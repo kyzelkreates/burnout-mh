@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>🤖 Recovery Guide — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.coach-panel { background:var(--surface); border-radius:var(--r); border:1.5px solid var(--border); box-shadow:var(--shadow); overflow:hidden; margin-bottom:12px; }
+.coach-panel-header { display:flex; align-items:center; justify-content:space-between; padding:12px 15px; background:linear-gradient(135deg,#0d2226,#1f4a50); color:#fff; }
+.coach-badge { background:rgba(74,124,126,.25); border:1px solid rgba(74,124,126,.45); border-radius:99px; padding:4px 13px; font-size:12px; font-weight:700; color:#7ec8cb; }
+.coach-live-dot { width:8px; height:8px; border-radius:50%; background:var(--low); animation:pulse 2s infinite; }
+.coach-chat { max-height:300px; overflow-y:auto; padding:12px 14px; display:flex; flex-direction:column; gap:8px; scroll-behavior:smooth; }
+.chat-msg { padding:9px 13px; border-radius:14px; font-size:14px; line-height:1.55; max-width:88%; animation:slideUp .2s ease; }
+.chat-user { background:var(--primary); color:#fff; align-self:flex-end; border-radius:14px 14px 3px 14px; }
+.chat-bot  { background:var(--surface2); color:var(--text); align-self:flex-start; border-radius:14px 14px 14px 3px; }
+.coach-quick-row { display:flex; gap:6px; overflow-x:auto; padding:4px 14px 10px; scrollbar-width:none; }
+.coach-quick-row::-webkit-scrollbar { display:none; }
+.coach-quick-btn { padding:5px 12px; border-radius:99px; border:1.5px solid var(--border); background:var(--surface2); color:var(--muted); font-size:11px; font-weight:600; cursor:pointer; white-space:nowrap; flex-shrink:0; transition:all var(--t); }
+.coach-quick-btn:hover { border-color:var(--primary); color:var(--primary); }
+.coach-input-row { display:flex; gap:8px; padding:8px 14px 14px; }
+.coach-input { flex:1; padding:10px 14px; border:1.5px solid var(--border); border-radius:99px; background:var(--surface2); color:var(--text); font-size:14px; outline:none; transition:border-color var(--t); }
+.coach-input:focus { border-color:var(--primary); }
+.coach-send { width:42px; height:42px; border-radius:50%; background:var(--primary); color:#fff; border:none; font-size:16px; cursor:pointer; transition:all var(--t); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+.coach-send:hover { background:var(--primary-d); }
+
+.quick-topics { display:flex; flex-direction:column; gap:7px; }
+.qt-btn { padding:11px 14px; border-radius:var(--rs); border:1.5px solid var(--border); background:var(--surface); color:var(--text); font-size:14px; font-weight:500; cursor:pointer; text-align:left; transition:all var(--t); }
+.qt-btn:hover { border-color:var(--primary); color:var(--primary); background:var(--primary-xl); }
+
+.disclaimer-box { background:var(--surface2); border-radius:var(--rs); border:1.5px solid var(--border); padding:13px 14px; font-size:12px; color:var(--muted); line-height:1.55; margin-top:4px; }
+</style>
+</head>
+<body class="theme-light" data-page="coach">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./index.html" class="back-btn">← Home</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in">
+  <h2 class="page-title">🤖 Recovery Guide</h2>
+  <p class="page-sub">Evidence-informed support for your recovery journey</p>
+
+  <div class="coach-panel">
+    <div class="coach-panel-header">
+      <span class="coach-badge">🧠 Recovery Guide — Active</span>
+      <span class="coach-live-dot"></span>
+    </div>
+    <div class="coach-chat" id="coach-chat"></div>
+    <div class="coach-quick-row" id="quick-btns"></div>
+    <div class="coach-input-row">
+      <input type="text" id="coach-input" class="coach-input" placeholder="Ask about recovery, energy, breathwork…"/>
+      <button class="coach-send" id="coach-send">➤</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">💬 Common Questions</div>
+    <div class="quick-topics" id="quick-topics"></div>
+  </div>
+
+  <div class="disclaimer-box">
+    🌿 <strong>Recharge Recovery Guide</strong> provides general evidence-informed support for burnout recovery and wellbeing. This is not medical or psychological advice. If you are experiencing significant mental health challenges, please reach out to a qualified healthcare professional.
+  </div>
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', initCoach);
+
+function initCoach() {
+  addMsg('bot', `Hi, ${APP.userName} 👋 I'm your Recharge Recovery Guide. Ask me anything about your recovery — energy management, sleep, breathwork, stress signals, or where to start in your program.`);
+
+  $('quick-btns').innerHTML = QUICK_TOPICS.slice(0,5).map(q=>
+    `<button class="coach-quick-btn" onclick="ask(${JSON.stringify(q)})">⚡ ${q}</button>`).join('');
+
+  $('quick-topics').innerHTML = QUICK_TOPICS.map(q=>
+    `<button class="qt-btn" onclick="ask(${JSON.stringify(q)})">💬 ${q}</button>`).join('');
+
+  $('coach-send').addEventListener('click', send);
+  $('coach-input').addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
+}
+
+function addMsg(role, text) {
+  const chat = $('coach-chat');
+  const div  = document.createElement('div');
+  div.className = `chat-msg ${role==='user'?'chat-user':'chat-bot'}`;
+  div.textContent = text;
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function send() {
+  const inp = $('coach-input');
+  const q   = inp.value.trim();
+  if (!q) return;
+  addMsg('user', q); inp.value = '';
+  setTimeout(()=>{
+    const lq = q.toLowerCase();
+    let resp = 'Whatever you\'re feeling right now is valid. Start small — one slow breath, one small action. Recovery is cumulative. Log a check-in to capture where you are, and use the restorative practices section for immediate support.';
+    Object.entries(AI_RESP).forEach(([k,v])=>{ if(lq.includes(k)) resp=v; });
+    addMsg('bot', resp);
+  }, 700);
+}
+
+function ask(q) { $('coach-input').value = q; send(); }
+</script>
+</body>
+</html>

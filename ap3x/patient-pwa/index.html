@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<title>🌿 Recharge Recovery</title>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="stylesheet" href="./patient.css"/>
+</head>
+<body class="theme-light">
+
+<!-- ══════════════════════════════════════════
+     ONBOARDING — shown on first visit
+══════════════════════════════════════════════ -->
+<div id="onboarding" class="ob-wrap" style="display:none">
+  <div class="ob-inner">
+
+    <!-- Step 1: Welcome -->
+    <div class="ob-step active" id="ob-step-1">
+      <div class="ob-logo">
+        <span class="ob-paw">🐾</span>
+        <div class="ob-brand">Recharge Recovery</div>
+        <div class="ob-brand-sub">Training Companion</div>
+      </div>
+      <h1 class="ob-title">Welcome to your<br/>Dog's Training Portal</h1>
+      <p class="ob-desc">Personalised training plans, behaviour tracking and AI guidance — all built around your dog. Let's set up your profile.</p>
+      <div class="ob-feature-list">
+        <div class="ob-feat"><span>🎓</span> 5-module Puppy Masterclass</div>
+        <div class="ob-feat"><span>🧠</span> AI Training Coach</div>
+        <div class="ob-feat"><span>📈</span> Progress &amp; behaviour tracking</div>
+        <div class="ob-feat"><span>🧩</span> Guided enrichment activities</div>
+      </div>
+      <button class="btn-primary ob-next-btn" onclick="obNext(1)">Let's set up your dog's profile →</button>
+      <button class="ob-skip-btn" onclick="obSkip()">Skip — already set up</button>
+    </div>
+
+    <!-- Step 2: Dog's name + breed -->
+    <div class="ob-step" id="ob-step-2">
+      <button class="ob-back" onclick="obBack(2)">‹ Back</button>
+      <div class="ob-step-num">Step 1 of 3</div>
+      <h2 class="ob-step-title">Tell us about your dog</h2>
+      <p class="ob-step-sub">This personalises your training plans and AI coach responses</p>
+      <div class="ob-field">
+        <label class="ob-label">Your dog's name</label>
+        <input type="text" id="ob-dog-name" class="ob-input" placeholder="e.g. Luna, Biscuit, Buddy…" autocomplete="off"/>
+      </div>
+      <div class="ob-field">
+        <label class="ob-label">Breed</label>
+        <input type="text" id="ob-breed" class="ob-input" placeholder="e.g. Labrador, French Bulldog, Mixed…" autocomplete="off"/>
+      </div>
+      <div class="ob-field">
+        <label class="ob-label">Age</label>
+        <div class="ob-age-row">
+          <button class="ob-age-btn active" data-age="8–16 weeks">8–16 weeks</button>
+          <button class="ob-age-btn" data-age="4–6 months">4–6 months</button>
+          <button class="ob-age-btn" data-age="6–12 months">6–12 months</button>
+          <button class="ob-age-btn" data-age="1–2 years">1–2 years</button>
+          <button class="ob-age-btn" data-age="2+ years">2+ years</button>
+        </div>
+      </div>
+      <div class="ob-field">
+        <label class="ob-label">Your name</label>
+        <input type="text" id="ob-owner-name" class="ob-input" placeholder="e.g. Sarah, James…" autocomplete="off"/>
+      </div>
+      <button class="btn-primary ob-next-btn" onclick="obNext(2)">Next →</button>
+    </div>
+
+    <!-- Step 3: Training goals -->
+    <div class="ob-step" id="ob-step-3">
+      <button class="ob-back" onclick="obBack(3)">‹ Back</button>
+      <div class="ob-step-num">Step 2 of 3</div>
+      <h2 class="ob-step-title">What are your training goals?</h2>
+      <p class="ob-step-sub">Select everything you want to work on — we'll prioritise your lessons</p>
+      <div class="ob-goals-grid" id="ob-goals">
+        <button class="ob-goal-btn" data-g="Recall &amp; coming when called">📣 Recall</button>
+        <button class="ob-goal-btn" data-g="Loose lead walking">🦮 Loose lead</button>
+        <button class="ob-goal-btn" data-g="Sit, down &amp; stay">🪑 Sit &amp; stay</button>
+        <button class="ob-goal-btn" data-g="Stopping jumping up">⬇️ No jumping</button>
+        <button class="ob-goal-btn" data-g="Crate training">🏠 Crate training</button>
+        <button class="ob-goal-btn" data-g="Socialisation">🐕 Socialisation</button>
+        <button class="ob-goal-btn" data-g="Stopping biting &amp; mouthing">😬 Biting/mouthing</button>
+        <button class="ob-goal-btn" data-g="Confidence building">💪 Confidence</button>
+        <button class="ob-goal-btn" data-g="Reducing reactivity">⚠️ Reactivity</button>
+        <button class="ob-goal-btn" data-g="Toilet training">🚽 Toilet training</button>
+        <button class="ob-goal-btn" data-g="Enrichment &amp; mental stimulation">🧩 Enrichment</button>
+        <button class="ob-goal-btn" data-g="Alone time &amp; separation">🚪 Alone time</button>
+      </div>
+      <button class="btn-primary ob-next-btn" onclick="obNext(3)" style="margin-top:16px">Next →</button>
+    </div>
+
+    <!-- Step 4: Experience level -->
+    <div class="ob-step" id="ob-step-4">
+      <button class="ob-back" onclick="obBack(4)">‹ Back</button>
+      <div class="ob-step-num">Step 3 of 3</div>
+      <h2 class="ob-step-title">Your training experience</h2>
+      <p class="ob-step-sub">Helps us calibrate lesson complexity and tip detail</p>
+      <div class="ob-exp-list" id="ob-exp">
+        <button class="ob-exp-btn" data-e="new">
+          <span class="oe-icon">🌱</span>
+          <div>
+            <div class="oe-title">New to dog training</div>
+            <div class="oe-desc">This is my first dog or I'm completely new to training</div>
+          </div>
+        </button>
+        <button class="ob-exp-btn" data-e="some">
+          <span class="oe-icon">📚</span>
+          <div>
+            <div class="oe-title">Some experience</div>
+            <div class="oe-desc">I've trained a dog before but want to learn more</div>
+          </div>
+        </button>
+        <button class="ob-exp-btn" data-e="confident">
+          <span class="oe-icon">🎓</span>
+          <div>
+            <div class="oe-title">Confident owner</div>
+            <div class="oe-desc">I'm comfortable with training but want structured guidance</div>
+          </div>
+        </button>
+      </div>
+      <button class="btn-primary ob-next-btn" onclick="obFinish()" style="margin-top:16px">Set up my portal →</button>
+    </div>
+
+    <!-- Step 5: Ready screen -->
+    <div class="ob-step" id="ob-step-5">
+      <div class="ob-ready-icon">🎉</div>
+      <h2 class="ob-ready-title">You're all set!</h2>
+      <p class="ob-ready-sub">Your personalised training portal is ready.</p>
+      <div class="ob-summary" id="ob-summary"></div>
+      <button class="btn-primary ob-next-btn" id="ob-launch-btn">Open My Training Portal →</button>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     PORTAL HOME — main hub
+══════════════════════════════════════════════ -->
+<div id="portal-root" style="display:none">
+
+  <header class="portal-header">
+    <div class="ph-brand">
+      <span class="brand-dot"></span>
+      <div>
+        <div class="brand-name">🐾 Four Paws</div>
+        <div class="brand-sub" id="portal-brand-sub">Training Companion</div>
+      </div>
+    </div>
+    <div class="ph-right">
+      <span class="xp-chip" id="xp-chip">⚡ 0 XP</span>
+      <button class="btn-icon" id="theme-toggle">🌙</button>
+    </div>
+  </header>
+
+  <div id="streak-banner" class="streak-banner" style="display:none">
+    <span>🔥</span><span id="streak-text">0-day streak</span>
+  </div>
+
+  <div class="portal-scroll">
+
+    <!-- Dog hero card -->
+    <div class="portal-hero">
+      <div class="hero-greeting" id="hero-greeting">Good morning 👋</div>
+      <div class="hero-dog"      id="hero-dog-name">Your Training Companion</div>
+      <div class="hero-sub"      id="hero-sub">Consistency builds champions 🐕</div>
+      <div class="hero-dog-chips" id="hero-dog-chips"></div>
+    </div>
+
+    <!-- Today snapshot -->
+    <div class="portal-today-strip" id="today-snapshot"></div>
+
+    <!-- Main portal grid -->
+    <div class="portal-grid">
+      <button class="portal-tile tile-log"      onclick="openScreen('log')">
+        <span class="tile-icon">📋</span>
+        <span class="tile-label">Log Session</span>
+        <span class="tile-meta" id="tile-log-meta">Ready to log</span>
+        <span class="tile-arrow">›</span>
+      </button>
+      <button class="portal-tile tile-courses"  onclick="openScreen('courses')">
+        <span class="tile-icon">🎓</span>
+        <span class="tile-label">My Course</span>
+        <span class="tile-meta" id="tile-course-meta">Loading…</span>
+        <span class="tile-arrow">›</span>
+      </button>
+      <button class="portal-tile tile-progress" onclick="openScreen('progress')">
+        <span class="tile-icon">📈</span>
+        <span class="tile-label">Progress</span>
+        <span class="tile-meta" id="tile-progress-meta">Loading…</span>
+        <span class="tile-arrow">›</span>
+      </button>
+      <button class="portal-tile tile-enrich"   onclick="openScreen('enrichment')">
+        <span class="tile-icon">🧩</span>
+        <span class="tile-label">Enrichment</span>
+        <span class="tile-meta">10 activities</span>
+        <span class="tile-arrow">›</span>
+      </button>
+      <button class="portal-tile tile-coach"    onclick="openScreen('coach')">
+        <span class="tile-icon">🤖</span>
+        <span class="tile-label">AI Coach</span>
+        <span class="tile-meta" id="tile-coach-meta">Ask anything</span>
+        <span class="tile-arrow">›</span>
+      </button>
+      <button class="portal-tile tile-today"    onclick="openScreen('today')">
+        <span class="tile-icon">☀️</span>
+        <span class="tile-label">Today's Plan</span>
+        <span class="tile-meta" id="tile-today-meta">3 tasks</span>
+        <span class="tile-arrow">›</span>
+      </button>
+    </div>
+
+    <!-- Tip strip -->
+    <div class="portal-tip">
+      <span class="tip-icon">💡</span>
+      <span id="portal-tip-text">Loading…</span>
+    </div>
+
+    <!-- Mini chart -->
+    <div class="portal-card">
+      <div class="pc-label">📈 Training This Week</div>
+      <canvas id="portal-chart" height="72" style="width:100%"></canvas>
+    </div>
+
+    <!-- Goals strip -->
+    <div class="portal-card" style="margin-top:10px">
+      <div class="pc-label">🎯 Your Training Goals</div>
+      <div class="goals-strip" id="goals-strip"></div>
+    </div>
+
+  </div>
+</div>
+
+
+<!-- ══════════════════════════════════════════
+     SCREENS
+══════════════════════════════════════════════ -->
+
+<!-- ── LOG SESSION ── -->
+<div id="screen-log" class="screen" aria-hidden="true">
+  <div class="screen-header">
+    <button class="screen-back" onclick="closeScreen('log')">‹ Back</button>
+    <span class="screen-title">📋 Log Session</span>
+    <span></span>
+  </div>
+  <div class="screen-body">
+    <div id="log-form-wrap">
+      <p class="screen-sub" id="log-sub">Record what happened today</p>
+
+      <div class="s-card">
+        <div class="s-label">How did the session go? <span class="hint">0 = easy win · 10 = very tough</span></div>
+        <div class="scale-row-labels"><span>Easy win</span><span>Very tough</span></div>
+        <div class="scale-track" id="score-scale"></div>
+        <div class="score-big" id="score-display">–</div>
+        <div class="score-ctx" id="score-ctx"></div>
+      </div>
+
+      <div class="s-card">
+        <div class="s-label">Skills practised <span class="hint">(select all)</span></div>
+        <div class="tag-group" id="skills-tags">
+          <button class="tag" data-v="Recall">Recall 📣</button>
+          <button class="tag" data-v="Loose lead">Loose lead 🦮</button>
+          <button class="tag" data-v="Sit / Down">Sit / Down 🪑</button>
+          <button class="tag" data-v="Stay">Stay ⏸</button>
+          <button class="tag" data-v="Polite greeting">Polite greeting 🤝</button>
+          <button class="tag" data-v="Focus">Focus 👀</button>
+          <button class="tag" data-v="Socialisation">Socialisation 🐕</button>
+          <button class="tag" data-v="Crate training">Crate 🏠</button>
+          <button class="tag" data-v="Enrichment">Enrichment 🧩</button>
+          <button class="tag" data-v="Confidence games">Confidence 💪</button>
+          <button class="tag" data-v="Scent work">Scent work 👃</button>
+          <button class="tag" data-v="Off-lead recall">Off-lead recall 🌳</button>
+        </div>
+      </div>
+
+      <div class="s-card">
+        <div class="s-label" id="mood-label">How was your dog's mood? <span class="hint">(select all)</span></div>
+        <div class="tag-group" id="mood-tags">
+          <button class="tag" data-v="Happy & playful">Happy &amp; playful 😄</button>
+          <button class="tag" data-v="Calm & relaxed">Calm &amp; relaxed 😌</button>
+          <button class="tag" data-v="Focused & engaged">Focused &amp; engaged 🎯</button>
+          <button class="tag" data-v="Excitable / bouncy">Excitable / bouncy</button>
+          <button class="tag" data-v="Anxious / unsettled">Anxious / unsettled 😟</button>
+          <button class="tag" data-v="Reactive to triggers">Reactive to triggers</button>
+          <button class="tag" data-v="Frustrated">Frustrated</button>
+          <button class="tag" data-v="Tired / flat">Tired / flat</button>
+          <button class="tag" data-v="Zoomies / over-aroused">Zoomies 🌀</button>
+          <button class="tag" data-v="Confident & brave">Confident &amp; brave 💪</button>
+        </div>
+      </div>
+
+      <div class="s-card">
+        <div class="s-label">Session length (mins)</div>
+        <input type="number" id="duration-input" class="ob-input" min="1" max="120" placeholder="e.g. 10" style="margin-top:0"/>
+      </div>
+
+      <div class="s-card">
+        <div class="s-label">Notes <span class="hint">(optional — visible to trainer)</span></div>
+        <textarea id="session-note" class="ob-textarea" placeholder="Breakthroughs, challenges, what you noticed…" rows="3"></textarea>
+      </div>
+
+      <button class="btn-primary" id="submit-session">Save Session ✓</button>
+    </div>
+
+    <div id="log-feedback" class="feedback-card" style="display:none">
+      <div id="fb-badge" class="fb-badge"></div>
+      <p id="fb-msg" class="fb-msg"></p>
+      <p id="fb-tip" class="fb-tip"></p>
+      <div class="fb-actions">
+        <button class="btn-sm-outline" onclick="openScreen('enrichment');closeScreen('log')">🧩 Enrichment</button>
+        <button class="btn-sm-outline" onclick="openScreen('courses');closeScreen('log')">🎓 Courses</button>
+        <button class="btn-sm-accent"  onclick="resetLog()">↩ New Log</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── COURSES ── -->
+<div id="screen-courses" class="screen" aria-hidden="true">
+  <div class="screen-header">
+    <button class="screen-back" onclick="closeScreen('courses')">‹ Back</button>
+    <span class="screen-title">🎓 Puppy Masterclass</span>
+    <span></span>
+  </div>
+  <div class="screen-body">
+    <div id="course-hero-wrap"></div>
+    <div id="modules-list"></div>
+  </div>
+</div>
+
+<!-- ── PROGRESS ── -->
+<div id="screen-progress" class="screen" aria-hidden="true">
+  <div class="screen-header">
+    <button class="screen-back" onclick="closeScreen('progress')">‹ Back</button>
+    <span class="screen-title">📈 Progress</span>
+    <span></span>
+  </div>
+  <div class="screen-body">
+    <div class="stats-grid" id="progress-stats"></div>
+    <div class="portal-card" style="margin-bottom:12px">
+      <div class="pc-label-row">
+        <span class="pc-label">Score Trend</span>
+        <div class="mini-tabs">
+          <button class="mini-tab active" onclick="switchProgressChart('score',this)">Sessions</button>
+          <button class="mini-tab" onclick="switchProgressChart('skills',this)">Skills</button>
+        </div>
+      </div>
+      <canvas id="progress-chart" height="120" style="width:100%"></canvas>
+    </div>
+    <div class="portal-card" style="margin-bottom:12px">
+      <div class="pc-label">🏅 Milestones</div>
+      <div id="milestones-list"></div>
+    </div>
+    <div class="portal-card">
+      <div class="pc-label">📋 Session History</div>
+      <div id="history-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── ENRICHMENT ── -->
+<div id="screen-enrichment" class="screen" aria-hidden="true">
+  <div class="screen-header">
+    <button class="screen-back" onclick="closeScreen('enrichment')">‹ Back</button>
+    <span class="screen-title">🧩 Enrichment</span>
+    <span></span>
+  </div>
+  <div class="screen-body">
+    <p class="screen-sub">Mental stimulation, confidence &amp; structured play</p>
+    <div class="filter-row" id="enrich-filters">
+      <button class="filter-btn active" onclick="filterEnrich('all',this)">All</button>
+      <button class="filter-btn" onclick="filterEnrich('scent',this)">👃 Scent</button>
+      <button class="filter-btn" onclick="filterEnrich('puzzle',this)">🧩 Puzzle</button>
+      <button class="filter-btn" onclick="filterEnrich('confidence',this)">💪 Confidence</button>
+      <button class="filter-btn" onclick="filterEnrich('calm',this)">😌 Calm</button>
+      <button class="filter-btn" onclick="filterEnrich('play',this)">🎾 Play</button>
+    </div>
+    <div id="enrich-list"></div>
+  </div>
+</div>
+
+<!-- ── AI COACH ── -->
+<div id="screen-coach" class="screen" aria-hidden="true">
+  <div class="screen-header">
+    <button class="screen-back" onclick="closeScreen('coach')">‹ Back</button>
+    <span class="screen-title">🤖 AI Coach</span>
+    <span></span>
+  </div>
+  <div class="screen-body coach-body">
+    <div class="coach-chat" id="coach-chat"></div>
+    <div class="coach-quick-row" id="coach-quick"></div>
+    <div class="coach-input-bar">
+      <input type="text" id="coach-input" class="coach-input" placeholder="Ask anything about your dog…"/>
+      <button class="coach-send" id="coach-send">➤</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── TODAY'S PLAN ── -->
+<div id="screen-today" class="screen" aria-hidden="true">
+  <div class="screen-header">
+    <button class="screen-back" onclick="closeScreen('today')">‹ Back</button>
+    <span class="screen-title">☀️ Today's Plan</span>
+    <span></span>
+  </div>
+  <div class="screen-body">
+    <p class="screen-sub" id="today-sub">Your personalised training tasks for today</p>
+    <div id="today-tasks-list"></div>
+    <div class="portal-tip" style="margin-top:12px">
+      <span class="tip-icon">💡</span>
+      <span id="today-tip"></span>
+    </div>
+    <div class="portal-card" style="margin-top:12px">
+      <div class="pc-label">🏅 Next Milestones</div>
+      <div id="today-milestones"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACTIVITY RUNNER ══ -->
+<div id="activity-runner" class="runner-overlay" style="display:none">
+  <div class="runner-box">
+    <div class="runner-title"        id="runner-title"></div>
+    <div class="runner-visual">
+      <div class="runner-circle"     id="runner-circle"></div>
+      <div class="runner-timer"      id="runner-timer">–</div>
+    </div>
+    <div class="runner-instruction"  id="runner-instruction">Get ready…</div>
+    <div class="runner-progress-txt" id="runner-progress-txt"></div>
+    <button class="btn-secondary"    id="runner-stop-btn">✓ End Activity</button>
+  </div>
+</div>
+
+<script src="./patient-app.js"></script>
+</body>
+</html>

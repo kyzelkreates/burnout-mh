@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>AP3X Intelligent AI — Clinician Dashboard</title>
+<style>
+:root{
+  --bg:#f0f4f8;--surface:#fff;--surface2:#e8f0fe;--sidebar:#0f2d52;
+  --sidebar-txt:#c8d8f0;--sidebar-act:#2563eb;--border:#d1dce8;
+  --primary:#2563eb;--primary-d:#1d4ed8;--accent:#10b981;--accent-d:#059669;
+  --warn:#f59e0b;--high:#ef4444;--critical:#7c3aed;--missing:#64748b;
+  --text:#1e293b;--muted:#64748b;--light:#94a3b8;
+  --low:#10b981;--medium:#f59e0b;
+  --r:10px;--rs:6px;--shadow:0 2px 8px rgba(15,45,82,.08);--shadow-md:0 4px 16px rgba(15,45,82,.12);
+  --sw:224px;--t:.18s ease;
+}
+[data-theme=dark]{
+  --bg:#0a1526;--surface:#111f35;--surface2:#1a2d48;--border:#1e3050;
+  --text:#dde8f8;--muted:#7a90b0;--light:#3a5070;--sidebar:#07111f;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;line-height:1.5}
+
+/* ── Layout ── */
+.layout{display:flex;width:100%;min-height:100vh}
+.sidebar{width:var(--sw);min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:20px 16px;border-bottom:1px solid rgba(255,255,255,.08)}
+.sb-dot{width:10px;height:10px;border-radius:50%;background:var(--sidebar-act);flex-shrink:0}
+.sb-name{color:#fff;font-size:15px;font-weight:800}
+.sb-sub{color:var(--sidebar-txt);font-size:11px}
+.sb-section{padding:10px 16px 4px;font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:rgba(255,255,255,.3);font-weight:700}
+.sb-nav{flex:1;padding:8px;display:flex;flex-direction:column;gap:2px}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--rs);background:none;border:none;color:var(--sidebar-txt);font-size:13px;font-weight:500;cursor:pointer;transition:all var(--t);text-align:left;width:100%}
+.nav-item:hover{background:rgba(255,255,255,.06);color:#fff}
+.nav-item.active{background:var(--sidebar-act);color:#fff}
+.nav-badge{margin-left:auto;background:var(--high);color:#fff;font-size:10px;font-weight:700;border-radius:99px;padding:1px 7px;min-width:18px;text-align:center}
+.nav-badge.warn{background:var(--warn)}
+.sb-footer{padding:14px;border-top:1px solid rgba(255,255,255,.08);display:flex;flex-direction:column;gap:8px}
+.clinician-chip{display:flex;align-items:center;gap:8px}
+.clin-avatar{width:32px;height:32px;border-radius:50%;background:var(--sidebar-act);color:#fff;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.clin-name{color:#fff;font-size:12px;font-weight:600}
+.clin-role{color:var(--sidebar-txt);font-size:11px}
+.sb-footer-btns{display:flex;gap:6px}
+.back-btn{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--sidebar-txt);border-radius:var(--rs);padding:5px 10px;font-size:11px;cursor:pointer;text-decoration:none;text-align:center;transition:all var(--t)}
+.back-btn:hover{color:#fff;background:rgba(255,255,255,.15)}
+
+/* ── Main ── */
+.main-area{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:17px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:14px}
+.rt-ind{display:flex;align-items:center;gap:5px;font-size:12px;color:var(--accent);font-weight:600}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.topbar-search{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:7px 12px;min-width:200px}
+.topbar-search input{background:none;border:none;font-size:13px;color:var(--text);outline:none;width:100%}
+.topbar-search input::placeholder{color:var(--muted)}
+.btn-icon-top{background:none;border:none;font-size:18px;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;transition:all var(--t)}
+.btn-icon-top:hover{background:var(--surface2);color:var(--text)}
+.notif-btn{position:relative}
+.notif-count{position:absolute;top:-3px;right:-3px;width:16px;height:16px;background:var(--high);color:#fff;font-size:9px;font-weight:700;border-radius:50%;display:flex;align-items:center;justify-content:center}
+
+/* ── Views ── */
+.view{padding:24px;animation:fadeIn .2s ease;flex:1}
+.view.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.view-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:gap}
+.view-title{font-size:20px;font-weight:800}
+.view-sub{font-size:13px;color:var(--muted);margin-top:2px}
+
+/* ── Stats row ── */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:24px}
+.stat-card{background:var(--surface);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);border-left:4px solid var(--primary);cursor:default;transition:box-shadow var(--t)}
+.stat-card:hover{box-shadow:var(--shadow-md)}
+.stat-card.w{border-left-color:var(--warn)}.stat-card.d{border-left-color:var(--high)}.stat-card.m{border-left-color:var(--missing)}.stat-card.c{border-left-color:var(--critical)}.stat-card.g{border-left-color:var(--accent)}
+.stat-val{font-size:26px;font-weight:800}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.05em}
+.stat-delta{font-size:11px;margin-top:4px;font-weight:600}
+.stat-delta.up{color:var(--high)}.stat-delta.down{color:var(--accent)}
+
+/* ── Patient grid ── */
+.patient-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:14px}
+.pc{background:var(--surface);border-radius:var(--r);padding:15px;box-shadow:var(--shadow);border-top:3px solid var(--border);cursor:pointer;transition:all var(--t)}
+.pc:hover{box-shadow:var(--shadow-md);transform:translateY(-2px)}
+.pc.HIGH{border-top-color:var(--high)}.pc.CRITICAL{border-top-color:var(--critical);background:linear-gradient(135deg,#faf5ff,var(--surface))}
+.pc.MEDIUM{border-top-color:var(--warn)}.pc.LOW{border-top-color:var(--accent)}.pc.MISSING{border-top-color:var(--missing);background:var(--surface2)}
+.pc-hdr{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px}
+.pc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#fff;flex-shrink:0}
+.pc-info{flex:1;margin-left:10px}
+.pc-name{font-size:14px;font-weight:700}
+.pc-id{font-size:11px;color:var(--muted);margin-top:1px}
+.pc-score{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;flex-shrink:0}
+.pc-score.sl{background:#d1fae5;color:#065f46}.pc-score.sm{background:#fef3c7;color:#92400e}.pc-score.sh{background:#fee2e2;color:#991b1b}.pc-score.sc{background:#ede9fe;color:#4c1d95}.pc-score.sn{background:var(--surface2);color:var(--muted);font-size:12px}
+.pc-metrics{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+.pc-metric{background:var(--surface2);border-radius:5px;padding:6px 8px;text-align:center}
+.pcm-val{font-size:13px;font-weight:700}
+.pcm-lbl{font-size:10px;color:var(--muted)}
+.pc-sparkline{margin-bottom:8px}
+.pc-footer{display:flex;align-items:center;justify-content:space-between}
+.rb{display:inline-flex;align-items:center;padding:3px 9px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.rb.LOW{background:#d1fae5;color:#065f46}.rb.MEDIUM{background:#fef3c7;color:#92400e}.rb.HIGH{background:#fee2e2;color:#991b1b}.rb.CRITICAL{background:#ede9fe;color:#4c1d95}.rb.MISSING{background:#f1f5f9;color:#475569}
+.trend-up{color:var(--high);font-weight:700;font-size:12px}.trend-down{color:var(--accent);font-weight:700;font-size:12px}.trend-flat{color:var(--muted);font-size:12px}
+.last-seen{font-size:11px;color:var(--muted)}
+.flag-chip{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:99px;font-size:10px;font-weight:600;background:#fee2e2;color:#991b1b;margin-top:4px}
+
+/* ── Table ── */
+.tbl-toolbar{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search-input{flex:1;min-width:180px;padding:8px 12px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);font-size:13px;color:var(--text)}
+.search-input:focus{outline:none;border-color:var(--primary)}
+.filter-sel{padding:7px 10px;background:var(--surface);border:1.5px solid var(--border);border-radius:var(--rs);font-size:12px;color:var(--text);cursor:pointer}
+.tbl-wrap{overflow-x:auto;background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+th{padding:10px 14px;text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);border-bottom:1.5px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none}
+th:hover{color:var(--primary)}
+td{padding:10px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:13px}
+tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:var(--surface2);cursor:pointer}
+.btn-view{padding:4px 11px;background:var(--surface2);border:1.5px solid var(--primary);color:var(--primary);border-radius:var(--rs);font-size:11px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-view:hover{background:var(--primary);color:#fff}
+.btn-sm-danger{padding:4px 10px;background:none;border:1.5px solid var(--high);color:var(--high);border-radius:var(--rs);font-size:11px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-sm-danger:hover{background:var(--high);color:#fff}
+
+/* ── Detail panel ── */
+.detail{position:fixed;top:0;right:0;width:min(560px,100vw);height:100vh;background:var(--surface);border-left:1px solid var(--border);box-shadow:-8px 0 32px rgba(0,0,0,.12);z-index:200;overflow-y:auto;display:flex;flex-direction:column}
+.detail.hidden{display:none!important}
+.detail-header{padding:20px 24px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:14px;background:var(--surface);position:sticky;top:0;z-index:10}
+.detail-avatar{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;color:#fff;flex-shrink:0}
+.d-name{font-size:18px;font-weight:800}
+.d-meta{font-size:12px;color:var(--muted);margin-top:2px}
+.d-risk-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+.btn-close{margin-left:auto;background:var(--surface2);border:1px solid var(--border);border-radius:var(--rs);width:30px;height:30px;font-size:13px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.detail-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--surface);padding:0 24px;gap:0}
+.detail-tab{padding:10px 16px;font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;color:var(--muted);transition:all var(--t)}
+.detail-tab.active{color:var(--primary);border-bottom-color:var(--primary)}
+.detail-body{padding:20px 24px;flex:1}
+.detail-section{margin-bottom:22px}
+.d-sec-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px}
+.mg-card{background:var(--surface2);border-radius:var(--rs);padding:12px;text-align:center}
+.mg-val{font-size:20px;font-weight:800}
+.mg-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;margin-top:2px}
+.checkin-list{display:flex;flex-direction:column;gap:8px}
+.ci-item{background:var(--surface2);border-radius:var(--rs);padding:10px 12px;display:flex;align-items:flex-start;gap:10px}
+.ci-score{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0}
+.ci-body{flex:1}
+.ci-date{font-size:11px;color:var(--muted)}
+.ci-note{font-size:12px;color:var(--text);margin-top:2px}
+.ci-tags{display:flex;gap:4px;flex-wrap:wrap;margin-top:4px}
+.ci-tag{font-size:10px;padding:2px 6px;border-radius:99px;background:var(--surface);border:1px solid var(--border);color:var(--muted)}
+.flag-list{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.flag-chip-lg{padding:5px 12px;border-radius:99px;font-size:11px;font-weight:600;background:#fee2e2;color:#991b1b}
+.flag-chip-lg.warn{background:#fef3c7;color:#92400e}
+.note-item{padding:10px 12px;background:var(--surface2);border-radius:var(--rs);margin-bottom:8px;border-left:3px solid var(--primary)}
+.note-text{font-size:13px;line-height:1.5}.note-meta{font-size:10px;color:var(--muted);margin-top:4px}
+.note-actions{display:flex;gap:8px;align-items:center;margin-top:8px}
+textarea{width:100%;padding:10px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);font-size:13px;color:var(--text);font-family:inherit;resize:vertical;margin-bottom:8px}
+textarea:focus{outline:none;border-color:var(--primary)}
+.chart-wrap-d{background:var(--surface2);border-radius:var(--rs);padding:12px;margin-bottom:10px}
+.cw-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.cw-title{font-size:12px;font-weight:700;color:var(--muted)}
+
+/* ── Analytics charts ── */
+.analytics-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.analytics-card{background:var(--surface);border-radius:var(--r);padding:16px;box-shadow:var(--shadow)}
+.ac-title{font-size:13px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.donut-wrap{display:flex;align-items:center;gap:16px}
+.donut-legend{display:flex;flex-direction:column;gap:6px}
+.dl-item{display:flex;align-items:center;gap:7px;font-size:12px}
+.dl-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.bar-chart{display:flex;flex-direction:column;gap:6px}
+.bar-row{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:11px;color:var(--muted);width:80px;flex-shrink:0;text-align:right}
+.bar-track{flex:1;height:16px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width .6s ease}
+.bar-val{font-size:11px;font-weight:700;color:var(--text);width:28px;text-align:right}
+
+/* ── Timeline ── */
+.timeline{display:flex;flex-direction:column;gap:0}
+.tl-item{display:flex;gap:12px;padding-bottom:16px;position:relative}
+.tl-item::before{content:'';position:absolute;left:15px;top:28px;bottom:0;width:2px;background:var(--border)}
+.tl-item:last-child::before{display:none}
+.tl-dot{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;z-index:1;background:var(--surface);border:2px solid var(--border)}
+.tl-dot.alert{background:#fee2e2;border-color:var(--high)}
+.tl-dot.good{background:#d1fae5;border-color:var(--accent)}
+.tl-dot.note{background:#dbeafe;border-color:var(--primary)}
+.tl-content{flex:1;background:var(--surface2);border-radius:var(--rs);padding:10px 12px;margin-top:2px}
+.tl-time{font-size:10px;color:var(--muted);margin-bottom:3px}
+.tl-text{font-size:13px;color:var(--text)}
+
+/* ── Alerts ── */
+.alert-card{background:var(--surface);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);margin-bottom:10px;border-left:4px solid var(--high);display:flex;align-items:flex-start;gap:12px}
+.alert-card.warn{border-left-color:var(--warn)}
+.alert-icon{font-size:20px;flex-shrink:0}
+.alert-body{flex:1}
+.alert-title{font-size:13px;font-weight:700}
+.alert-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.alert-time{font-size:11px;color:var(--muted);margin-top:4px}
+.alert-actions{display:flex;gap:6px;margin-top:8px}
+.btn-ack{padding:4px 12px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);font-size:11px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-ack:hover{border-color:var(--primary);color:var(--primary)}
+.btn-escalate{padding:4px 12px;background:none;border:1.5px solid var(--high);color:var(--high);border-radius:var(--rs);font-size:11px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-escalate:hover{background:var(--high);color:#fff}
+
+/* ── Buttons ── */
+.btn-primary{padding:8px 18px;background:var(--primary);color:#fff;border:none;border-radius:var(--rs);font-size:13px;font-weight:700;cursor:pointer;transition:all var(--t)}
+.btn-primary:hover{background:var(--primary-d)}
+.btn-primary.sm{padding:6px 14px;font-size:12px}
+.btn-secondary{padding:7px 14px;background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+
+/* ── Toast ── */
+.toast{position:fixed;bottom:24px;right:24px;background:#1e293b;color:#fff;padding:10px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;z-index:500;animation:toastIn .3s ease;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.hidden{display:none!important}
+@keyframes toastIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Misc ── */
+.empty-state{color:var(--muted);font-size:13px;padding:24px;text-align:center}
+.hidden{display:none!important}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.badge.new{background:#dbeafe;color:#1d4ed8}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.cli-footer{padding:12px 24px;font-size:11px;color:var(--light);border-top:1px solid var(--border);background:var(--surface);line-height:1.4}
+
+@media(max-width:900px){
+  .stats-row{grid-template-columns:repeat(3,1fr)}
+  .analytics-row{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  .stats-row{grid-template-columns:repeat(2,1fr)}
+  .sidebar{width:56px}
+  .sb-name,.sb-sub,.nav-item span:not(:first-child),.sb-section,.clinician-chip .clin-name,.clinician-chip .clin-role{display:none}
+  .nav-item{justify-content:center;padding:10px}
+  .nav-badge{display:none}
+}
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ── Sidebar ── -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-dot"></div>
+    <div><div class="sb-name">AP3X</div><div class="sb-sub">Intelligent AI Clinical</div></div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Overview</div>
+    <button class="nav-item active" id="nav-overview" onclick="showView('overview')"><span>🏠</span><span>Dashboard</span></button>
+    <button class="nav-item" id="nav-alerts" onclick="showView('alerts')"><span>🔔</span><span>Alerts</span><span class="nav-badge" id="alertBadge">3</span></button>
+    <div class="sb-section">Patients</div>
+    <button class="nav-item" id="nav-patients" onclick="showView('patients')"><span>👥</span><span>All Patients</span></button>
+    <button class="nav-item" id="nav-highrisk" onclick="showView('highrisk')"><span>⚠️</span><span>High Risk</span><span class="nav-badge warn" id="hrBadge">2</span></button>
+    <button class="nav-item" id="nav-checkins" onclick="showView('checkins')"><span>📋</span><span>Check-Ins</span><span class="nav-badge" style="background:var(--accent)" id="ciBadge">7</span></button>
+    <div class="sb-section">Analytics</div>
+    <button class="nav-item" id="nav-analytics" onclick="showView('analytics')"><span>📊</span><span>Analytics</span></button>
+    <button class="nav-item" id="nav-timeline" onclick="showView('timeline')"><span>📅</span><span>Timeline</span></button>
+    <div class="sb-section">Tools</div>
+    <button class="nav-item" id="nav-notes" onclick="showView('notes')"><span>📝</span><span>Notes</span></button>
+    <button class="nav-item" id="nav-settings" onclick="showView('settings')"><span>⚙️</span><span>Settings</span></button>
+  </nav>
+  <div class="sb-footer">
+    <div class="clinician-chip">
+      <div class="clin-avatar">DR</div>
+      <div><div class="clin-name">Dr. Reyes</div><div class="clin-role">Clinical Psychologist</div></div>
+    </div>
+    <div class="sb-footer-btns">
+      <a href="index.html" class="back-btn">← Home</a>
+      <button class="back-btn" id="themeToggle" onclick="toggleTheme()">🌙</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ── Main ── -->
+<div class="main-area">
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="topbar-title" id="topbarTitle">Dashboard</div>
+      <div class="rt-ind"><div class="pulse"></div>Live Demo</div>
+    </div>
+    <div class="topbar-right">
+      <div class="topbar-search"><span style="color:var(--muted)">🔍</span><input type="text" placeholder="Search patients…" oninput="globalSearch(this.value)" id="globalSearchInput"/></div>
+      <button class="btn-icon-top notif-btn" onclick="showView('alerts')">🔔<span class="notif-count">3</span></button>
+      <button class="btn-icon-top" onclick="toggleTheme()">🌙</button>
+      <span style="font-size:13px;color:var(--muted)" id="clockEl"></span>
+    </div>
+  </div>
+
+  <!-- OVERVIEW -->
+  <div class="view" id="view-overview">
+    <div class="view-header">
+      <div><div class="view-title">Good morning, Dr. Reyes 👋</div><div class="view-sub">Here's your patient overview for today</div></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-secondary" onclick="showView('checkins')">📋 Today's Check-Ins</button>
+        <button class="btn-primary" onclick="showView('alerts')">🔔 View Alerts</button>
+      </div>
+    </div>
+    <div class="stats-row" id="statsRow"></div>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px">
+      <div class="analytics-card">
+        <div class="ac-title">📈 Weekly Anxiety Trends (All Patients)</div>
+        <canvas id="overviewChart" height="110"></canvas>
+      </div>
+      <div class="analytics-card">
+        <div class="ac-title">🎯 Risk Distribution</div>
+        <div class="donut-wrap">
+          <canvas id="donutChart" width="90" height="90"></canvas>
+          <div class="donut-legend" id="donutLegend"></div>
+        </div>
+      </div>
+    </div>
+    <div class="view-header" style="margin-bottom:12px">
+      <div style="font-size:15px;font-weight:700">⚠️ Patients Needing Attention</div>
+      <button class="btn-secondary" onclick="showView('patients')">View All →</button>
+    </div>
+    <div class="patient-grid" id="urgentGrid"></div>
+  </div>
+
+  <!-- ALERTS -->
+  <div class="view hidden" id="view-alerts">
+    <div class="view-header">
+      <div><div class="view-title">🔔 Alerts</div><div class="view-sub">Real-time patient risk notifications</div></div>
+      <button class="btn-secondary" onclick="ackAll()">✓ Acknowledge All</button>
+    </div>
+    <div id="alertsList"></div>
+  </div>
+
+  <!-- PATIENTS -->
+  <div class="view hidden" id="view-patients">
+    <div class="view-header">
+      <div><div class="view-title">👥 All Patients</div><div class="view-sub" id="patientCount"></div></div>
+      <div style="display:flex;gap:8px">
+        <select class="filter-sel" id="riskFilter" onchange="renderPatientsTable()">
+          <option value="">All Risk Levels</option>
+          <option value="CRITICAL">Critical</option>
+          <option value="HIGH">High</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="LOW">Low</option>
+          <option value="MISSING">Missing Data</option>
+        </select>
+        <select class="filter-sel" id="sortFilter" onchange="renderPatientsTable()">
+          <option value="risk">Sort: Risk</option>
+          <option value="name">Sort: Name</option>
+          <option value="score">Sort: Anxiety Score</option>
+          <option value="lastSeen">Sort: Last Seen</option>
+        </select>
+      </div>
+    </div>
+    <div class="tbl-toolbar">
+      <input class="search-input" placeholder="Search by name or ID…" oninput="renderPatientsTable(this.value)" id="ptSearch"/>
+    </div>
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Patient</th><th>Risk</th><th>Anxiety</th><th>Sleep</th><th>Streak</th><th>Last Check-In</th><th>Trend</th><th>Flags</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="patientsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- HIGH RISK -->
+  <div class="view hidden" id="view-highrisk">
+    <div class="view-header">
+      <div><div class="view-title">⚠️ High Risk Patients</div><div class="view-sub">Patients requiring immediate attention</div></div>
+    </div>
+    <div id="highRiskContent"></div>
+  </div>
+
+  <!-- CHECK-INS -->
+  <div class="view hidden" id="view-checkins">
+    <div class="view-header">
+      <div><div class="view-title">📋 Recent Check-Ins</div><div class="view-sub">All patient check-ins, newest first</div></div>
+      <select class="filter-sel" id="ciFilter" onchange="renderCheckins()">
+        <option value="all">All</option><option value="today">Today</option><option value="HIGH">High Risk</option><option value="CRITICAL">Critical</option>
+      </select>
+    </div>
+    <div class="tbl-wrap"><table>
+      <thead><tr><th>Patient</th><th>Time</th><th>Anxiety</th><th>Sleep</th><th>Risk</th><th>Triggers</th><th>Notes</th><th>Action</th></tr></thead>
+      <tbody id="checkinsTableBody"></tbody>
+    </table></div>
+  </div>
+
+  <!-- ANALYTICS -->
+  <div class="view hidden" id="view-analytics">
+    <div class="view-header">
+      <div><div class="view-title">📊 Analytics</div><div class="view-sub">Population-level insights</div></div>
+      <select class="filter-sel" id="analyticsRange" onchange="renderAnalytics()">
+        <option value="7">Last 7 days</option><option value="14">Last 14 days</option><option value="30">Last 30 days</option>
+      </select>
+    </div>
+    <div class="analytics-row">
+      <div class="analytics-card"><div class="ac-title">📈 Average Anxiety Over Time</div><canvas id="anxTrendChart" height="120"></canvas></div>
+      <div class="analytics-card"><div class="ac-title">😴 Average Sleep Over Time</div><canvas id="sleepTrendChart" height="120"></canvas></div>
+    </div>
+    <div class="analytics-row">
+      <div class="analytics-card"><div class="ac-title">⚡ Top Triggers (All Patients)</div><div class="bar-chart" id="triggersBar"></div></div>
+      <div class="analytics-card"><div class="ac-title">🕐 Check-In Time Distribution</div><canvas id="timeDistChart" height="120"></canvas></div>
+    </div>
+    <div class="analytics-card" style="margin-bottom:20px"><div class="ac-title">📋 Engagement Rate (Check-ins per patient/week)</div><canvas id="engagementChart" height="80"></canvas></div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div class="view hidden" id="view-timeline">
+    <div class="view-header">
+      <div><div class="view-title">📅 Activity Timeline</div><div class="view-sub">All patient events in chronological order</div></div>
+    </div>
+    <div class="timeline" id="timelineContent"></div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="view hidden" id="view-notes">
+    <div class="view-header">
+      <div><div class="view-title">📝 Clinical Notes</div><div class="view-sub">All notes across patients</div></div>
+    </div>
+    <div id="allNotesContent"></div>
+  </div>
+
+  <!-- SETTINGS -->
+  <div class="view hidden" id="view-settings">
+    <div class="view-header"><div class="view-title">⚙️ Settings</div></div>
+    <div style="max-width:500px">
+      <div class="analytics-card" style="margin-bottom:16px">
+        <div class="ac-title">🔔 Alert Thresholds</div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">HIGH RISK threshold (anxiety score ≥)</label><input type="range" min="5" max="9" value="7" style="width:100%;accent-color:var(--primary)" oninput="this.nextElementSibling.textContent=this.value" /><span style="font-size:13px;font-weight:700;color:var(--high)">7</span></div>
+          <div><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">CRITICAL threshold (anxiety score ≥)</label><input type="range" min="8" max="10" value="9" style="width:100%;accent-color:var(--critical)" oninput="this.nextElementSibling.textContent=this.value" /><span style="font-size:13px;font-weight:700;color:var(--critical)">9</span></div>
+          <div><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Missing data alert after (days)</label><input type="range" min="1" max="7" value="3" style="width:100%;accent-color:var(--warn)" oninput="this.nextElementSibling.textContent=this.value" /><span style="font-size:13px;font-weight:700;color:var(--warn)">3</span></div>
+        </div>
+      </div>
+      <div class="analytics-card">
+        <div class="ac-title">👤 Clinician Profile</div>
+        <div style="display:flex;flex-direction:column;gap:10px">
+          <div><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Name</label><input type="text" value="Dr. Reyes" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px"/></div>
+          <div><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Role</label><input type="text" value="Clinical Psychologist" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px"/></div>
+          <button class="btn-primary sm" onclick="showToast('Settings saved ✓')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cli-footer">AP3X Intelligent AI v1.0 · Clinician Demo · All data is simulated · <a href="index.html" style="color:var(--primary)">← Back to Home</a></div>
+</div>
+</div>
+
+<!-- ── Patient Detail Panel ── -->
+<div class="detail hidden" id="detailPanel">
+  <div class="detail-header">
+    <div class="detail-avatar" id="dAvatar"></div>
+    <div style="flex:1">
+      <div class="d-name" id="dName"></div>
+      <div class="d-meta" id="dMeta"></div>
+      <div class="d-risk-row" id="dRiskRow"></div>
+    </div>
+    <button class="btn-close" onclick="closeDetail()">✕</button>
+  </div>
+  <div class="detail-tabs">
+    <button class="detail-tab active" onclick="switchDetailTab('overview',this)">Overview</button>
+    <button class="detail-tab" onclick="switchDetailTab('checkins',this)">Check-Ins</button>
+    <button class="detail-tab" onclick="switchDetailTab('chart',this)">Chart</button>
+    <button class="detail-tab" onclick="switchDetailTab('notes',this)">Notes</button>
+    <button class="detail-tab" onclick="switchDetailTab('flags',this)">Flags</button>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+<script>
+// ── Data ──────────────────────────────────────────────────────────────────
+const PATIENTS = [
+  {id:'P001',name:'Jordan M.',age:24,dx:'GAD',avatar:'#ef4444',initials:'JM',
+   scores:[7,6,8,5,7,6,9],sleep:[5,6,4,7,5,6,4],streak:5,
+   triggers:['Work/School','Social','Poor Sleep'],coping:['Breathing','Music'],
+   flags:['CRITICAL_SCORE','MISSED_3_DAYS'],risk:'CRITICAL',
+   notes:[{text:'Patient reports increased work pressure. Recommended breathing exercises 3x daily.',date:Date.now()-86400000*2,by:'Dr. Reyes'},{text:'Phone check-in — patient sounded calmer. Continue current plan.',date:Date.now()-86400000*5,by:'Dr. Reyes'}],
+   checkins:[
+     {date:Date.now()-3600000*2,anxiety:9,sleep:4,risk:'CRITICAL',triggers:['Work/School','Poor Sleep'],note:'Panic attack this morning'},
+     {date:Date.now()-86400000,anxiety:7,sleep:5,risk:'HIGH',triggers:['Work/School'],note:'Very stressed about deadline'},
+     {date:Date.now()-86400000*2,anxiety:6,sleep:6,risk:'MEDIUM',triggers:['Social'],note:'Feeling overwhelmed in meetings'},
+     {date:Date.now()-86400000*3,anxiety:5,sleep:7,risk:'MEDIUM',triggers:[],note:'Better day today'},
+   ]
+  },
+  {id:'P002',name:'Alex T.',age:31,dx:'Panic Disorder',avatar:'#f59e0b',initials:'AT',
+   scores:[4,5,3,6,5,4,7],sleep:[7,6,8,5,7,7,5],streak:12,
+   triggers:['Finances','Health'],coping:['Exercise','Meditation'],
+   flags:['TRENDING_UP'],risk:'HIGH',
+   notes:[{text:'Showing good progress with CBT techniques. Scores trending down overall.',date:Date.now()-86400000*3,by:'Dr. Reyes'}],
+   checkins:[
+     {date:Date.now()-3600000*5,anxiety:7,sleep:5,risk:'HIGH',triggers:['Finances'],note:'Bills arrived, very anxious'},
+     {date:Date.now()-86400000,anxiety:5,sleep:7,risk:'MEDIUM',triggers:['Health'],note:'Doctor appointment tomorrow'},
+     {date:Date.now()-86400000*2,anxiety:4,sleep:8,risk:'LOW',triggers:[],note:'Good session today'},
+   ]
+  },
+  {id:'P003',name:'Sam K.',age:19,dx:'Social Anxiety',avatar:'#10b981',initials:'SK',
+   scores:[3,2,4,3,2,3,2],sleep:[8,7,8,7,8,8,7],streak:21,
+   triggers:['Social'],coping:['Journaling','Deep breathing'],
+   flags:[],risk:'LOW',
+   notes:[{text:'Excellent engagement. 21-day streak achieved. Considering reducing session frequency.',date:Date.now()-86400000*4,by:'Dr. Reyes'}],
+   checkins:[
+     {date:Date.now()-3600000*1,anxiety:2,sleep:8,risk:'LOW',triggers:['Social'],note:'Group project was okay actually'},
+     {date:Date.now()-86400000,anxiety:3,sleep:7,risk:'LOW',triggers:[],note:'Feeling confident this week'},
+   ]
+  },
+  {id:'P004',name:'Morgan L.',age:27,dx:'MDD + Anxiety',avatar:'#7c3aed',initials:'ML',
+   scores:[6,7,5,8,6,7,8],sleep:[5,4,6,4,5,5,4],streak:3,
+   triggers:['Relationships','Work/School'],coping:['Music','Talking to someone'],
+   flags:['HIGH_SCORE','LOW_SLEEP'],risk:'HIGH',
+   notes:[{text:'Patient disclosed relationship difficulties. Referred to couples counselling.',date:Date.now()-86400000,by:'Dr. Reyes'}],
+   checkins:[
+     {date:Date.now()-3600000*3,anxiety:8,sleep:4,risk:'HIGH',triggers:['Relationships'],note:'Argument last night, could not sleep'},
+     {date:Date.now()-86400000,anxiety:7,sleep:5,risk:'HIGH',triggers:['Work/School'],note:'Work and home both overwhelming'},
+   ]
+  },
+  {id:'P005',name:'Riley C.',age:35,dx:'PTSD',avatar:'#2563eb',initials:'RC',
+   scores:[5,4,5,4,5,4,4],sleep:[6,7,6,7,6,7,7],streak:9,
+   triggers:['News/World','Health'],coping:['Exercise','Deep breathing'],
+   flags:[],risk:'MEDIUM',
+   notes:[{text:'EMDR sessions progressing well. Patient reports fewer nightmares.',date:Date.now()-86400000*6,by:'Dr. Reyes'}],
+   checkins:[
+     {date:Date.now()-3600000*4,anxiety:4,sleep:7,risk:'MEDIUM',triggers:['News/World'],note:'Watched news, triggered. Used breathing.'},
+     {date:Date.now()-86400000,anxiety:5,sleep:6,risk:'MEDIUM',triggers:[],note:'Okay day'},
+   ]
+  },
+  {id:'P006',name:'Dana W.',age:22,dx:'GAD',avatar:'#64748b',initials:'DW',
+   scores:[],sleep:[],streak:0,
+   triggers:[],coping:[],
+   flags:['MISSING_DATA_5D'],risk:'MISSING',
+   notes:[{text:'No check-in for 5 days. Attempted contact — no response. Consider welfare check.',date:Date.now()-86400000,by:'Dr. Reyes'}],
+   checkins:[]
+  },
+  {id:'P007',name:'Chris B.',age:28,dx:'Health Anxiety',avatar:'#0891b2',initials:'CB',
+   scores:[3,3,2,4,3,2,3],sleep:[7,8,7,8,7,8,8],streak:15,
+   triggers:['Health'],coping:['Meditation','Journaling'],
+   flags:[],risk:'LOW',
+   notes:[],
+   checkins:[
+     {date:Date.now()-3600000*6,anxiety:3,sleep:8,risk:'LOW',triggers:['Health'],note:'Read something online, got anxious briefly. Used grounding.'},
+   ]
+  },
+  {id:'P008',name:'Taylor N.',age:41,dx:'Adjustment Disorder',avatar:'#dc2626',initials:'TN',
+   scores:[6,5,7,6,5,6,7],sleep:[5,6,5,6,6,5,5],streak:7,
+   triggers:['Work/School','Finances'],coping:['Exercise','Talking to someone'],
+   flags:['TRENDING_UP'],risk:'MEDIUM',
+   notes:[{text:'Redundancy situation ongoing. Supporting patient through career transition stress.',date:Date.now()-86400000*2,by:'Dr. Reyes'}],
+   checkins:[
+     {date:Date.now()-3600000*1,anxiety:7,sleep:5,risk:'HIGH',triggers:['Work/School','Finances'],note:'Interview went badly'},
+     {date:Date.now()-86400000,anxiety:6,sleep:6,risk:'MEDIUM',triggers:['Finances'],note:'Bills stacking up'},
+   ]
+  },
+];
+
+const ALL_CHECKINS = PATIENTS.flatMap(p=>p.checkins.map(ci=>({...ci,patient:p})));
+ALL_CHECKINS.sort((a,b)=>b.date-a.date);
+
+let currentPatient = null;
+let currentDetailTab = 'overview';
+
+// ── Clock ─────────────────────────────────────────────
+function updateClock(){
+  const now=new Date();
+  document.getElementById('clockEl').textContent=now.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});
+}
+updateClock();setInterval(updateClock,10000);
+
+// ── Theme ─────────────────────────────────────────────
+let dark=localStorage.getItem('cdTheme')==='dark';
+function toggleTheme(){dark=!dark;localStorage.setItem('cdTheme',dark?'dark':'');applyTheme();}
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme',dark?'dark':'');
+  document.querySelectorAll('#themeToggle').forEach(b=>b.textContent=dark?'☀️':'🌙');
+}
+applyTheme();
+
+// ── View switching ─────────────────────────────────────
+function showView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  document.getElementById('view-'+v).classList.remove('hidden');
+  document.getElementById('nav-'+v).classList.add('active');
+  const titles={overview:'Dashboard',alerts:'Alerts',patients:'All Patients',highrisk:'High Risk',checkins:'Check-Ins',analytics:'Analytics',timeline:'Timeline',notes:'Clinical Notes',settings:'Settings'};
+  document.getElementById('topbarTitle').textContent=titles[v]||v;
+  if(v==='patients')renderPatientsTable();
+  if(v==='highrisk')renderHighRisk();
+  if(v==='checkins')renderCheckins();
+  if(v==='analytics')renderAnalytics();
+  if(v==='timeline')renderTimeline();
+  if(v==='alerts')renderAlerts();
+  if(v==='notes')renderAllNotes();
+  if(v==='overview'){renderStats();renderOverviewChart();renderDonut();renderUrgentGrid();}
+}
+
+// ── Stats ─────────────────────────────────────────────
+function renderStats(){
+  const total=PATIENTS.length;
+  const critical=PATIENTS.filter(p=>p.risk==='CRITICAL').length;
+  const high=PATIENTS.filter(p=>p.risk==='HIGH').length;
+  const missing=PATIENTS.filter(p=>p.risk==='MISSING').length;
+  const avgAnx=(PATIENTS.filter(p=>p.scores.length).reduce((a,p)=>{return a+(p.scores[p.scores.length-1]||0)},0)/PATIENTS.filter(p=>p.scores.length).length).toFixed(1);
+  const todayCI=ALL_CHECKINS.filter(ci=>Date.now()-ci.date<86400000).length;
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Total Patients</div><div class="stat-delta down">+1 this week</div></div>
+    <div class="stat-card c"><div class="stat-val" style="color:var(--critical)">${critical}</div><div class="stat-lbl">Critical</div><div class="stat-delta up">↑ needs action</div></div>
+    <div class="stat-card d"><div class="stat-val" style="color:var(--high)">${high}</div><div class="stat-lbl">High Risk</div><div class="stat-delta up">↑ 1 from yesterday</div></div>
+    <div class="stat-card m"><div class="stat-val" style="color:var(--missing)">${missing}</div><div class="stat-lbl">Missing Data</div><div class="stat-delta up">↑ overdue</div></div>
+    <div class="stat-card g"><div class="stat-val">${todayCI}</div><div class="stat-lbl">Today's Check-Ins</div><div class="stat-delta down">↓ avg ${avgAnx} anxiety</div></div>`;
+}
+
+// ── Overview chart ─────────────────────────────────────
+function renderOverviewChart(){
+  const c=document.getElementById('overviewChart');
+  const days=7;
+  const labels=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  const avgData=[];
+  for(let d=0;d<days;d++){
+    const vals=PATIENTS.filter(p=>p.scores.length>d).map(p=>p.scores[d]||0);
+    avgData.push(vals.length?(vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1):0);
+  }
+  drawLineChart(c,labels,avgData.map(Number),'#2563eb','rgba(37,99,235,.12)',10);
+}
+
+// ── Donut ──────────────────────────────────────────────
+function renderDonut(){
+  const counts={CRITICAL:0,HIGH:0,MEDIUM:0,LOW:0,MISSING:0};
+  PATIENTS.forEach(p=>counts[p.risk]=(counts[p.risk]||0)+1);
+  const colors={CRITICAL:'#7c3aed',HIGH:'#ef4444',MEDIUM:'#f59e0b',LOW:'#10b981',MISSING:'#94a3b8'};
+  const c=document.getElementById('donutChart');
+  const ctx=c.getContext('2d');
+  const total=PATIENTS.length;
+  let start=-Math.PI/2;
+  Object.entries(counts).forEach(([k,v])=>{
+    if(!v)return;
+    const angle=(v/total)*Math.PI*2;
+    ctx.beginPath();ctx.moveTo(45,45);ctx.arc(45,45,40,start,start+angle);ctx.closePath();
+    ctx.fillStyle=colors[k];ctx.fill();
+    start+=angle;
+  });
+  // hole
+  ctx.beginPath();ctx.arc(45,45,22,0,Math.PI*2);ctx.fillStyle=dark?'#111f35':'#fff';ctx.fill();
+  ctx.fillStyle=dark?'#dde8f8':'#1e293b';ctx.font='bold 13px sans-serif';ctx.textAlign='center';ctx.textBaseline='middle';
+  ctx.fillText(total,45,45);
+  document.getElementById('donutLegend').innerHTML=Object.entries(counts).filter(([,v])=>v>0).map(([k,v])=>
+    `<div class="dl-item"><div class="dl-dot" style="background:${colors[k]}"></div>${k}: ${v}</div>`).join('');
+}
+
+// ── Urgent grid ────────────────────────────────────────
+function renderUrgentGrid(){
+  const urgent=PATIENTS.filter(p=>['CRITICAL','HIGH','MISSING'].includes(p.risk));
+  document.getElementById('urgentGrid').innerHTML=urgent.map(p=>patientCard(p)).join('');
+}
+
+// ── Patient card HTML ──────────────────────────────────
+function patientCard(p){
+  const last=p.checkins[0];
+  const score=p.scores.length?p.scores[p.scores.length-1]:null;
+  const scoreClass=score===null?'sn':score<=3?'sl':score<=6?'sm':score<=8?'sh':'sc';
+  const trend=p.scores.length>=2?p.scores[p.scores.length-1]-p.scores[p.scores.length-2]:0;
+  const trendEl=trend>0?`<span class="trend-up">↑ +${trend}</span>`:trend<0?`<span class="trend-down">↓ ${trend}</span>`:'<span class="trend-flat">→ Stable</span>';
+  const lastSeen=last?timeSince(last.date):'Never';
+  const avgSleep=p.sleep.length?(p.sleep.reduce((a,b)=>a+b,0)/p.sleep.length).toFixed(1):'—';
+  const streak=p.streak;
+  const flags=p.flags.map(f=>`<span class="flag-chip">${f.replace(/_/g,' ')}</span>`).join('');
+  const spark=p.scores.length?miniSparkline(p.scores):'';
+  return `<div class="pc ${p.risk}" onclick="openDetail('${p.id}')">
+    <div class="pc-hdr">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div class="pc-avatar" style="background:${p.avatar}">${p.initials}</div>
+        <div class="pc-info"><div class="pc-name">${p.name}</div><div class="pc-id">${p.id} · ${p.dx} · Age ${p.age}</div></div>
+      </div>
+      <div class="pc-score ${scoreClass}">${score??'—'}</div>
+    </div>
+    <div class="pc-metrics">
+      <div class="pc-metric"><div class="pcm-val">${avgSleep}</div><div class="pcm-lbl">Avg Sleep</div></div>
+      <div class="pc-metric"><div class="pcm-val">${streak}</div><div class="pcm-lbl">Streak</div></div>
+      <div class="pc-metric"><div class="pcm-val">${trendEl}</div><div class="pcm-lbl">Trend</div></div>
+    </div>
+    ${spark?`<div class="pc-sparkline">${spark}</div>`:''}
+    <div class="pc-footer">
+      <span class="rb ${p.risk}">${p.risk}</span>
+      <span class="last-seen">Last: ${lastSeen}</span>
+    </div>
+    ${flags?`<div style="margin-top:6px">${flags}</div>`:''}
+  </div>`;
+}
+
+function miniSparkline(scores){
+  const w=220,h=32,pad=4,max=10;
+  const xStep=(w-pad*2)/(scores.length-1||1);
+  const yScale=(h-pad*2)/max;
+  let d=`M${pad},${h-pad-scores[0]*yScale}`;
+  scores.forEach((v,i)=>{if(i>0)d+=` L${pad+i*xStep},${h-pad-v*yScale}`});
+  const color=scores[scores.length-1]<=3?'#10b981':scores[scores.length-1]<=6?'#f59e0b':'#ef4444';
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="width:100%"><path d="${d}" stroke="${color}" stroke-width="2" fill="none" stroke-linecap="round"/></svg>`;
+}
+
+// ── Patients table ─────────────────────────────────────
+function renderPatientsTable(search=''){
+  search=(document.getElementById('ptSearch')?.value||search).toLowerCase();
+  const riskF=document.getElementById('riskFilter')?.value||'';
+  const sortF=document.getElementById('sortFilter')?.value||'risk';
+  const riskOrder={CRITICAL:0,HIGH:1,MEDIUM:2,LOW:3,MISSING:4};
+  let pts=PATIENTS.filter(p=>{
+    const matchSearch=!search||p.name.toLowerCase().includes(search)||p.id.toLowerCase().includes(search)||p.dx.toLowerCase().includes(search);
+    const matchRisk=!riskF||p.risk===riskF;
+    return matchSearch&&matchRisk;
+  });
+  if(sortF==='risk') pts.sort((a,b)=>(riskOrder[a.risk]||9)-(riskOrder[b.risk]||9));
+  else if(sortF==='name') pts.sort((a,b)=>a.name.localeCompare(b.name));
+  else if(sortF==='score') pts.sort((a,b)=>(b.scores[b.scores.length-1]||0)-(a.scores[a.scores.length-1]||0));
+  else if(sortF==='lastSeen') pts.sort((a,b)=>(b.checkins[0]?.date||0)-(a.checkins[0]?.date||0));
+  document.getElementById('patientCount').textContent=`${pts.length} of ${PATIENTS.length} patients`;
+  const colors={CRITICAL:'#7c3aed',HIGH:'#ef4444',MEDIUM:'#f59e0b',LOW:'#10b981',MISSING:'#94a3b8'};
+  document.getElementById('patientsTableBody').innerHTML=pts.map(p=>{
+    const score=p.scores.length?p.scores[p.scores.length-1]:'—';
+    const sleep=p.sleep.length?p.sleep[p.sleep.length-1]:'—';
+    const trend=p.scores.length>=2?p.scores[p.scores.length-1]-p.scores[p.scores.length-2]:0;
+    const trendEl=trend>0?`<span class="trend-up">↑${trend}</span>`:trend<0?`<span class="trend-down">↓${Math.abs(trend)}</span>`:'<span class="trend-flat">—</span>';
+    const last=p.checkins[0];
+    const flags=p.flags.slice(0,2).map(f=>`<span class="flag-chip" style="font-size:10px">${f.replace(/_/g,' ')}</span>`).join('');
+    return `<tr onclick="openDetail('${p.id}')">
+      <td><div style="display:flex;align-items:center;gap:8px"><div class="pc-avatar" style="background:${p.avatar};width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0">${p.initials}</div><div><div style="font-weight:600">${p.name}</div><div style="font-size:11px;color:var(--muted)">${p.dx}</div></div></div></td>
+      <td><span class="rb ${p.risk}">${p.risk}</span></td>
+      <td style="font-weight:700;color:${score>7?'var(--high)':score>4?'var(--warn)':'var(--accent)'}">${score}</td>
+      <td>${sleep}</td>
+      <td>${p.streak}🔥</td>
+      <td>${last?timeSince(last.date):'<span style="color:var(--high)">Never</span>'}</td>
+      <td>${trendEl}</td>
+      <td>${flags}</td>
+      <td><button class="btn-view" onclick="event.stopPropagation();openDetail('${p.id}')">View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── High risk ──────────────────────────────────────────
+function renderHighRisk(){
+  const hrs=PATIENTS.filter(p=>['CRITICAL','HIGH'].includes(p.risk));
+  document.getElementById('highRiskContent').innerHTML=`<div class="patient-grid">${hrs.map(p=>patientCard(p)).join('')}</div>`;
+}
+
+// ── Check-ins table ────────────────────────────────────
+function renderCheckins(){
+  const f=document.getElementById('ciFilter')?.value||'all';
+  let cis=ALL_CHECKINS;
+  if(f==='today') cis=cis.filter(ci=>Date.now()-ci.date<86400000);
+  else if(f==='HIGH'||f==='CRITICAL') cis=cis.filter(ci=>ci.risk===f);
+  const colors={LOW:'#d1fae5',MEDIUM:'#fef3c7',HIGH:'#fee2e2',CRITICAL:'#ede9fe'};
+  const tc={LOW:'#065f46',MEDIUM:'#92400e',HIGH:'#991b1b',CRITICAL:'#4c1d95'};
+  document.getElementById('checkinsTableBody').innerHTML=cis.slice(0,40).map(ci=>{
+    const p=ci.patient;
+    return `<tr onclick="openDetail('${p.id}')">
+      <td><div style="display:flex;align-items:center;gap:7px"><div class="pc-avatar" style="background:${p.avatar};width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">${p.initials}</div><span style="font-weight:600">${p.name}</span></div></td>
+      <td style="font-size:12px;color:var(--muted)">${new Date(ci.date).toLocaleString('en-GB',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}</td>
+      <td><span style="font-weight:700;font-size:15px;color:${ci.anxiety>7?'var(--high)':ci.anxiety>4?'var(--warn)':'var(--accent)'}">${ci.anxiety}</span></td>
+      <td>${ci.sleep}</td>
+      <td><span class="rb ${ci.risk}">${ci.risk}</span></td>
+      <td style="font-size:11px">${(ci.triggers||[]).join(', ')||'—'}</td>
+      <td style="font-size:12px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ci.note||'—'}</td>
+      <td><button class="btn-view" onclick="event.stopPropagation();openDetail('${p.id}')">View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Analytics ──────────────────────────────────────────
+function renderAnalytics(){
+  const days=parseInt(document.getElementById('analyticsRange')?.value||7);
+  const labels=Array.from({length:days},(_,i)=>{const d=new Date(Date.now()-86400000*(days-1-i));return`${d.getDate()}/${d.getMonth()+1}`});
+  const anxData=labels.map((_,i)=>{
+    const dayPts=PATIENTS.filter(p=>p.scores.length>i).map(p=>p.scores[i%p.scores.length]||0);
+    return dayPts.length?(dayPts.reduce((a,b)=>a+b,0)/dayPts.length).toFixed(1):5;
+  });
+  const sleepData=labels.map((_,i)=>{
+    const dayPts=PATIENTS.filter(p=>p.sleep.length>i).map(p=>p.sleep[i%p.sleep.length]||0);
+    return dayPts.length?(dayPts.reduce((a,b)=>a+b,0)/dayPts.length).toFixed(1):6;
+  });
+  drawLineChart(document.getElementById('anxTrendChart'),labels,anxData.map(Number),'#ef4444','rgba(239,68,68,.1)',10);
+  drawLineChart(document.getElementById('sleepTrendChart'),labels,sleepData.map(Number),'#10b981','rgba(16,185,129,.1)',10);
+
+  // Triggers bar
+  const trigCounts={};
+  PATIENTS.flatMap(p=>p.triggers).forEach(t=>{trigCounts[t]=(trigCounts[t]||0)+1});
+  const sorted=Object.entries(trigCounts).sort((a,b)=>b[1]-a[1]).slice(0,6);
+  const maxCount=sorted[0]?.[1]||1;
+  const trigColors=['#ef4444','#f59e0b','#3b82f6','#10b981','#7c3aed','#0891b2'];
+  document.getElementById('triggersBar').innerHTML=sorted.map(([name,count],i)=>
+    `<div class="bar-row"><div class="bar-label">${name}</div><div class="bar-track"><div class="bar-fill" style="width:${(count/maxCount)*100}%;background:${trigColors[i%6]}"></div></div><div class="bar-val">${count}</div></div>`
+  ).join('');
+
+  // Time dist (simulated)
+  const timeLabels=['6am','8am','10am','12pm','2pm','4pm','6pm','8pm','10pm'];
+  const timeDist=[1,3,5,4,6,8,5,3,2];
+  drawBarChart(document.getElementById('timeDistChart'),timeLabels,timeDist,'#2563eb');
+
+  // Engagement
+  const engLabels=PATIENTS.map(p=>p.name.split(' ')[0]);
+  const engData=PATIENTS.map(p=>Math.min(p.checkins.length,7));
+  drawBarChart(document.getElementById('engagementChart'),engLabels,engData,'#10b981');
+}
+
+// ── Timeline ───────────────────────────────────────────
+function renderTimeline(){
+  const events=[];
+  PATIENTS.forEach(p=>{
+    p.checkins.forEach(ci=>{
+      events.push({time:ci.date,type:ci.risk==='CRITICAL'||ci.risk==='HIGH'?'alert':'good',icon:ci.risk==='CRITICAL'?'🚨':ci.risk==='HIGH'?'⚠️':ci.anxiety<=3?'✅':'📋',text:`<strong>${p.name}</strong> checked in — Anxiety: ${ci.anxiety}/10, Sleep: ${ci.sleep}/10${ci.note?` · "${ci.note}"`:''}`});
+    });
+    p.notes.forEach(n=>{
+      events.push({time:n.date,type:'note',icon:'📝',text:`<strong>Note added</strong> for ${p.name} by ${n.by}: "${n.text.substring(0,80)}…"`});
+    });
+  });
+  events.sort((a,b)=>b.time-a.time);
+  document.getElementById('timelineContent').innerHTML=events.slice(0,30).map(e=>
+    `<div class="tl-item">
+      <div class="tl-dot ${e.type}">${e.icon}</div>
+      <div class="tl-content"><div class="tl-time">${timeSince(e.time)}</div><div class="tl-text">${e.text}</div></div>
+    </div>`
+  ).join('');
+}
+
+// ── Alerts ─────────────────────────────────────────────
+const ALERTS=[
+  {id:1,icon:'🚨',title:'Jordan M. — CRITICAL anxiety score',sub:'Score of 9/10 logged 2 hours ago. Patient reports panic attack.',time:'2 hours ago',type:'critical',acked:false,patientId:'P001'},
+  {id:2,icon:'⚠️',title:'Dana W. — No check-in for 5 days',sub:'Patient has been unreachable. Consider welfare check.',time:'5 hours ago',type:'warn',acked:false,patientId:'P006'},
+  {id:3,icon:'📈',title:'Taylor N. — Trend worsening',sub:'3 consecutive HIGH scores over last 3 days.',time:'1 day ago',type:'warn',acked:false,patientId:'P008'},
+];
+function renderAlerts(){
+  document.getElementById('alertsList').innerHTML=ALERTS.map(a=>
+    `<div class="alert-card ${a.acked?'':''}${a.type==='warn'?' warn':''}" id="alert-${a.id}" style="${a.acked?'opacity:.5':''}">
+      <div class="alert-icon">${a.icon}</div>
+      <div class="alert-body">
+        <div class="alert-title">${a.title}</div>
+        <div class="alert-sub">${a.sub}</div>
+        <div class="alert-time">${a.time}</div>
+        <div class="alert-actions">
+          <button class="btn-ack" onclick="ackAlert(${a.id})">✓ Acknowledge</button>
+          <button class="btn-view" onclick="openDetail('${a.patientId}')">View Patient</button>
+          <button class="btn-escalate" onclick="showToast('Escalation sent to supervisor')">↑ Escalate</button>
+        </div>
+      </div>
+    </div>`
+  ).join('');
+}
+function ackAlert(id){
+  const a=ALERTS.find(x=>x.id===id);
+  if(a){a.acked=true;renderAlerts();showToast('Alert acknowledged ✓');}
+  const remaining=ALERTS.filter(x=>!x.acked).length;
+  document.getElementById('alertBadge').textContent=remaining||'';
+  document.querySelector('.notif-count').textContent=remaining||'';
+}
+function ackAll(){ALERTS.forEach(a=>a.acked=true);renderAlerts();showToast('All alerts acknowledged ✓');document.getElementById('alertBadge').textContent='';document.querySelector('.notif-count').textContent='';}
+
+// ── All notes ──────────────────────────────────────────
+function renderAllNotes(){
+  const allNotes=PATIENTS.flatMap(p=>p.notes.map(n=>({...n,patient:p}))).sort((a,b)=>b.date-a.date);
+  document.getElementById('allNotesContent').innerHTML=allNotes.length?allNotes.map(n=>
+    `<div class="note-item" style="margin-bottom:10px;cursor:pointer" onclick="openDetail('${n.patient.id}')">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <div class="pc-avatar" style="background:${n.patient.avatar};width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff">${n.patient.initials}</div>
+        <span style="font-weight:700;font-size:13px">${n.patient.name}</span>
+        <span class="rb ${n.patient.risk}">${n.patient.risk}</span>
+      </div>
+      <div class="note-text">${n.text}</div>
+      <div class="note-meta">By ${n.by} · ${timeSince(n.date)}</div>
+    </div>`
+  ).join(''):'<div class="empty-state">No clinical notes yet</div>';
+}
+
+// ── Global search ──────────────────────────────────────
+function globalSearch(q){
+  if(!q)return;
+  const p=PATIENTS.find(x=>x.name.toLowerCase().includes(q.toLowerCase())||x.id.toLowerCase().includes(q.toLowerCase()));
+  if(p)openDetail(p.id);
+}
+
+// ── Detail panel ───────────────────────────────────────
+function openDetail(id){
+  currentPatient=PATIENTS.find(p=>p.id===id);
+  if(!currentPatient)return;
+  const p=currentPatient;
+  document.getElementById('dAvatar').style.background=p.avatar;
+  document.getElementById('dAvatar').textContent=p.initials;
+  document.getElementById('dName').textContent=p.name;
+  document.getElementById('dMeta').textContent=`${p.id} · ${p.dx} · Age ${p.age} · ${p.streak} day streak 🔥`;
+  const score=p.scores.length?p.scores[p.scores.length-1]:null;
+  document.getElementById('dRiskRow').innerHTML=`<span class="rb ${p.risk}">${p.risk}</span><span style="font-size:12px;color:var(--muted)">Last score: ${score??'N/A'}/10</span>${p.flags.map(f=>`<span class="flag-chip">${f.replace(/_/g,' ')}</span>`).join('')}`;
+  document.getElementById('detailPanel').classList.remove('hidden');
+  switchDetailTab('overview',null);
+}
+function closeDetail(){document.getElementById('detailPanel').classList.add('hidden');currentPatient=null;}
+
+function switchDetailTab(tab, btn){
+  currentDetailTab=tab;
+  document.querySelectorAll('.detail-tab').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  else document.querySelectorAll('.detail-tab')[0].classList.add('active');
+  const p=currentPatient;
+  if(!p)return;
+  const body=document.getElementById('detailBody');
+  if(tab==='overview'){
+    const avg=p.scores.length?(p.scores.reduce((a,b)=>a+b,0)/p.scores.length).toFixed(1):'—';
+    const avgSleep=p.sleep.length?(p.sleep.reduce((a,b)=>a+b,0)/p.sleep.length).toFixed(1):'—';
+    const worst=p.scores.length?Math.max(...p.scores):'—';
+    body.innerHTML=`
+      <div class="detail-section">
+        <div class="d-sec-title">Key Metrics</div>
+        <div class="metric-grid">
+          <div class="mg-card"><div class="mg-val" style="color:var(--primary)">${avg}</div><div class="mg-lbl">Avg Anxiety</div></div>
+          <div class="mg-card"><div class="mg-val" style="color:var(--accent)">${avgSleep}</div><div class="mg-lbl">Avg Sleep</div></div>
+          <div class="mg-card"><div class="mg-val" style="color:var(--high)">${worst}</div><div class="mg-lbl">Peak Score</div></div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">7-Day Anxiety Trend</div>
+        <div class="chart-wrap-d"><canvas id="detailMiniChart" height="80"></canvas></div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Top Triggers</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${p.triggers.map(t=>`<span class="flag-chip-lg warn">${t}</span>`).join('')||'<span style="color:var(--muted);font-size:13px">None logged</span>'}</div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Coping Strategies</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">${p.coping.map(c=>`<span class="flag-chip-lg" style="background:#dbeafe;color:#1d4ed8">${c}</span>`).join('')||'<span style="color:var(--muted);font-size:13px">None logged</span>'}</div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Last Check-In</div>
+        ${p.checkins[0]?`<div class="ci-item"><div class="ci-score" style="background:${p.checkins[0].anxiety>7?'#fee2e2':p.checkins[0].anxiety>4?'#fef3c7':'#d1fae5'};color:${p.checkins[0].anxiety>7?'#991b1b':p.checkins[0].anxiety>4?'#92400e':'#065f46'}">${p.checkins[0].anxiety}</div><div class="ci-body"><div class="ci-date">${timeSince(p.checkins[0].date)} · Sleep: ${p.checkins[0].sleep}/10</div><div class="ci-note">${p.checkins[0].note||'No notes'}</div><div class="ci-tags">${(p.checkins[0].triggers||[]).map(t=>`<span class="ci-tag">${t}</span>`).join('')}</div></div></div>`:'<div class="empty-state">No check-ins yet</div>'}
+      </div>`;
+    setTimeout(()=>{
+      const c=document.getElementById('detailMiniChart');
+      if(c&&p.scores.length){
+        const labels=['D-6','D-5','D-4','D-3','D-2','D-1','Today'].slice(-p.scores.length);
+        drawLineChart(c,labels,p.scores,'#2563eb','rgba(37,99,235,.12)',10);
+      }
+    },50);
+  }
+  else if(tab==='checkins'){
+    body.innerHTML=`<div class="checkin-list">${p.checkins.length?p.checkins.map(ci=>`
+      <div class="ci-item">
+        <div class="ci-score" style="background:${ci.anxiety>7?'#fee2e2':ci.anxiety>4?'#fef3c7':'#d1fae5'};color:${ci.anxiety>7?'#991b1b':ci.anxiety>4?'#92400e':'#065f46'}">${ci.anxiety}</div>
+        <div class="ci-body">
+          <div class="ci-date">${new Date(ci.date).toLocaleString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})} · <span class="rb ${ci.risk}">${ci.risk}</span> · Sleep: ${ci.sleep}/10</div>
+          <div class="ci-note">${ci.note||'No notes'}</div>
+          <div class="ci-tags">${(ci.triggers||[]).map(t=>`<span class="ci-tag">${t}</span>`).join('')}</div>
+        </div>
+      </div>`).join(''):'<div class="empty-state">No check-ins recorded</div>'}</div>`;
+  }
+  else if(tab==='chart'){
+    body.innerHTML=`
+      <div class="detail-section">
+        <div class="d-sec-title">Anxiety Over Time</div>
+        <div class="chart-wrap-d"><canvas id="dChartAnx" height="100"></canvas></div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Sleep Over Time</div>
+        <div class="chart-wrap-d"><canvas id="dChartSleep" height="100"></canvas></div>
+      </div>`;
+    setTimeout(()=>{
+      const labels=['D-6','D-5','D-4','D-3','D-2','D-1','Today'].slice(-p.scores.length);
+      if(document.getElementById('dChartAnx')&&p.scores.length)
+        drawLineChart(document.getElementById('dChartAnx'),labels,p.scores,'#ef4444','rgba(239,68,68,.1)',10);
+      if(document.getElementById('dChartSleep')&&p.sleep.length)
+        drawLineChart(document.getElementById('dChartSleep'),labels.slice(-p.sleep.length),p.sleep,'#10b981','rgba(16,185,129,.1)',10);
+    },50);
+  }
+  else if(tab==='notes'){
+    body.innerHTML=`
+      <div class="detail-section">
+        <div class="d-sec-title">Add Note</div>
+        <textarea id="newNoteTA" placeholder="Clinical observation…" rows="3"></textarea>
+        <div class="note-actions">
+          <button class="btn-primary sm" onclick="addNote('${p.id}')">Save Note</button>
+          <select class="filter-sel" id="noteType"><option>General</option><option>Risk Flag</option><option>Session Summary</option><option>Action Required</option></select>
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Previous Notes (${p.notes.length})</div>
+        <div id="notesList">${p.notes.length?p.notes.map(n=>`<div class="note-item"><div class="note-text">${n.text}</div><div class="note-meta">By ${n.by} · ${timeSince(n.date)}</div></div>`).join(''):'<div class="empty-state">No notes yet</div>'}</div>
+      </div>`;
+  }
+  else if(tab==='flags'){
+    body.innerHTML=`
+      <div class="detail-section">
+        <div class="d-sec-title">Active Flags</div>
+        <div class="flag-list">${p.flags.length?p.flags.map(f=>`<div class="flag-chip-lg">${f.replace(/_/g,' ')}<button onclick="removeFlag('${p.id}','${f}')" style="background:none;border:none;color:inherit;cursor:pointer;margin-left:5px">✕</button></div>`).join(''):'<div class="empty-state">No active flags</div>'}</div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Add Flag</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          ${['CRITICAL_SCORE','MISSED_3_DAYS','TRENDING_UP','WELFARE_CHECK','MEDS_REVIEW','REFER_SPECIALIST'].map(f=>
+            `<button class="btn-secondary" onclick="addFlag('${p.id}','${f}')" style="font-size:11px">${f.replace(/_/g,' ')}</button>`
+          ).join('')}
+        </div>
+      </div>
+      <div class="detail-section">
+        <div class="d-sec-title">Emergency Contact</div>
+        <div style="background:var(--surface2);border-radius:var(--rs);padding:12px;font-size:13px">
+          <div>Next of Kin: <strong>On file</strong></div>
+          <div style="margin-top:4px">GP Contact: <strong>On file</strong></div>
+          <button class="btn-escalate" style="margin-top:10px" onclick="showToast('Emergency contact notified')">📞 Notify Emergency Contact</button>
+        </div>
+      </div>`;
+  }
+}
+
+function addNote(pid){
+  const p=PATIENTS.find(x=>x.id===pid);
+  const text=document.getElementById('newNoteTA').value.trim();
+  if(!text||!p){showToast('Write a note first');return;}
+  p.notes.unshift({text,date:Date.now(),by:'Dr. Reyes'});
+  document.getElementById('newNoteTA').value='';
+  switchDetailTab('notes',null);
+  document.querySelectorAll('.detail-tab')[3].classList.add('active');
+  showToast('Note saved ✓');
+}
+function addFlag(pid,flag){
+  const p=PATIENTS.find(x=>x.id===pid);
+  if(p&&!p.flags.includes(flag)){p.flags.push(flag);switchDetailTab('flags',null);document.querySelectorAll('.detail-tab')[4].classList.add('active');showToast('Flag added ✓');}
+}
+function removeFlag(pid,flag){
+  const p=PATIENTS.find(x=>x.id===pid);
+  if(p){p.flags=p.flags.filter(f=>f!==flag);switchDetailTab('flags',null);document.querySelectorAll('.detail-tab')[4].classList.add('active');showToast('Flag removed');}
+}
+
+// ── Chart helpers ──────────────────────────────────────
+function drawLineChart(canvas,labels,data,color,fill,maxY=10){
+  if(!canvas)return;
+  const W=canvas.offsetWidth||300,H=parseInt(canvas.getAttribute('height'))||100;
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  if(!data.length)return;
+  const pad=16,max=maxY,min=0;
+  const xStep=(W-pad*2)/(data.length-1||1);
+  const yScale=(H-pad*2)/(max-min||1);
+  ctx.strokeStyle=dark?'rgba(255,255,255,.06)':'rgba(148,163,184,.15)';ctx.lineWidth=1;
+  for(let g=0;g<=4;g++){const y=pad+g*(H-pad*2)/4;ctx.beginPath();ctx.moveTo(pad,y);ctx.lineTo(W-pad,y);ctx.stroke();}
+  ctx.beginPath();
+  data.forEach((v,i)=>{const x=pad+i*xStep,y=H-pad-(v-min)*yScale;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.lineTo(pad+(data.length-1)*xStep,H-pad);ctx.lineTo(pad,H-pad);ctx.closePath();
+  ctx.fillStyle=fill;ctx.fill();
+  ctx.beginPath();ctx.strokeStyle=color;ctx.lineWidth=2.5;ctx.lineJoin='round';
+  data.forEach((v,i)=>{const x=pad+i*xStep,y=H-pad-(v-min)*yScale;i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.stroke();
+  data.forEach((v,i)=>{
+    const x=pad+i*xStep,y=H-pad-(v-min)*yScale;
+    ctx.beginPath();ctx.arc(x,y,3.5,0,Math.PI*2);ctx.fillStyle=color;ctx.fill();
+    ctx.fillStyle=dark?'#111f35':'#fff';ctx.beginPath();ctx.arc(x,y,1.8,0,Math.PI*2);ctx.fill();
+  });
+  ctx.fillStyle=dark?'rgba(255,255,255,.4)':'#94a3b8';ctx.font='10px sans-serif';ctx.textAlign='center';
+  labels.forEach((l,i)=>{ctx.fillText(l,pad+i*xStep,H-1)});
+}
+function drawBarChart(canvas,labels,data,color){
+  if(!canvas)return;
+  const W=canvas.offsetWidth||300,H=parseInt(canvas.getAttribute('height'))||80;
+  canvas.width=W;canvas.height=H;
+  const ctx=canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const pad=20,barW=Math.max((W-pad*2)/data.length-4,4),max=Math.max(...data,1);
+  data.forEach((v,i)=>{
+    const x=pad+i*(W-pad*2)/data.length,y=H-pad-(v/max)*(H-pad-4);
+    ctx.fillStyle=color;ctx.globalAlpha=0.8;
+    ctx.beginPath();ctx.roundRect(x,y,barW,H-pad-y,3);ctx.fill();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=dark?'rgba(255,255,255,.4)':'#94a3b8';ctx.font='9px sans-serif';ctx.textAlign='center';
+    ctx.fillText(labels[i]||'',x+barW/2,H-4);
+  });
+}
+
+// ── Helpers ────────────────────────────────────────────
+function timeSince(ts){
+  const d=(Date.now()-ts)/1000;
+  if(d<60)return'just now';
+  if(d<3600)return Math.floor(d/60)+'m ago';
+  if(d<86400)return Math.floor(d/3600)+'h ago';
+  return Math.floor(d/86400)+'d ago';
+}
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.add('hidden'),2800);
+}
+
+// ── Init ──────────────────────────────────────────────
+showView('overview');
+window.addEventListener('resize',()=>{
+  renderOverviewChart();
+  if(currentPatient&&currentDetailTab==='chart') switchDetailTab('chart',null);
+});
+</script>
+</body>
+</html>

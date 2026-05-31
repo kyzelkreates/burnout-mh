@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>🎓 Recovery Programs — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.picker-hero {
+  background:linear-gradient(135deg,#1a3d40,#4a7c7e);
+  border-radius:var(--r); padding:18px; color:#fff; margin-bottom:14px;
+}
+.ph-title { font-size:18px; font-weight:800; margin-bottom:3px; }
+.ph-sub { font-size:12px; opacity:.75; }
+
+.program-card {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:var(--r); margin-bottom:12px; overflow:hidden;
+  box-shadow:var(--shadow); transition:all var(--t); text-decoration:none; display:block; color:var(--text);
+}
+.program-card:hover { border-color:var(--primary); box-shadow:var(--shadow-lg); transform:translateY(-2px); }
+.pc-header { padding:16px 15px 12px; background:linear-gradient(135deg,#1a3d40,#4a7c7e); color:#fff; }
+.pc-emoji { font-size:26px; margin-bottom:6px; }
+.pc-title { font-size:16px; font-weight:800; margin-bottom:3px; }
+.pc-sub { font-size:12px; opacity:.75; }
+.pc-body { padding:14px 15px; }
+.pc-desc { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:10px; }
+.pc-meta { display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap; }
+.pc-pill { padding:3px 10px; border-radius:99px; font-size:11px; font-weight:600; background:var(--surface2); color:var(--muted); border:1px solid var(--border); }
+.pc-prog-wrap { margin-bottom:10px; }
+.pc-prog-lbl { font-size:11px; color:var(--muted); font-weight:600; margin-bottom:4px; display:flex; justify-content:space-between; }
+.pc-prog-track { height:7px; background:var(--surface2); border-radius:99px; overflow:hidden; }
+.pc-prog-fill { height:100%; border-radius:99px; background:var(--primary); transition:width .6s ease; }
+.pc-btn { width:100%; padding:11px; border-radius:var(--rs); background:var(--primary); color:#fff; border:none; font-size:14px; font-weight:700; cursor:pointer; transition:background var(--t); }
+.pc-btn:hover { background:var(--primary-d); }
+.pc-btn.resume { background:var(--accent); }
+.pc-btn.resume:hover { background:var(--accent-d); }
+</style>
+</head>
+<body class="theme-light" data-page="courses">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./index.html" class="back-btn">← Home</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in">
+
+  <div class="picker-hero">
+    <div class="ph-title">🎓 Recovery Programs</div>
+    <div class="ph-sub">Structured, evidence-informed pathways for burnout recovery</div>
+  </div>
+
+  <div id="programs-list"></div>
+
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+/* Recovery program catalogue — maps to external course files */
+const PROGRAMS = [
+  {
+    id:'burnout-reset',
+    emoji:'🌱',
+    title:'Burnout Reset Program',
+    subtitle:'The complete foundational recovery pathway',
+    desc:'A structured 5-phase journey through burnout recovery — from understanding your nervous system to building long-term sustainable energy.',
+    phases:5, sessions:25, duration:'8–12 weeks',
+    tags:['Foundational','Self-guided','All levels'],
+    courseId:'burnout-reset',
+  },
+  {
+    id:'stress-recovery',
+    emoji:'🌊',
+    title:'Stress Recovery Pathway',
+    subtitle:'Targeted relief from chronic stress overload',
+    desc:'Focused recovery practices for those experiencing acute stress, chronic overwhelm or emotional exhaustion. Practical and gentle.',
+    phases:4, sessions:20, duration:'6–8 weeks',
+    tags:['Intermediate','Stress focus','Gentle'],
+    courseId:'stress-recovery',
+  },
+  {
+    id:'focus-rebuild',
+    emoji:'🎯',
+    title:'Focus & Clarity Rebuild',
+    subtitle:'Restore cognitive capacity and mental clarity',
+    desc:'Designed for those experiencing brain fog, inability to concentrate, or mental fatigue. Rebuilds your capacity for sustained attention.',
+    phases:4, sessions:18, duration:'6–8 weeks',
+    tags:['Cognitive','Intermediate','Focus'],
+    courseId:'focus-rebuild',
+  },
+  {
+    id:'energy-mastery',
+    emoji:'🔋',
+    title:'Energy Mastery Plan',
+    subtitle:'Advanced long-term energy optimisation',
+    desc:'For those who have completed foundational recovery and are ready to build lasting resilience, sustainable performance and energy mastery.',
+    phases:5, sessions:24, duration:'10–14 weeks',
+    tags:['Advanced','Long-term','Mastery'],
+    courseId:'energy-mastery',
+  },
+];
+
+document.addEventListener('DOMContentLoaded', render);
+
+function render() {
+  const container = $('programs-list') || document.querySelector('main');
+  container.innerHTML = '';
+
+  // intro card
+  const intro = document.createElement('div');
+  intro.className = 'card';
+  intro.innerHTML = `<div class="card-label">Where to start?</div>
+    <p style="font-size:13px;color:var(--muted);line-height:1.6">
+      If you're new to structured recovery, begin with the <strong>Burnout Reset Program</strong>.
+      If you know your primary challenge, choose the program that fits best.
+      You can run multiple programs — your progress is tracked separately for each.
+    </p>`;
+  container.appendChild(intro);
+
+  PROGRAMS.forEach(prog => {
+    const doneKey = 'fp_ext_done_' + prog.courseId;
+    const done = load(doneKey, []);
+    const total = prog.sessions;
+    const pct = total ? Math.round(done.length / total * 100) : 0;
+    const hasStarted = done.length > 0;
+
+    const card = document.createElement('a');
+    card.className = 'program-card';
+    card.href = `./course-view.html?course=${prog.courseId}`;
+    card.innerHTML = `
+      <div class="pc-header">
+        <div class="pc-emoji">${prog.emoji}</div>
+        <div class="pc-title">${prog.title}</div>
+        <div class="pc-sub">${prog.subtitle}</div>
+      </div>
+      <div class="pc-body">
+        <p class="pc-desc">${prog.desc}</p>
+        <div class="pc-meta">
+          <span class="pc-pill">📋 ${prog.phases} phases</span>
+          <span class="pc-pill">🌿 ${prog.sessions} sessions</span>
+          <span class="pc-pill">⏱ ${prog.duration}</span>
+          ${prog.tags.map(t=>`<span class="pc-pill">${t}</span>`).join('')}
+        </div>
+        ${hasStarted ? `
+        <div class="pc-prog-wrap">
+          <div class="pc-prog-lbl"><span>Progress</span><span>${done.length}/${total} sessions · ${pct}%</span></div>
+          <div class="pc-prog-track"><div class="pc-prog-fill" style="width:${pct}%"></div></div>
+        </div>` : ''}
+        <button class="pc-btn ${hasStarted?'resume':''}" onclick="event.preventDefault();window.location.href='./course-view.html?course=${prog.courseId}'">
+          ${hasStarted ? '▶ Resume Program' : '🌱 Start Program'}
+        </button>
+      </div>`;
+    container.appendChild(card);
+  });
+}
+</script>
+</body>
+</html>

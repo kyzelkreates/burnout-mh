@@ -1,0 +1,1183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Recharge — Recovery Guide Dashboard</title>
+<style>
+:root{
+  --bg:#f3f7f0;--surface:#fff;--surface2:#eef4e8;--surface3:#e4eedc;
+  --sidebar:#0d2710;--sidebar-txt:#b8d4b0;--sidebar-act:#4a7c7e;
+  --border:#c8d8b0;--primary:#4a7c7e;--primary-d:#3a6264;
+  --accent:#f4a435;--accent-d:#d4891a;
+  --warn:#f59e0b;--high:#ef4444;--critical:#7c3aed;--missing:#64748b;
+  --text:#1e293b;--muted:#64748b;--light:#94a3b8;
+  --low:#10b981;--r:10px;--rs:6px;
+  --shadow:0 2px 8px rgba(13,39,16,.08);--shadow-md:0 4px 16px rgba(13,39,16,.12);
+  --sw:232px;--t:.18s ease;
+}
+[data-theme=dark]{
+  --bg:#0a1a0c;--surface:#101f12;--surface2:#172b19;--surface3:#1e3320;
+  --border:#1a2e1c;--text:#dde8f8;--muted:#7a90b0;--light:#3a5070;--sidebar:#07111f;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);display:flex;min-height:100vh;font-size:14px;line-height:1.5}
+.layout{display:flex;width:100%;min-height:100vh}
+
+/* Sidebar */
+.sidebar{width:var(--sw);min-height:100vh;background:var(--sidebar);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto;scrollbar-width:none}
+.sidebar::-webkit-scrollbar{display:none}
+.sb-brand{display:flex;align-items:center;gap:10px;padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.07)}
+.sb-dot{width:10px;height:10px;border-radius:50%;background:var(--sidebar-act);flex-shrink:0;animation:pulse 2.5s infinite}
+.sb-name{color:#fff;font-size:13px;font-weight:800;line-height:1.2}
+.sb-sub{color:var(--sidebar-txt);font-size:10px;margin-top:1px}
+.sb-section{padding:12px 16px 4px;font-size:9px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.28);font-weight:700}
+.sb-nav{flex:1;padding:6px 8px;display:flex;flex-direction:column;gap:1px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:var(--rs);background:none;border:none;color:var(--sidebar-txt);font-size:12.5px;font-weight:500;cursor:pointer;transition:all var(--t);text-align:left;width:100%}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:var(--sidebar-act);color:#fff;font-weight:600}
+.ni-icon{font-size:14px;width:18px;text-align:center;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--high);color:#fff;font-size:9px;font-weight:700;border-radius:99px;padding:1px 6px;min-width:16px;text-align:center}
+.nav-badge.warn{background:var(--warn)}.nav-badge.acc{background:var(--accent)}
+.sb-footer{padding:12px;border-top:1px solid rgba(255,255,255,.07);display:flex;flex-direction:column;gap:8px}
+.guide-chip{display:flex;align-items:center;gap:8px}
+.guide-av{width:32px;height:32px;border-radius:50%;background:var(--sidebar-act);color:#fff;font-size:12px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.guide-name{color:#fff;font-size:12px;font-weight:600}
+.guide-role{color:var(--sidebar-txt);font-size:11px}
+.sb-btns{display:flex;gap:6px}
+.back-btn{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);color:var(--sidebar-txt);border-radius:var(--rs);padding:5px 8px;font-size:11px;cursor:pointer;text-decoration:none;text-align:center;transition:all var(--t)}
+.back-btn:hover{color:#fff;background:rgba(255,255,255,.15)}
+
+/* Main */
+.main-area{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 24px;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow);position:sticky;top:0;z-index:50}
+.topbar-left{display:flex;align-items:center;gap:12px}
+.topbar-title{font-size:16px;font-weight:700}
+.topbar-right{display:flex;align-items:center;gap:12px}
+.rt-ind{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--accent);font-weight:600}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--accent);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.tb-search{display:flex;align-items:center;gap:6px;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:6px 12px;min-width:190px}
+.tb-search input{background:none;border:none;font-size:13px;color:var(--text);outline:none;width:100%}
+.tb-search input::placeholder{color:var(--muted)}
+.btn-icon-top{background:none;border:none;font-size:17px;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;transition:all var(--t)}
+.btn-icon-top:hover{background:var(--surface2);color:var(--text)}
+
+/* Views */
+.view{padding:22px 24px;animation:fadeIn .2s ease;flex:1}
+.view.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.view-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+.view-title{font-size:19px;font-weight:800}
+.view-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.view-actions{display:flex;gap:8px;flex-shrink:0}
+.btn-sm{padding:6px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;transition:all var(--t);border:1.5px solid var(--border);background:var(--surface);color:var(--text)}
+.btn-sm:hover{border-color:var(--primary);color:var(--primary)}
+.btn-sm.primary{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-sm.primary:hover{background:var(--primary-d)}
+.btn-sm.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+
+/* Stats row */
+.stats-row{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:22px}
+.stat-card{background:var(--surface);border-radius:var(--r);padding:14px 16px;box-shadow:var(--shadow);border-left:3px solid var(--primary);transition:box-shadow var(--t)}
+.stat-card:hover{box-shadow:var(--shadow-md)}
+.stat-card.w{border-left-color:var(--warn)}.stat-card.d{border-left-color:var(--high)}.stat-card.m{border-left-color:var(--missing)}.stat-card.c{border-left-color:var(--critical)}.stat-card.acc{border-left-color:var(--accent)}
+.stat-top{display:flex;align-items:flex-start;justify-content:space-between}
+.stat-icon{font-size:18px;opacity:.8}
+.stat-val{font-size:26px;font-weight:900;letter-spacing:-1px}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.stat-delta{font-size:11px;margin-top:5px;font-weight:600}
+.delta-up{color:var(--low)}.delta-down{color:var(--high)}.delta-flat{color:var(--muted)}
+
+/* Grid */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.card{background:var(--surface);border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.card-title{font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px}
+.card-body{padding:16px 18px}
+
+/* User table */
+.user-table{width:100%;border-collapse:collapse}
+.user-table th{font-size:10px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:700;padding:8px 12px;text-align:left;border-bottom:1px solid var(--border);background:var(--surface2)}
+.user-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;vertical-align:middle}
+.user-table tr:last-child td{border-bottom:none}
+.user-table tr:hover td{background:var(--surface2);cursor:pointer}
+.user-av{width:32px;height:32px;border-radius:50%;font-size:13px;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0}
+.user-name-wrap{display:flex;align-items:center;gap:9px}
+.user-name{font-weight:600;font-size:13px}
+.user-status{font-size:11px;color:var(--muted)}
+.status-pill{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;text-transform:uppercase}
+.s-STELLAR{background:#d1fae5;color:#065f46}
+.s-PROGRESSING{background:#fef3c7;color:#92400e}
+.s-STALLED{background:#fee2e2;color:#991b1b}
+.s-CRITICAL{background:#ede9fe;color:#4c1d95}
+.s-INACTIVE{background:#f1f5f9;color:#475569}
+.score-circ{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800}
+
+/* Progress bars */
+.prog-row{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.prog-label{font-size:11px;color:var(--muted);width:130px;flex-shrink:0}
+.prog-track{flex:1;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.prog-fill{height:100%;border-radius:99px;transition:width .6s ease}
+.pf-g{background:var(--low)}.pf-y{background:var(--warn)}.pf-r{background:var(--high)}.pf-p{background:var(--primary)}.pf-a{background:var(--accent)}
+.prog-val{font-size:11px;font-weight:700;width:36px;text-align:right}
+
+/* Alert items */
+.alert-item{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;border-radius:var(--r);margin-bottom:8px;border:1px solid var(--border);background:var(--surface)}
+.alert-item.critical{border-left:3px solid var(--critical);background:rgba(124,58,237,.04)}
+.alert-item.high{border-left:3px solid var(--high);background:rgba(239,68,68,.04)}
+.alert-item.warn{border-left:3px solid var(--warn);background:rgba(245,158,11,.04)}
+.alert-item.info{border-left:3px solid var(--low);background:rgba(16,185,129,.04)}
+.alert-icon{font-size:20px;flex-shrink:0;margin-top:1px}
+.alert-body{flex:1}
+.alert-title{font-size:13px;font-weight:700;margin-bottom:3px}
+.alert-desc{font-size:12px;color:var(--muted);line-height:1.45}
+.alert-time{font-size:11px;color:var(--muted);margin-top:4px}
+.alert-actions{display:flex;gap:6px;margin-top:8px}
+
+/* AI panel */
+.ai-panel{background:linear-gradient(135deg,#0d2710,#1a4d24);border-radius:var(--r);padding:20px;color:#fff;position:relative;overflow:hidden}
+.ai-panel::before{content:'';position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(244,164,53,.07)}
+.ai-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(244,164,53,.15);border:1px solid rgba(244,164,53,.3);border-radius:99px;padding:4px 12px;font-size:11px;font-weight:700;color:var(--accent);margin-bottom:12px}
+.ai-title{font-size:15px;font-weight:800;margin-bottom:4px}
+.ai-sub{font-size:12px;color:rgba(255,255,255,.6);margin-bottom:14px;line-height:1.5}
+.ai-insights{display:flex;flex-direction:column;gap:8px;margin-bottom:14px}
+.ai-insight{display:flex;align-items:flex-start;gap:9px;background:rgba(255,255,255,.06);border-radius:8px;padding:10px 12px;font-size:12px;line-height:1.45}
+.ai-insight-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+.ai-insight-text{color:rgba(255,255,255,.85)}
+.ai-insight-text strong{color:#fff}
+.ai-actions{display:flex;gap:8px;flex-wrap:wrap}
+.ai-btn{padding:7px 14px;border-radius:var(--rs);font-size:11px;font-weight:700;cursor:pointer;transition:all var(--t);border:none}
+.ai-btn.primary{background:var(--accent);color:#fff}
+.ai-btn.primary:hover{background:var(--accent-d)}
+.ai-btn.ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.ai-btn.ghost:hover{background:rgba(255,255,255,.18)}
+
+/* Filter bar */
+.filter-bar{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-btn{padding:5px 13px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);transition:all var(--t)}
+.filter-btn.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.filter-btn:hover:not(.active){border-color:var(--primary);color:var(--primary)}
+
+/* Metric cards */
+.metric-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metric-card{background:var(--surface2);border-radius:var(--r);padding:12px 14px;text-align:center}
+.metric-val{font-size:22px;font-weight:900;color:var(--primary)}
+.metric-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-top:2px;font-weight:600}
+.metric-trend{font-size:11px;font-weight:600;margin-top:4px}
+
+/* Timeline */
+.tl-item{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.tl-item:last-child{border-bottom:none}
+.tl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.tl-content{flex:1;min-width:0}
+.tl-top{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.tl-name{font-size:13px;font-weight:600}
+.tl-time{font-size:11px;color:var(--muted)}
+.tl-note{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.45}
+.tl-tags{display:flex;gap:5px;margin-top:5px;flex-wrap:wrap}
+.tl-tag{padding:2px 8px;border-radius:99px;font-size:10px;font-weight:600;background:var(--surface2);color:var(--muted)}
+
+/* Note items */
+.note-item{background:var(--surface2);border-radius:var(--rs);padding:10px 12px;margin-bottom:8px;border-left:3px solid var(--accent)}
+.note-text{font-size:13px;line-height:1.5}
+.note-meta{font-size:11px;color:var(--muted);margin-top:5px;display:flex;gap:10px}
+
+/* Detail panel */
+.detail-panel{position:fixed;top:0;right:0;width:480px;max-width:100vw;height:100vh;background:var(--surface);box-shadow:-4px 0 32px rgba(0,0,0,.18);z-index:1000;display:flex;flex-direction:column;transform:translateX(100%);transition:transform .3s ease}
+.detail-panel.open{transform:translateX(0)}
+.detail-header{padding:18px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;flex-shrink:0}
+.detail-close{margin-left:auto;background:none;border:none;font-size:20px;cursor:pointer;color:var(--muted);padding:4px;border-radius:6px;transition:all var(--t)}
+.detail-close:hover{background:var(--surface2);color:var(--text)}
+.detail-tabs{display:flex;gap:2px;padding:10px 16px;border-bottom:1px solid var(--border);background:var(--surface2);flex-shrink:0;overflow-x:auto}
+.detail-tab{padding:6px 14px;border-radius:var(--rs);font-size:12px;font-weight:600;cursor:pointer;border:none;background:none;color:var(--muted);transition:all var(--t);white-space:nowrap}
+.detail-tab.active{background:var(--primary);color:#fff}
+.detail-tab:hover:not(.active){background:var(--surface);color:var(--text)}
+.detail-body{flex:1;overflow-y:auto;padding:18px 20px}
+.detail-overlay{position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:999;display:none}
+.detail-overlay.open{display:block}
+
+/* Badges */
+.badge{padding:2px 8px;border-radius:99px;font-size:10px;font-weight:700}
+.badge-green{background:#d1fae5;color:#065f46}
+.badge-amber{background:#fef3c7;color:#92400e}
+.badge-red{background:#fee2e2;color:#991b1b}
+.badge-purple{background:#ede9fe;color:#4c1d95}
+.badge-gray{background:#f1f5f9;color:#475569}
+
+/* Divider */
+.section-divider{height:1px;background:var(--border);margin:16px 0}
+
+/* Empty state */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.es-icon{font-size:36px;margin-bottom:12px}
+.es-txt{font-size:14px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:#1e2d12;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:600;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.25);transition:transform .3s ease,opacity .3s ease;opacity:0;white-space:nowrap;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+
+.scrollable-x{overflow-x:auto}
+canvas{display:block}
+@media(max-width:900px){.two-col{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.sidebar{display:none}.detail-panel{width:100vw}}
+
+/* ── PWA Metrics View ── */
+.pwa-kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.pwa-kpi{background:var(--surface);border-radius:var(--r);padding:16px 18px;box-shadow:var(--shadow);border-left:3px solid var(--primary);transition:box-shadow var(--t)}
+.pwa-kpi:hover{box-shadow:var(--shadow-md)}
+.pwa-kpi.acc{border-left-color:var(--accent)}.pwa-kpi.low{border-left-color:var(--low)}.pwa-kpi.warn{border-left-color:var(--warn)}
+.pwa-kpi-val{font-size:28px;font-weight:900;letter-spacing:-1.2px;margin-bottom:2px}
+.pwa-kpi-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.pwa-kpi-delta{font-size:11px;font-weight:600;margin-top:6px;color:var(--low)}
+.pwa-device-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pwa-dev-card{background:var(--surface2);border-radius:var(--r);padding:13px;display:flex;align-items:center;gap:10px}
+.pwa-dev-icon{font-size:22px;flex-shrink:0;width:38px;height:38px;background:var(--surface);border-radius:9px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border)}
+.pwa-dev-name{font-size:12px;font-weight:700;margin-bottom:1px}
+.pwa-dev-cnt{font-size:20px;font-weight:900;color:var(--primary);letter-spacing:-1px;line-height:1}
+.pwa-dev-pct{font-size:10px;color:var(--muted)}
+.pwa-event-list{display:flex;flex-direction:column}
+.pwa-event-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)}
+.pwa-event-row:last-child{border-bottom:none}
+.pwa-event-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.pwa-event-type{font-size:12px;font-weight:700;width:140px;flex-shrink:0}
+.pwa-event-detail{font-size:12px;color:var(--muted);flex:1}
+.pwa-event-time{font-size:11px;color:var(--light);flex-shrink:0}
+.pwa-funnel{display:flex;flex-direction:column;gap:9px}
+.pwa-funnel-row{display:flex;align-items:center;gap:10px}
+.pwa-funnel-lbl{width:130px;font-size:12px;font-weight:600;color:var(--muted);flex-shrink:0;text-align:right}
+.pwa-funnel-track{flex:1;height:28px;background:var(--surface2);border-radius:6px;overflow:hidden}
+.pwa-funnel-fill{height:100%;border-radius:6px;display:flex;align-items:center;padding-left:10px;font-size:12px;font-weight:700;color:#fff;transition:width .8s ease;min-width:32px}
+.pwa-funnel-val{width:36px;font-size:13px;font-weight:800;text-align:right;flex-shrink:0}
+.supabase-ready-banner{background:linear-gradient(90deg,#0d3320,#1a4d28);border-radius:var(--r);padding:14px 18px;color:#fff;display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.srb-icon{font-size:22px;flex-shrink:0}
+.srb-title{font-size:13px;font-weight:700;margin-bottom:2px}
+.srb-sub{font-size:11px;opacity:.7;line-height:1.5}
+.srb-badge{background:rgba(244,164,53,.18);border:1px solid rgba(244,164,53,.35);color:var(--accent);font-size:10px;font-weight:700;padding:3px 10px;border-radius:99px;flex-shrink:0;text-transform:uppercase;letter-spacing:.06em;white-space:nowrap}
+
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-brand">
+    <div class="sb-dot"></div>
+    <div>
+      <div class="sb-name">🐾 Recharge Recovery Platform</div>
+      <div class="sb-sub">Recovery Guide Dashboard</div>
+    </div>
+  </div>
+  <nav class="sb-nav">
+    <div class="sb-section">Command Centre</div>
+    <button class="nav-item active" id="nav-overview" onclick="showView('overview')"><span class="ni-icon">🏠</span><span>Overview</span></button>
+    <button class="nav-item" id="nav-alerts" onclick="showView('alerts')"><span class="ni-icon">🔔</span><span>Recovery Alerts</span><span class="nav-badge" id="alertBadge">3</span></button>
+    <div class="sb-section">Users & Guides</div>
+    <button class="nav-item" id="nav-dogs" onclick="showView('dogs')"><span class="ni-icon">🌱</span><span>All Users</span></button>
+    <button class="nav-item" id="nav-stalled" onclick="showView('stalled')"><span class="ni-icon">⚠️</span><span>Needs Attention</span><span class="nav-badge warn" id="stalledBadge">3</span></button>
+    <button class="nav-item" id="nav-sessions" onclick="showView('sessions')"><span class="ni-icon">📋</span><span>Session Log</span></button>
+    <div class="sb-section">Intelligence</div>
+    <button class="nav-item" id="nav-analytics" onclick="showView('analytics')"><span class="ni-icon">📊</span><span>Recovery Analytics</span></button>
+    <button class="nav-item" id="nav-ai" onclick="showView('ai')"><span class="ni-icon">🤖</span><span>AI Guidance Centre</span><span class="nav-badge acc">NEW</span></button>
+    <button class="nav-item" id="nav-courses" onclick="showView('courses')"><span class="ni-icon">🎓</span><span>Courses</span></button>
+    <button class="nav-item" id="nav-enrichment" onclick="showView('enrichment')"><span class="ni-icon">🧩</span><span>Enrichment Planner</span></button>
+    <div class="sb-section">Academy</div>
+    <button class="nav-item" id="nav-progress" onclick="showView('progress')"><span class="ni-icon">📈</span><span>Progress Tracking</span></button>
+    <button class="nav-item" id="nav-certs" onclick="showView('certs')"><span class="ni-icon">🏅</span><span>Certifications</span></button>
+    <button class="nav-item" id="nav-revenue" onclick="showView('revenue')"><span class="ni-icon">💰</span><span>Revenue Analytics</span></button>
+    <button class="nav-item" id="nav-settings" onclick="showView('settings')"><span class="ni-icon">⚙️</span><span>Settings</span></button>
+    <button class="nav-item" id="nav-pwa" onclick="showView('pwa')"><span class="ni-icon">📲</span><span>PWA Metrics</span><span class="nav-badge acc" id="pwaBadge" style="display:none">LIVE</span></button>
+  </nav>
+  <div class="sb-footer">
+    <div class="guide-chip">
+      <div class="guide-av">AR</div>
+      <div><div class="guide-name">Alex Rivera</div><div class="guide-role">Head Trainer</div></div>
+    </div>
+    <div class="sb-btns">
+      <a href="index.html" class="back-btn">← Home</a>
+      <button class="back-btn" onclick="toggleTheme()" id="themeToggle">🌙</button>
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<div class="main-area">
+  <div class="topbar">
+    <div class="topbar-left">
+      <button class="btn-icon-top" onclick="document.querySelector('.sidebar').style.display=document.querySelector('.sidebar').style.display==='none'?'flex':'none'">☰</button>
+      <div class="topbar-title" id="topbarTitle">Overview</div>
+    </div>
+    <div class="topbar-right">
+      <div class="rt-ind"><div class="pulse"></div>Live</div>
+      <div class="tb-search"><span>🔍</span><input type="text" id="searchInput" placeholder="Search users, guides…" oninput="liveSearch(this.value)"/></div>
+      <div style="font-size:13px;color:var(--muted)" id="clockEl"></div>
+      <button class="btn-icon-top" onclick="showToast('🔔 No new notifications')">🔔</button>
+    </div>
+  </div>
+
+  <!-- VIEW: OVERVIEW -->
+  <div class="view" id="view-overview">
+    <div class="view-header">
+      <div><div class="view-title" id="overviewGreeting">Good morning, Alex 👋</div><div class="view-sub">Your academy intelligence overview — updated in real time</div></div>
+      <div class="view-actions">
+        <button class="btn-sm" onclick="showToast('📅 Session scheduler opening…')">+ New Session</button>
+        <button class="btn-sm primary" onclick="showView('ai')">🤖 AI Insights</button>
+      </div>
+    </div>
+    <div class="stats-row" id="statsRow"></div>
+    <div class="two-col">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">📈 Energy Score Trend <span style="font-size:10px;color:var(--muted);font-weight:400;margin-left:6px">Last 7 days</span></div>
+          <select style="font-size:11px;border:1px solid var(--border);border-radius:4px;padding:3px 6px;background:var(--surface);color:var(--text)" onchange="renderOverviewChart(this.value)">
+            <option value="all">All metrics</option><option value="breathwork">Breathwork</option><option value="grounding">Grounding</option><option value="energy">Energy</option>
+          </select>
+        </div>
+        <div class="card-body"><canvas id="overviewChart" height="160"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">🎯 Progression Distribution</div></div>
+        <div class="card-body" style="display:flex;align-items:center;gap:20px">
+          <canvas id="donutChart" width="120" height="120"></canvas>
+          <div id="donutLegend" style="flex:1"></div>
+        </div>
+      </div>
+    </div>
+    <div class="two-col">
+      <div class="ai-panel">
+        <div class="ai-badge">🤖 AI Guidance Centre — Active</div>
+        <div class="ai-title">3 dogs need your attention today</div>
+        <div class="ai-sub">Behavioural intelligence analysis updated 4 minutes ago</div>
+        <div class="ai-insights" id="aiInsightsMini"></div>
+        <div class="ai-actions">
+          <button class="ai-btn primary" onclick="showView('ai')">Open AI Centre →</button>
+          <button class="ai-btn ghost" onclick="showView('alerts')">View All Alerts</button>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><div class="card-title">⚡ Priority Dogs</div><button class="btn-sm" onclick="showView('stalled')">View all</button></div>
+        <div class="card-body" id="urgentGrid"></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">📋 Recent Sessions</div><button class="btn-sm" onclick="showView('sessions')">All sessions</button></div>
+      <div class="card-body" id="recentSessions"></div>
+    </div>
+  </div>
+
+  <!-- VIEW: ALERTS -->
+  <div class="view hidden" id="view-alerts">
+    <div class="view-header">
+      <div><div class="view-title">🔔 Recovery Alerts</div><div class="view-sub">Real-time flags requiring trainer attention</div></div>
+      <div class="view-actions"><button class="btn-sm" onclick="showToast('✓ All alerts marked reviewed')">Mark all reviewed</button></div>
+    </div>
+    <div id="alertsList"></div>
+  </div>
+
+  <!-- VIEW: ALL DOGS -->
+  <div class="view hidden" id="view-dogs">
+    <div class="view-header">
+      <div><div class="view-title">🌱 All Users</div><div class="view-sub" id="dogCountSub"></div></div>
+      <div class="view-actions">
+        <button class="btn-sm" onclick="showToast('📥 Exporting roster…')">Export</button>
+        <button class="btn-sm primary" onclick="showToast('➕ Add dog coming soon')">+ Add Dog</button>
+      </div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="filterDogs('all',this)">All</button>
+      <button class="filter-btn" onclick="filterDogs('STELLAR',this)">🌟 Stellar</button>
+      <button class="filter-btn" onclick="filterDogs('PROGRESSING',this)">📈 Progressing</button>
+      <button class="filter-btn" onclick="filterDogs('STALLED',this)">⚠️ Stalled</button>
+      <button class="filter-btn" onclick="filterDogs('CRITICAL',this)">🔴 Critical</button>
+      <button class="filter-btn" onclick="filterDogs('INACTIVE',this)">⏸ Inactive</button>
+    </div>
+    <div class="card scrollable-x">
+      <table class="user-table">
+        <thead><tr><th>Dog</th><th>Breed</th><th>Age</th><th>Owner</th><th>Status</th><th>Behaviour Score</th><th>Recall</th><th>Streak</th><th>Module</th><th></th></tr></thead>
+        <tbody id="dogsTableBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- VIEW: NEEDS ATTENTION -->
+  <div class="view hidden" id="view-stalled">
+    <div class="view-header"><div><div class="view-title">⚠️ Dogs Needing Attention</div><div class="view-sub">Stalled progression, regression, inactive owners</div></div></div>
+    <div id="stalledList"></div>
+  </div>
+
+  <!-- VIEW: SESSION LOG -->
+  <div class="view hidden" id="view-sessions">
+    <div class="view-header">
+      <div><div class="view-title">📋 Session Log</div><div class="view-sub">All training sessions across enrolled dogs</div></div>
+      <div class="view-actions"><button class="btn-sm" onclick="showToast('📥 Exporting CSV…')">Export CSV</button></div>
+    </div>
+    <div id="sessionsList"></div>
+  </div>
+
+  <!-- VIEW: ANALYTICS -->
+  <div class="view hidden" id="view-analytics">
+    <div class="view-header"><div><div class="view-title">📊 Recovery Analytics</div><div class="view-sub">Population-level intelligence across your academy</div></div></div>
+    <div class="stats-row" id="analyticsStats"></div>
+    <div class="two-col">
+      <div class="card"><div class="card-header"><div class="card-title">📈 Recall & Lead Progress — 7 Weeks</div></div><div class="card-body"><canvas id="analyticsChart1" height="160"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">🌱 Confidence & Socialisation</div></div><div class="card-body"><canvas id="analyticsChart2" height="160"></canvas></div></div>
+    </div>
+    <div class="two-col">
+      <div class="card"><div class="card-header"><div class="card-title">🧩 Enrichment Completion by Activity</div></div><div class="card-body" id="enrichmentStats"></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">📉 Behaviour Risk Matrix</div></div><div class="card-body" id="riskMatrix"></div></div>
+    </div>
+  </div>
+
+  <!-- VIEW: AI GUIDANCE CENTRE -->
+  <div class="view hidden" id="view-ai">
+    <div class="view-header"><div><div class="view-title">🤖 AI Guidance Centre</div><div class="view-sub">Intelligent behavioural analysis & personalised training recommendations</div></div></div>
+    <div class="two-col">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="ai-panel">
+          <div class="ai-badge">🧠 Behaviour Intelligence Engine — Active</div>
+          <div class="ai-title">Today's AI Analysis</div>
+          <div class="ai-sub">Processed 34 sessions · 8 dogs monitored · Updated 4 min ago</div>
+          <div class="ai-insights" id="aiFullInsights"></div>
+          <div class="ai-actions">
+            <button class="ai-btn primary" onclick="showToast('🤖 Refreshing AI analysis…')">↻ Refresh</button>
+            <button class="ai-btn ghost" onclick="showToast('📧 AI report emailed to Alex Rivera')">Email Report</button>
+          </div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">⚡ Recommended Actions</div></div><div class="card-body" id="aiActions"></div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card">
+          <div class="card-header"><div class="card-title">💬 Ask the AI Assistant</div></div>
+          <div class="card-body">
+            <div id="aiChat" style="min-height:160px;max-height:250px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px"></div>
+            <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="aiQuickQ"></div>
+            <div style="display:flex;gap:8px">
+              <input id="aiInput" type="text" style="flex:1;padding:8px 12px;border-radius:var(--rs);border:1.5px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;outline:none" placeholder="Ask about any dog, behaviour, or training strategy…" onkeydown="if(event.key==='Enter')sendAIMessage()"/>
+              <button class="btn-sm primary" onclick="sendAIMessage()">Send →</button>
+            </div>
+          </div>
+        </div>
+        <div class="card"><div class="card-header"><div class="card-title">📊 Progression Predictions</div></div><div class="card-body" id="aiPredictions"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- VIEW: COURSES -->
+  <div class="view hidden" id="view-courses">
+    <div class="view-header"><div><div class="view-title">🎓 Puppy Masterclass</div><div class="view-sub">5-module course progress across all enrolled dogs</div></div></div>
+    <div id="coursesView"></div>
+  </div>
+
+  <!-- VIEW: ENRICHMENT PLANNER -->
+  <div class="view hidden" id="view-enrichment">
+    <div class="view-header">
+      <div><div class="view-title">🧩 Enrichment Planner</div><div class="view-sub">Scheduled enrichment activities & completion tracking</div></div>
+      <div class="view-actions"><button class="btn-sm primary" onclick="showToast('➕ Adding activity…')">+ Add Activity</button></div>
+    </div>
+    <div id="enrichmentPlanner"></div>
+  </div>
+
+  <!-- VIEW: PROGRESS TRACKING -->
+  <div class="view hidden" id="view-progress">
+    <div class="view-header"><div><div class="view-title">📈 Progress Tracking</div><div class="view-sub">Milestones, achievements & behavioural development journeys</div></div></div>
+    <div id="progressView"></div>
+  </div>
+
+  <!-- VIEW: CERTIFICATIONS -->
+  <div class="view hidden" id="view-certs">
+    <div class="view-header"><div><div class="view-title">🏅 Certifications</div><div class="view-sub">Academy completions & qualification tracking</div></div></div>
+    <div id="certsView"></div>
+  </div>
+
+  <!-- VIEW: REVENUE -->
+  <div class="view hidden" id="view-revenue">
+    <div class="view-header"><div><div class="view-title">💰 Revenue Analytics</div><div class="view-sub">Academy financial intelligence & growth metrics</div></div></div>
+    <div id="revenueView"></div>
+  </div>
+
+  <!-- VIEW: SETTINGS -->
+  <div class="view hidden" id="view-settings">
+    <div class="view-header"><div><div class="view-title">⚙️ Settings</div><div class="view-sub">Academy configuration & preferences</div></div></div>
+    <div class="two-col">
+      <div class="card"><div class="card-header"><div class="card-title">🎨 Appearance</div></div><div class="card-body"><button class="btn-sm" onclick="toggleTheme()">Toggle Dark / Light Mode</button></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">👤 Trainer Profile</div></div>
+        <div class="card-body">
+          <div style="margin-bottom:10px"><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Name</label><input type="text" value="Alex Rivera" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px"/></div>
+          <div><label style="font-size:12px;font-weight:600;color:var(--muted);display:block;margin-bottom:4px">Academy Name</label><input type="text" value="Four Paws Training & Enrichment Academy" style="width:100%;padding:8px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px"/></div>
+          <button class="btn-sm primary" style="margin-top:12px" onclick="showToast('✓ Profile saved')">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- VIEW: PWA METRICS -->
+  <div class="view hidden" id="view-pwa">
+    <div class="view-header">
+      <div><div class="view-title">📲 PWA Metrics</div><div class="view-sub">App install analytics, device breakdown &amp; engagement tracking — stored locally, Supabase-ready</div></div>
+      <div class="view-actions">
+        <button class="btn-sm" onclick="refreshPWAMetrics()">↻ Refresh</button>
+        <button class="btn-sm primary" onclick="exportLocalEvents()">⬇ Export JSON</button>
+      </div>
+    </div>
+    <div class="supabase-ready-banner">
+      <div class="srb-icon">🗄️</div>
+      <div><div class="srb-title">Local storage active — Supabase ready</div><div class="srb-sub">All PWA events captured locally in the browser. Paste your Supabase key below to sync across devices.</div></div>
+      <span class="srb-badge">⚡ Supabase Ready</span>
+    </div>
+    <div class="pwa-kpi-grid" id="pwaKpiGrid"></div>
+    <div class="two-col" style="margin-bottom:16px">
+      <div class="card"><div class="card-header"><div class="card-title">📱 Installs by Device</div></div><div class="card-body"><div class="pwa-device-grid" id="pwaDeviceGrid"></div></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">🔽 Install Funnel</div></div><div class="card-body"><div class="pwa-funnel" id="pwaFunnel"></div></div></div>
+    </div>
+    <div class="two-col" style="margin-bottom:16px">
+      <div class="card"><div class="card-header"><div class="card-title">📈 Daily Installs — Last 14 Days</div></div><div class="card-body"><canvas id="pwaInstallChart" height="140"></canvas></div></div>
+      <div class="card"><div class="card-header"><div class="card-title">🚀 PWA Sessions — Last 14 Days</div></div><div class="card-body"><canvas id="pwaSessionChart" height="140"></canvas></div></div>
+    </div>
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-header"><div class="card-title">📋 PWA Event Log</div><div style="font-size:11px;color:var(--muted)" id="pwaEventCount">Loading…</div></div>
+      <div class="card-body"><div class="pwa-event-list" id="pwaEventList"></div></div>
+    </div>
+    <div class="card">
+      <div class="card-header"><div class="card-title">🗄️ Supabase Integration</div></div>
+      <div class="card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px">
+          <div><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">Project URL</label><input type="text" id="sb-url" placeholder="https://xxxx.supabase.co" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:inherit"/></div>
+          <div><label style="font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:5px">Anon Key</label><input type="password" id="sb-key" placeholder="eyJhbGciOiJIUzI1NiIs…" style="width:100%;padding:8px 11px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px;outline:none;font-family:inherit"/></div>
+        </div>
+        <div style="background:var(--surface2);border-radius:var(--rs);padding:11px 13px;font-size:12px;color:var(--muted);margin-bottom:11px;line-height:1.7">
+          <strong style="color:var(--text);display:block;margin-bottom:3px">📋 Supabase setup SQL — run once:</strong>
+          <code style="font-family:monospace;font-size:11px;display:block;background:#0d1117;color:#58d68d;padding:10px 12px;border-radius:6px;margin-top:6px;line-height:1.9">CREATE TABLE pwa_events (<br>&nbsp;&nbsp;id uuid DEFAULT gen_random_uuid() PRIMARY KEY,<br>&nbsp;&nbsp;event_type text NOT NULL,<br>&nbsp;&nbsp;device text,<br>&nbsp;&nbsp;platform text,<br>&nbsp;&nbsp;session_id text,<br>&nbsp;&nbsp;timestamp timestamptz DEFAULT now(),<br>&nbsp;&nbsp;meta jsonb<br>);</code>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn-sm primary" onclick="connectSupabase()">⚡ Save Credentials</button>
+          <button class="btn-sm" onclick="exportLocalEvents()">⬇ Export Events (JSON)</button>
+          <button class="btn-sm" onclick="clearLocalEvents()">🗑 Clear Local Log</button>
+        </div>
+        <div id="sb-status" style="margin-top:9px;font-size:12px;color:var(--muted)"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- end main-area -->
+</div><!-- end layout -->
+
+<!-- Detail panel -->
+<div class="detail-overlay" id="detailOverlay" onclick="closeDetail()"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header" id="detailHeader"></div>
+  <div class="detail-tabs">
+    <button class="detail-tab active" onclick="switchDetailTab('overview',this)">Overview</button>
+    <button class="detail-tab" onclick="switchDetailTab('sessions',this)">Sessions</button>
+    <button class="detail-tab" onclick="switchDetailTab('chart',this)">Chart</button>
+    <button class="detail-tab" onclick="switchDetailTab('notes',this)">Notes</button>
+    <button class="detail-tab" onclick="switchDetailTab('ai',this)">AI Recs</button>
+  </div>
+  <div class="detail-body" id="detailBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// FOUR PAWS — TRAINER INTELLIGENCE OS
+// ═══════════════════════════════════════════
+const D=Date.now(),H=3600000,DAY=86400000;
+
+const DOGS=[
+  {id:'D001',name:'Biscuit',breed:'Labrador Retriever',age:'8 months',owner:'Sarah Mitchell',
+   avatar:'#f59e0b',initials:'Bi',status:'STALLED',behaviourScore:62,
+   recall:58,looseLead:45,confidence:70,socialisation:75,enrichment:80,streak:3,
+   module:'Module 2 — Core Obedience',moduleNum:2,lessonNum:3,
+   scores:[55,58,60,57,62,60,62],
+   flags:['STALLED_RECALL','LOW_LEAD'],
+   notes:[{text:'Biscuit struggling with loose-lead near other dogs. Owner needs coaching on reward timing — recommend 5-min street sessions with high-value treats at hip level.',date:D-DAY*2,by:'Alex Rivera'},{text:'Good progress on sit and down in the garden. Sarah is consistent — practises daily.',date:D-DAY*7,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*3,score:62,duration:10,skills:['Sit','Down'],note:'Good in garden, distracted near fence',difficulty:'Medium'},
+     {date:D-DAY,score:58,duration:8,skills:['Loose lead'],note:'Pulled heavily near postbox — ended on sit',difficulty:'Hard'},
+     {date:D-DAY*2,score:65,duration:12,skills:['Recall','Down'],note:'Best recall yet — jackpot reward used',difficulty:'Easy'},
+   ],
+   milestones:['First sit ✓','Down command ✓','Name recognition ✓','Crate settled ✓','Garden recall 50% ✓'],
+   ai:'Biscuit has strong food motivation — leverage this for loose-lead shaping. Sarah\'s reward timing needs calibration: suggest 1:1 coaching on marker training. Confidence score is strong; redirect energy into structured play before obedience drills to reduce pulling arousal.'
+  },
+  {id:'D002',name:'Pepper',breed:'Border Collie',age:'5 months',owner:'James Okafor',
+   avatar:'#4a7c7e',initials:'Pe',status:'STELLAR',behaviourScore:88,
+   recall:92,looseLead:84,confidence:81,socialisation:88,enrichment:95,streak:18,
+   module:'Module 3 — Socialisation & Confidence',moduleNum:3,lessonNum:2,
+   scores:[72,76,80,83,85,87,88],
+   flags:[],
+   notes:[{text:'Exceptional progress. James is a highly engaged, consistent owner. Pepper ready to fast-track to Module 4 if motivation holds.',date:D-DAY*1,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*1,score:90,duration:15,skills:['Environmental confidence','Novel objects'],note:'Superb — engaged with everything calmly',difficulty:'Easy'},
+     {date:D-DAY,score:87,duration:12,skills:['Recall','Sit-stay'],note:'20m reliable recall achieved',difficulty:'Medium'},
+     {date:D-DAY*2,score:85,duration:14,skills:['Socialisation walk'],note:'Calm around 3 new dogs — brilliant',difficulty:'Medium'},
+   ],
+   milestones:['Foundation cert ✓','Module 1 complete ✓','Module 2 complete ✓','20m recall ✓','Calm social greeting ✓'],
+   ai:'Pepper is in the top 5% of enrolled dogs. Introduce scent work foundations and off-lead recall in open spaces. James would benefit from Advanced Enrichment content. Recommend unlocking Module 4 immediately.'
+  },
+  {id:'D003',name:'Milo',breed:'Golden Retriever',age:'4 months',owner:'Claire Thompson',
+   avatar:'#f4a435',initials:'Mi',status:'PROGRESSING',behaviourScore:74,
+   recall:70,looseLead:65,confidence:78,socialisation:82,enrichment:88,streak:9,
+   module:'Module 2 — Core Obedience',moduleNum:2,lessonNum:4,
+   scores:[60,63,66,69,70,72,74],
+   flags:['ENRICHMENT_STAR'],
+   notes:[{text:'Milo thrives on enrichment. Claire should channel his food drive into recall training — it\'s his biggest asset.',date:D-DAY*3,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*5,score:76,duration:12,skills:['Recall','Play reward'],note:'Excellent with ball-play motivation',difficulty:'Easy'},
+     {date:D-DAY,score:72,duration:10,skills:['Loose lead'],note:'3 minutes without pulling — steady improvement',difficulty:'Medium'},
+     {date:D-DAY*3,score:74,duration:15,skills:['Sit','Down','Stay'],note:'Solid 10-second stay',difficulty:'Medium'},
+   ],
+   milestones:['Module 1 complete ✓','Crate trained ✓','Toilet trained ✓','Sit/Down reliable ✓'],
+   ai:'Milo\'s enrichment engagement (88%) correlates strongly with confidence. Recommend scatter feeding and sniff walks as recall motivators. Loose lead improving but needs real-world proofing — street walks with high-value rewards at rush hour.'
+  },
+  {id:'D004',name:'Luna',breed:'German Shepherd',age:'7 months',owner:'Ryan Davies',
+   avatar:'#7c3aed',initials:'Lu',status:'CRITICAL',behaviourScore:41,
+   recall:38,looseLead:30,confidence:35,socialisation:28,enrichment:55,streak:1,
+   module:'Module 1 — Foundations',moduleNum:1,lessonNum:2,
+   scores:[48,44,46,42,40,39,41],
+   flags:['REACTIVITY_FLAG','SOCIALISATION_RISK','STALLED_2W'],
+   notes:[{text:'URGENT: Luna showing increasing reactivity near other dogs. Ryan reports difficulty managing on lead. Book 1:1 this week. Refer to behaviourist if no improvement in 14 days.',date:D-DAY*1,by:'Alex Rivera'},{text:'Ryan is motivated but inconsistent. Simplify the plan to 3 core behaviours only: name response, sit, calmness.',date:D-DAY*5,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*2,score:39,duration:6,skills:['Calmness foundations'],note:'Reactive bark at neighbour — ended early',difficulty:'Hard'},
+     {date:D-DAY*3,score:42,duration:8,skills:['Marker word','Focus'],note:'Better in garden away from triggers',difficulty:'Medium'},
+     {date:D-DAY*6,score:44,duration:5,skills:['Calmness'],note:'Short session — Ryan struggling to engage Luna',difficulty:'Hard'},
+   ],
+   milestones:['Enrolled ✓','First session ✓'],
+   ai:'PRIORITY ALERT: Luna shows consistent behavioural regression across all metrics. Reactivity risk is elevated. Immediate 1:1 session needed — focus on threshold management and distance from triggers. Simplify Ryan\'s plan to 3 rules. If score drops below 35, refer to certified behaviourist.'
+  },
+  {id:'D005',name:'Charlie',breed:'Golden Retriever',age:'12 months',owner:'Emma Walsh',
+   avatar:'#2563eb',initials:'Ch',status:'INACTIVE',behaviourScore:0,
+   recall:0,looseLead:0,confidence:0,socialisation:0,enrichment:0,streak:0,
+   module:'Module 1 — Foundations',moduleNum:1,lessonNum:1,
+   scores:[],
+   flags:['INACTIVE_7D','OWNER_UNRESPONSIVE'],
+   notes:[{text:'No session logged in 7 days. Attempted contact twice — no response. Final reminder sent today.',date:D-DAY,by:'Alex Rivera'}],
+   sessions:[],
+   milestones:['Enrolled ✓'],
+   ai:'Charlie has been inactive for 7+ days with no owner response. Recommend one final re-engagement message with a free enrichment guide incentive. If no response in 48 hours, flag for a phone call.'
+  },
+  {id:'D006',name:'Ruby',breed:'Cockapoo',age:'3 months',owner:'Priya Sharma',
+   avatar:'#ec4899',initials:'Ru',status:'STELLAR',behaviourScore:91,
+   recall:89,looseLead:90,confidence:92,socialisation:90,enrichment:97,streak:22,
+   module:'Module 4 — Home Life Success',moduleNum:4,lessonNum:2,
+   scores:[78,81,84,86,88,90,91],
+   flags:[],
+   notes:[{text:'Ruby is the star of the current cohort. Priya is exceptionally consistent. Consider fast-tracking to advanced programme.',date:D-DAY*2,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*1,score:93,duration:15,skills:['Alone time','Crate confidence'],note:'15 min alone — zero vocalisation. Outstanding.',difficulty:'Easy'},
+     {date:D-DAY,score:90,duration:12,skills:['Polite greeting','Loose lead'],note:'Perfect greeting with a visitor at the door',difficulty:'Easy'},
+     {date:D-DAY*2,score:91,duration:14,skills:['Recall','Enrichment'],note:'Off-lead recall in open field — brilliant',difficulty:'Easy'},
+   ],
+   milestones:['Module 1 ✓','Module 2 ✓','Module 3 ✓','22-day streak ✓','Off-lead recall ✓','Puppy Graduate 🏅'],
+   ai:'Ruby is graduate-level. Introduce Module 5 scent work and advanced enrichment. Priya is an excellent testimonial candidate. Invite to alumni group and advanced off-lead workshop. Consider featuring as academy success story.'
+  },
+  {id:'D007',name:'Archie',breed:'Cocker Spaniel',age:'6 months',owner:'Tom Henderson',
+   avatar:'#0891b2',initials:'Ar',status:'PROGRESSING',behaviourScore:69,
+   recall:72,looseLead:68,confidence:65,socialisation:74,enrichment:78,streak:6,
+   module:'Module 2 — Core Obedience',moduleNum:2,lessonNum:5,
+   scores:[56,59,62,64,66,68,69],
+   flags:[],
+   notes:[{text:'Archie making consistent weekly gains. Tom could unlock faster results by adding enrichment activities to build confidence.',date:D-DAY*4,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*6,score:70,duration:10,skills:['Recall','Loose lead'],note:'Good park session — slight distraction',difficulty:'Medium'},
+     {date:D-DAY*2,score:67,duration:12,skills:['Sit-stay','Down'],note:'10-second sit-stay achieved',difficulty:'Medium'},
+     {date:D-DAY*4,score:65,duration:11,skills:['Focus','Marker word'],note:'Marker word reliably understood now',difficulty:'Easy'},
+   ],
+   milestones:['Module 1 complete ✓','Marker trained ✓','Sit reliable ✓','Down reliable ✓'],
+   ai:'Archie progressing steadily. Confidence score (65) is the limiting factor. Add Module 3 confidence-building games alongside current Module 2 work. Tom should film sessions — self-review improves reward timing significantly.'
+  },
+  {id:'D008',name:'Bella',breed:'French Bulldog',age:'5 months',owner:'Lisa Park',
+   avatar:'#dc2626',initials:'Be',status:'STALLED',behaviourScore:55,
+   recall:48,looseLead:52,confidence:60,socialisation:65,enrichment:70,streak:4,
+   module:'Module 2 — Core Obedience',moduleNum:2,lessonNum:2,
+   scores:[58,56,55,54,56,55,55],
+   flags:['STALLED_PROGRESS','RECALL_RISK'],
+   notes:[{text:'Bella\'s scores plateaued 2 weeks. Lisa is over-training — reduce to 2x daily 5-min sessions. French Bulldogs fatigue quickly.',date:D-DAY*1,by:'Alex Rivera'}],
+   sessions:[
+     {date:D-H*4,score:55,duration:8,skills:['Recall','Sit'],note:'Motivated but short attention span',difficulty:'Medium'},
+     {date:D-DAY,score:54,duration:7,skills:['Loose lead'],note:'Better on quiet streets only',difficulty:'Hard'},
+     {date:D-DAY*2,score:57,duration:6,skills:['Focus','Name recognition'],note:'Very responsive to her name now',difficulty:'Easy'},
+   ],
+   milestones:['Module 1 complete ✓','Toilet training ✓','Name recognition ✓'],
+   ai:'Bella\'s plateau is likely over-training fatigue (brachycephalic breed — shorter sessions critical). Reduce frequency, add lick mats and scatter feeding to rebuild calm confidence. Recall will improve once arousal levels are managed.'
+  },
+];
+
+const ALL_SESSIONS=DOGS.flatMap(d=>d.sessions.map(s=>({...s,dog:d}))).sort((a,b)=>b.date-a.date);
+
+let currentDog=null,currentFilter='all';
+
+// Clock
+function updateClock(){const n=new Date();document.getElementById('clockEl').textContent=n.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'});}
+updateClock();setInterval(updateClock,10000);
+
+// Greeting
+(function(){const h=new Date().getHours();document.getElementById('overviewGreeting').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Alex 👋';})();
+
+// Theme
+let dark=localStorage.getItem('fpTrainerTheme')==='dark';
+function toggleTheme(){dark=!dark;localStorage.setItem('fpTrainerTheme',dark?'dark':'');applyTheme();}
+function applyTheme(){document.documentElement.setAttribute('data-theme',dark?'dark':'');document.querySelectorAll('#themeToggle').forEach(b=>b.textContent=dark?'☀️':'🌙');}
+applyTheme();
+
+// View switching
+function showView(v){
+  document.querySelectorAll('.view').forEach(x=>x.classList.add('hidden'));
+  document.querySelectorAll('.nav-item').forEach(x=>x.classList.remove('active'));
+  const vEl=document.getElementById('view-'+v);if(vEl)vEl.classList.remove('hidden');
+  const nEl=document.getElementById('nav-'+v);if(nEl)nEl.classList.add('active');
+  const T={overview:'Overview',pwa:'PWA Metrics',alerts:'Recovery Alerts',dogs:'All Users',stalled:'Needs Attention',sessions:'Session Log',analytics:'Recovery Analytics',ai:'AI Guidance Centre',courses:'Courses',enrichment:'Enrichment Planner',progress:'Progress Tracking',certs:'Certifications',revenue:'Revenue Analytics',settings:'Settings'};
+  document.getElementById('topbarTitle').textContent=T[v]||v;
+  const renders={overview:()=>{renderStats();setTimeout(()=>{renderOverviewChart('all');renderDonut();},60);renderUrgentGrid();renderAIInsightsMini();renderRecentSessions();},alerts:renderAlerts,dogs:()=>renderDogsTable(currentFilter),stalled:renderStalledList,sessions:renderSessions,analytics:()=>{renderAnalyticsStats();setTimeout(renderAnalyticsCharts,60);},ai:()=>{renderAIFull();renderAIActions();initAIChat();renderAIPredictions();},courses:renderCourses,enrichment:renderEnrichmentPlanner,progress:renderProgress,certs:renderCerts,revenue:renderRevenue,pwa:renderPWAMetrics};
+  if(renders[v])renders[v]();
+}
+
+// Stats
+function renderStats(){
+  const total=DOGS.length,stellar=DOGS.filter(d=>d.status==='STELLAR').length,critical=DOGS.filter(d=>d.status==='CRITICAL').length,stalled=DOGS.filter(d=>d.status==='STALLED').length,inactive=DOGS.filter(d=>d.status==='INACTIVE').length;
+  const active=DOGS.filter(d=>d.behaviourScore>0);const avg=Math.round(active.reduce((s,d)=>s+d.behaviourScore,0)/active.length);
+  document.getElementById('statsRow').innerHTML=`
+    <div class="stat-card"><div class="stat-top"><div><div class="stat-val">${total}</div><div class="stat-lbl">Enrolled Dogs</div></div><div class="stat-icon">🌱</div></div><div class="stat-delta delta-up">↑ 2 this week</div></div>
+    <div class="stat-card acc"><div class="stat-top"><div><div class="stat-val">${stellar}</div><div class="stat-lbl">Stellar Progress</div></div><div class="stat-icon">🌟</div></div><div class="stat-delta delta-up">↑ 1 vs last week</div></div>
+    <div class="stat-card w"><div class="stat-top"><div><div class="stat-val">${stalled}</div><div class="stat-lbl">Stalled</div></div><div class="stat-icon">⚠️</div></div><div class="stat-delta delta-flat">→ Same as last week</div></div>
+    <div class="stat-card d"><div class="stat-top"><div><div class="stat-val">${critical}</div><div class="stat-lbl">Critical Alert</div></div><div class="stat-icon">🔴</div></div><div class="stat-delta delta-down">↑ Action needed</div></div>
+    <div class="stat-card"><div class="stat-top"><div><div class="stat-val">${avg}%</div><div class="stat-lbl">Avg Behaviour Score</div></div><div class="stat-icon">📊</div></div><div class="stat-delta delta-up">↑ +3 pts this week</div></div>`;
+  document.getElementById('alertBadge').textContent=critical+stalled;
+  document.getElementById('stalledBadge').textContent=stalled+inactive;
+}
+
+// Chart helpers
+function drawLineChart(ctx,w,h,labels,datasets,colors,names){
+  ctx.clearRect(0,0,w,h);
+  const pad={t:20,r:90,b:28,l:38};const cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;
+  const all=datasets.flat().filter(v=>typeof v==='number');if(!all.length)return;
+  const mn=Math.min(...all)-5,mx=Math.max(...all)+5;
+  const sx=i=>pad.l+i*(cw/(labels.length-1));const sy=v=>pad.t+ch-(v-mn)/(mx-mn)*ch;
+  ctx.strokeStyle=dark?'rgba(255,255,255,.07)':'rgba(0,0,0,.06)';ctx.lineWidth=1;
+  for(let i=0;i<4;i++){const y=pad.t+ch*(i/3);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cw,y);ctx.stroke();}
+  datasets.forEach((data,di)=>{
+    ctx.beginPath();ctx.strokeStyle=colors[di];ctx.lineWidth=2.5;ctx.lineJoin='round';
+    data.forEach((v,i)=>{i===0?ctx.moveTo(sx(i),sy(v)):ctx.lineTo(sx(i),sy(v));});ctx.stroke();
+    data.forEach((v,i)=>{ctx.beginPath();ctx.fillStyle=colors[di];ctx.arc(sx(i),sy(v),3.5,0,Math.PI*2);ctx.fill();});
+  });
+  ctx.fillStyle=dark?'rgba(255,255,255,.35)':'rgba(0,0,0,.35)';ctx.font='10px system-ui';ctx.textAlign='center';
+  labels.forEach((l,i)=>ctx.fillText(l,sx(i),h-6));
+  names.forEach((n,i)=>{ctx.fillStyle=colors[i];ctx.fillRect(w-pad.r+8,pad.t+i*16,10,10);ctx.fillStyle=dark?'rgba(255,255,255,.55)':'rgba(0,0,0,.45)';ctx.font='10px system-ui';ctx.textAlign='left';ctx.fillText(n,w-pad.r+22,pad.t+i*16+8);});
+}
+
+function renderOverviewChart(metric){
+  const c=document.getElementById('overviewChart');if(!c)return;
+  c.width=c.parentElement.offsetWidth-32||480;c.height=160;
+  const ds={all:[[58,61,63,65,67,68,70],[52,55,57,60,62,63,65]],recall:[[55,58,61,63,66,68,70],[48,52,55,58,60,62,64]],lead:[[45,48,52,55,57,60,62],[38,42,45,48,50,52,55]],confidence:[[62,64,66,68,70,72,73],[55,58,60,62,65,67,69]]};
+  const d=ds[metric]||ds.all;
+  drawLineChart(c.getContext('2d'),c.width,160,['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],d,['#4a7c7e','#f4a435'],['Top cohort','Avg cohort']);
+}
+
+function renderDonut(){
+  const c=document.getElementById('donutChart');if(!c)return;
+  const ctx=c.getContext('2d');ctx.clearRect(0,0,120,120);
+  const counts={};DOGS.forEach(d=>counts[d.status]=(counts[d.status]||0)+1);
+  const colors={STELLAR:'#10b981',PROGRESSING:'#4a7c7e',STALLED:'#f59e0b',CRITICAL:'#7c3aed',INACTIVE:'#94a3b8'};
+  let start=-Math.PI/2;const total=DOGS.length;
+  Object.entries(counts).forEach(([k,v])=>{const a=(v/total)*Math.PI*2;ctx.beginPath();ctx.moveTo(60,60);ctx.arc(60,60,52,start,start+a);ctx.closePath();ctx.fillStyle=colors[k];ctx.fill();start+=a;});
+  ctx.beginPath();ctx.arc(60,60,30,0,Math.PI*2);ctx.fillStyle=dark?'#101f12':'#fff';ctx.fill();
+  ctx.fillStyle=dark?'#fff':'#1e293b';ctx.font='bold 14px system-ui';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(total,60,58);
+  ctx.font='9px system-ui';ctx.fillStyle=dark?'rgba(255,255,255,.5)':'rgba(0,0,0,.4)';ctx.fillText('dogs',60,72);
+  document.getElementById('donutLegend').innerHTML=Object.entries(counts).filter(([,v])=>v>0).map(([k,v])=>`<div style="display:flex;align-items:center;gap:7px;margin-bottom:7px"><div style="width:10px;height:10px;border-radius:50%;background:${colors[k]};flex-shrink:0"></div><div style="font-size:11px;color:var(--muted)">${k.charAt(0)+k.slice(1).toLowerCase()} <strong style="color:var(--text)">${v}</strong></div></div>`).join('');
+}
+
+// AI insights
+const AI_INSIGHTS=[
+  {icon:'🔴',text:'<strong>Luna</strong> (German Shepherd) — Reactivity flag active. Score down 7 pts in 2 weeks. 1:1 session needed urgently.'},
+  {icon:'⚠️',text:'<strong>Biscuit</strong> (Labrador) — Loose-lead stalling at 45%. Owner reward timing off. Schedule coaching call.'},
+  {icon:'⏸',text:'<strong>Charlie</strong> (Golden Retriever) — 7 days inactive. Owner unresponsive. Final outreach recommended.'},
+  {icon:'🌟',text:'<strong>Pepper</strong> (Border Collie) — Top performer. Ready for Module 4. Owner engagement exceptional.'},
+  {icon:'📈',text:'<strong>Bella</strong> (French Bulldog) — Plateau detected. Reduce session frequency, add enrichment.'},
+  {icon:'🧩',text:'<strong>Milo</strong> (Golden Retriever) — 88% enrichment engagement. Channel into recall for fast gains.'},
+];
+function renderAIInsightsMini(){document.getElementById('aiInsightsMini').innerHTML=AI_INSIGHTS.slice(0,3).map(i=>`<div class="ai-insight"><div class="ai-insight-icon">${i.icon}</div><div class="ai-insight-text">${i.text}</div></div>`).join('');}
+function renderAIFull(){document.getElementById('aiFullInsights').innerHTML=AI_INSIGHTS.map(i=>`<div class="ai-insight"><div class="ai-insight-icon">${i.icon}</div><div class="ai-insight-text">${i.text}</div></div>`).join('');}
+
+function renderAIActions(){
+  const actions=[{p:'URGENT',dog:'Luna',action:'Book emergency 1:1 session',icon:'📞'},{p:'TODAY',dog:'Biscuit',action:'Send reward timing coaching video',icon:'🎥'},{p:'TODAY',dog:'Charlie',action:'Send final re-engagement email',icon:'📧'},{p:'THIS WEEK',dog:'Bella',action:'Update plan — reduce session frequency',icon:'📝'},{p:'THIS WEEK',dog:'Pepper',action:'Unlock Module 4 content',icon:'🔓'},{p:'THIS WEEK',dog:'Milo',action:'Add scent work enrichment plan',icon:'👃'}];
+  const cols={URGENT:'badge-red',TODAY:'badge-amber','THIS WEEK':'badge-green'};
+  document.getElementById('aiActions').innerHTML=actions.map(a=>`<div style="display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)"><div style="font-size:18px">${a.icon}</div><div style="flex:1"><div style="font-size:13px;font-weight:600">${a.dog} — ${a.action}</div></div><span class="badge ${cols[a.p]}">${a.p}</span><button class="btn-sm" style="font-size:11px;padding:4px 10px" onclick="showToast('✓ Done for ${a.dog}')">Done</button></div>`).join('');
+}
+
+// AI Chat
+const AI_RESP={'luna':'Luna\'s reactivity means she\'s consistently over-threshold near other dogs. Work at distance — reward heavily the moment she notices a dog without reacting. Build duration at that distance, then slowly decrease. Ryan needs 1:1 guidance on reading Luna\'s early stress signals.','biscuit':'Biscuit\'s loose-lead fix: reward placement at your hip, not out front. Use high-value treats (chicken/cheese). Reward every 5 steps without pulling. Stop immediately when the lead goes taut. 5-min focused street sessions beat long walks.','recall':'Build a "recall bank" — 20+ heavily rewarded recalls daily in low-distraction areas before proofing outside. Use a unique recall cue, never overuse it, and jackpot every single successful return. Never call a dog to something unpleasant.','enrichment':'Today\'s plan: scatter feeding at breakfast, lick mat before the training session (lowers arousal), 10-min sniff walk on a long lead at midday. Simple, effective, enriches body and mind.','barking':'Barking at visitors is usually frustration, fear, or rehearsed habit. Fix: manage the environment (baby gate), teach a go-to-mat behaviour, and systematically desensitise the doorbell sound at low volume from a distance.','crate':'Crate training fails when you go too fast. Start: door open, feed all meals inside, toss treats in randomly throughout the day. Only close the door once they enter willingly. Build duration in 10-second increments — never let them "cry it out".'};
+function initAIChat(){
+  const chat=document.getElementById('aiChat');
+  if(!chat.innerHTML.trim())addAIMsg('assistant','Hi Alex 👋 I\'m your AI Guidance Assistant. Ask about any dog, training challenge, or what to prioritise today.');
+  document.getElementById('aiQuickQ').innerHTML=['How do I fix Luna\'s reactivity?','Biscuit won\'t stop pulling — help!','How do I build reliable recall?','What enrichment today?','Why is crate training failing?'].map(q=>`<button class="filter-btn" style="font-size:11px" onclick="quickAsk('${q}')">${q}</button>`).join('');
+}
+function addAIMsg(role,text){
+  const chat=document.getElementById('aiChat');const div=document.createElement('div');
+  div.style.cssText=`padding:9px 12px;border-radius:10px;font-size:12.5px;line-height:1.55;max-width:90%;${role==='user'?'background:var(--primary);color:#fff;align-self:flex-end':'background:var(--surface2);color:var(--text);align-self:flex-start'}`;
+  div.textContent=text;chat.appendChild(div);chat.scrollTop=chat.scrollHeight;
+}
+function sendAIMessage(){
+  const inp=document.getElementById('aiInput');const q=inp.value.trim();if(!q)return;
+  addAIMsg('user',q);inp.value='';
+  setTimeout(()=>{
+    const lq=q.toLowerCase();let resp='Focus on one skill at a time, keep sessions under 5 minutes, and always end on a success. If you\'re seeing regression, reduce difficulty and rebuild confidence before progressing.';
+    Object.entries(AI_RESP).forEach(([k,v])=>{if(lq.includes(k))resp=v;});
+    addAIMsg('assistant',resp);
+  },600);
+}
+function quickAsk(q){document.getElementById('aiInput').value=q;sendAIMessage();}
+
+function renderAIPredictions(){
+  const preds=[{dog:'Pepper',p:'On track for Module 5 in 3 weeks',c:94,t:'↑'},{dog:'Ruby',p:'Graduate assessment ready — advanced programme candidate',c:91,t:'↑'},{dog:'Milo',p:'Expected 80% score in 2 weeks if enrichment added',c:82,t:'↑'},{dog:'Biscuit',p:'Stalled risk if owner technique not corrected this week',c:77,t:'→'},{dog:'Luna',p:'Continued regression without immediate 1:1 intervention',c:89,t:'↓'},{dog:'Bella',p:'Plateau continues until training frequency reduced',c:84,t:'→'}];
+  document.getElementById('aiPredictions').innerHTML=preds.map(p=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div style="font-size:16px">${p.t==='↑'?'📈':p.t==='↓'?'📉':'➡️'}</div><div style="flex:1"><div style="font-size:12px;font-weight:700">${p.dog}</div><div style="font-size:11px;color:var(--muted);line-height:1.4">${p.p}</div></div><div style="text-align:right;flex-shrink:0"><div style="font-size:12px;font-weight:800;color:var(--primary)">${p.c}%</div><div style="font-size:9px;color:var(--muted)">confidence</div></div></div>`).join('');
+}
+
+// Urgent grid
+function renderUrgentGrid(){
+  const urgent=DOGS.filter(d=>['CRITICAL','STALLED','INACTIVE'].includes(d.status)).slice(0,4);
+  document.getElementById('urgentGrid').innerHTML=urgent.map(d=>`<div onclick="openDetail('${d.id}')" style="display:flex;align-items:center;gap:10px;padding:9px;border-radius:var(--rs);background:var(--surface2);cursor:pointer;margin-bottom:7px;transition:background var(--t)" onmouseover="this.style.background='var(--surface3)'" onmouseout="this.style.background='var(--surface2)'"><div class="user-av" style="background:${d.avatar};width:34px;height:34px;font-size:12px">${d.initials}</div><div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:700">${d.name} <span style="font-size:11px;color:var(--muted);font-weight:400">${d.breed}</span></div><div style="font-size:11px;color:var(--muted)">${d.flags[0]||d.status}</div></div><span class="status-pill s-${d.status}">${d.status}</span></div>`).join('');
+}
+
+// Recent sessions
+function renderRecentSessions(){
+  document.getElementById('recentSessions').innerHTML=`<table class="user-table" style="width:100%"><thead><tr><th>Dog</th><th>Owner</th><th>Skills</th><th>Score</th><th>Duration</th><th>When</th></tr></thead><tbody>${ALL_SESSIONS.slice(0,8).map(s=>`<tr onclick="openDetail('${s.dog.id}')" style="cursor:pointer"><td><div class="user-name-wrap"><div class="user-av" style="background:${s.dog.avatar};width:28px;height:28px;font-size:11px">${s.dog.initials}</div><div><div class="user-name">${s.dog.name}</div><div class="user-status">${s.dog.breed}</div></div></div></td><td style="font-size:12px;color:var(--muted)">${s.dog.owner}</td><td style="font-size:12px">${s.skills.join(', ')}</td><td><div class="score-circ" style="background:${s.score>=75?'#d1fae5':s.score>=55?'#fef3c7':'#fee2e2'};color:${s.score>=75?'#065f46':s.score>=55?'#92400e':'#991b1b'}">${s.score}</div></td><td style="font-size:12px;color:var(--muted)">${s.duration}m</td><td style="font-size:11px;color:var(--muted)">${timeAgo(s.date)}</td></tr>`).join('')}</tbody></table>`;
+}
+
+// Dogs table
+function filterDogs(f,btn){currentFilter=f;document.querySelectorAll('#view-dogs .filter-btn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderDogsTable(f);}
+function renderDogsTable(f='all'){
+  const filtered=f==='all'?DOGS:DOGS.filter(d=>d.status===f);
+  document.getElementById('dogCountSub').textContent=`${filtered.length} of ${DOGS.length} dogs`;
+  document.getElementById('dogsTableBody').innerHTML=filtered.map(d=>`<tr onclick="openDetail('${d.id}')"><td><div class="user-name-wrap"><div class="user-av" style="background:${d.avatar}">${d.initials}</div><div class="user-name">${d.name}</div></div></td><td style="font-size:12px;color:var(--muted)">${d.breed}</td><td style="font-size:12px;color:var(--muted)">${d.age}</td><td style="font-size:12px">${d.owner}</td><td><span class="status-pill s-${d.status}">${d.status}</span></td><td><div style="display:flex;align-items:center;gap:8px"><div style="flex:1;height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;min-width:60px"><div style="height:100%;width:${d.behaviourScore}%;background:${d.behaviourScore>=75?'var(--low)':d.behaviourScore>=55?'var(--warn)':'var(--high)'};border-radius:99px"></div></div><span style="font-size:12px;font-weight:700;width:32px">${d.behaviourScore||'–'}${d.behaviourScore?'%':''}</span></div></td><td style="font-size:12px;font-weight:600;color:${d.recall>=70?'var(--low)':d.recall>=50?'var(--warn)':'var(--high)'}">${d.recall||'–'}${d.recall?'%':''}</td><td>🔥 ${d.streak}</td><td style="font-size:11px;color:var(--muted);max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.module}</td><td><button class="btn-sm" onclick="event.stopPropagation();openDetail('${d.id}')">View →</button></td></tr>`).join('');
+}
+function liveSearch(q){if(!q){renderDogsTable(currentFilter);return;}const lq=q.toLowerCase();const f=DOGS.filter(d=>d.name.toLowerCase().includes(lq)||d.breed.toLowerCase().includes(lq)||d.owner.toLowerCase().includes(lq));document.getElementById('dogsTableBody').innerHTML=f.map(d=>`<tr onclick="openDetail('${d.id}')"><td><div class="user-name-wrap"><div class="user-av" style="background:${d.avatar}">${d.initials}</div><div class="user-name">${d.name}</div></div></td><td style="font-size:12px;color:var(--muted)">${d.breed}</td><td style="font-size:12px;color:var(--muted)">${d.age}</td><td style="font-size:12px">${d.owner}</td><td><span class="status-pill s-${d.status}">${d.status}</span></td><td style="font-weight:700">${d.behaviourScore||'–'}${d.behaviourScore?'%':''}</td><td>${d.recall||'–'}${d.recall?'%':''}</td><td>🔥 ${d.streak}</td><td style="font-size:11px;color:var(--muted)">${d.module}</td><td><button class="btn-sm" onclick="event.stopPropagation();openDetail('${d.id}')">View →</button></td></tr>`).join('');}
+
+// Stalled list
+function renderStalledList(){
+  const list=DOGS.filter(d=>['CRITICAL','STALLED','INACTIVE'].includes(d.status));
+  document.getElementById('stalledList').innerHTML=list.map(d=>`<div class="alert-item ${d.status==='CRITICAL'?'critical':d.status==='STALLED'?'warn':'high'}" style="cursor:pointer" onclick="openDetail('${d.id}')"><div class="alert-icon"><div class="user-av" style="background:${d.avatar};width:36px;height:36px">${d.initials}</div></div><div class="alert-body"><div class="alert-title">${d.name} — ${d.breed} · ${d.age} · ${d.owner}</div><div class="alert-desc">Status: <strong>${d.status}</strong> · Score: ${d.behaviourScore||'No data'}${d.behaviourScore?'%':''} · Streak: 🔥 ${d.streak}</div><div class="alert-desc" style="margin-top:4px">${d.flags.join(' · ')||'No active flags'}</div>${d.notes.length?`<div class="alert-desc" style="margin-top:4px;font-style:italic">"${d.notes[0].text.substring(0,120)}…"</div>`:''}</div><button class="btn-sm primary" onclick="event.stopPropagation();openDetail('${d.id}')">Action →</button></div>`).join('');
+}
+
+// Session log
+function renderSessions(){
+  document.getElementById('sessionsList').innerHTML=`<div class="card scrollable-x"><table class="user-table" style="width:100%"><thead><tr><th>Dog</th><th>Owner</th><th>Skills</th><th>Score</th><th>Duration</th><th>Difficulty</th><th>Notes</th><th>When</th></tr></thead><tbody>${ALL_SESSIONS.map(s=>`<tr onclick="openDetail('${s.dog.id}')" style="cursor:pointer"><td><div class="user-name-wrap"><div class="user-av" style="background:${s.dog.avatar};width:28px;height:28px;font-size:11px">${s.dog.initials}</div><div><div class="user-name">${s.dog.name}</div><div class="user-status">${s.dog.breed}</div></div></div></td><td style="font-size:12px;color:var(--muted)">${s.dog.owner}</td><td style="font-size:12px">${s.skills.join(', ')}</td><td><div class="score-circ" style="background:${s.score>=75?'#d1fae5':s.score>=55?'#fef3c7':'#fee2e2'};color:${s.score>=75?'#065f46':s.score>=55?'#92400e':'#991b1b'}">${s.score}</div></td><td style="font-size:12px;color:var(--muted)">${s.duration}m</td><td><span class="badge ${s.difficulty==='Easy'?'badge-green':s.difficulty==='Medium'?'badge-amber':'badge-red'}">${s.difficulty}</span></td><td style="font-size:11px;color:var(--muted);max-width:160px">${s.note}</td><td style="font-size:11px;color:var(--muted)">${timeAgo(s.date)}</td></tr>`).join('')}</tbody></table></div>`;
+}
+
+// Alerts
+function renderAlerts(){
+  const alerts=[{type:'critical',icon:'🔴',title:'Luna — Reactivity Regression (German Shepherd)',desc:'Behaviour score dropped 48→41 over 2 weeks. Flags: REACTIVITY_FLAG, SOCIALISATION_RISK. Ryan Davies logged only 1 session this week.',time:'2 hours ago',dog:'D004'},{type:'warn',icon:'⚠️',title:'Biscuit — Loose-Lead Stalled (Labrador Retriever)',desc:'Loose-lead score stuck at 45% for 10 days. Likely cause: owner reward timing. Intervention needed.',time:'Yesterday',dog:'D001'},{type:'high',icon:'⏸',title:'Charlie — 7 Days Inactive (Golden Retriever)',desc:'Owner Emma Walsh has not logged a session or responded to 2 follow-up messages.',time:'3 days ago',dog:'D005'},{type:'warn',icon:'📉',title:'Bella — Plateau Detected (French Bulldog)',desc:'Score flat at 55% for 2 weeks. Pattern consistent with over-training fatigue in brachycephalic breeds.',time:'4 days ago',dog:'D008'},{type:'info',icon:'🌟',title:'Pepper — Ready for Module 4 (Border Collie)',desc:'All Module 3 objectives completed. Recommend unlocking Module 4 for James Okafor.',time:'1 day ago',dog:'D002'}];
+  document.getElementById('alertsList').innerHTML=alerts.map(a=>`<div class="alert-item ${a.type}" onclick="openDetail('${a.dog}')" style="cursor:pointer"><div class="alert-icon">${a.icon}</div><div class="alert-body"><div class="alert-title">${a.title}</div><div class="alert-desc">${a.desc}</div><div class="alert-time">${a.time}</div><div class="alert-actions"><button class="btn-sm primary" onclick="event.stopPropagation();openDetail('${a.dog}')">View Dog →</button><button class="btn-sm" onclick="event.stopPropagation();showToast('✓ Alert resolved')">Resolve</button></div></div></div>`).join('');
+}
+
+// Analytics
+function renderAnalyticsStats(){
+  document.getElementById('analyticsStats').innerHTML=`<div class="stat-card"><div class="stat-top"><div><div class="stat-val">74%</div><div class="stat-lbl">Avg Recall Score</div></div><div class="stat-icon">📣</div></div><div class="stat-delta delta-up">↑ +4% this month</div></div><div class="stat-card w"><div class="stat-top"><div><div class="stat-val">61%</div><div class="stat-lbl">Avg Loose Lead</div></div><div class="stat-icon">🦮</div></div><div class="stat-delta delta-up">↑ +6% this month</div></div><div class="stat-card acc"><div class="stat-top"><div><div class="stat-val">82%</div><div class="stat-lbl">Enrichment Rate</div></div><div class="stat-icon">🧩</div></div><div class="stat-delta delta-up">↑ +9% this month</div></div><div class="stat-card"><div class="stat-top"><div><div class="stat-val">78%</div><div class="stat-lbl">Owner Engagement</div></div><div class="stat-icon">👥</div></div><div class="stat-delta delta-flat">→ Steady</div></div><div class="stat-card"><div class="stat-top"><div><div class="stat-val">91%</div><div class="stat-lbl">Course Completion</div></div><div class="stat-icon">🎓</div></div><div class="stat-delta delta-up">↑ +3% this month</div></div>`;
+}
+function renderAnalyticsCharts(){
+  const c1=document.getElementById('analyticsChart1');if(c1){c1.width=c1.parentElement.offsetWidth-32||380;c1.height=160;drawLineChart(c1.getContext('2d'),c1.width,160,['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7'],[[58,62,65,67,69,71,74],[45,48,52,55,57,59,61]],['#4a7c7e','#f4a435'],['Recall avg','Lead avg']);}
+  const c2=document.getElementById('analyticsChart2');if(c2){c2.width=c2.parentElement.offsetWidth-32||380;c2.height=160;drawLineChart(c2.getContext('2d'),c2.width,160,['Wk1','Wk2','Wk3','Wk4','Wk5','Wk6','Wk7'],[[60,63,65,68,70,72,74],[55,58,62,65,67,70,73]],['#7c3aed','#ec4899'],['Confidence','Socialisation']);}
+  const acts=[{n:'Sniff Walk',v:92},{n:'Lick Mat',v:88},{n:'Scatter Feed',v:85},{n:'Muffin Tin',v:79},{n:'Tug Play',v:74},{n:'Frozen Kong',v:68}];
+  document.getElementById('enrichmentStats').innerHTML=acts.map(a=>`<div class="prog-row"><div class="prog-label">${a.n}</div><div class="prog-track"><div class="prog-fill pf-p" style="width:${a.v}%"></div></div><div class="prog-val">${a.v}%</div></div>`).join('');
+  const risks=[{l:'Recall at risk',v:25,c:'r'},{l:'Socialisation concern',v:13,c:'y'},{l:'Stalled progression',v:25,c:'y'},{l:'Owner disengaged',v:13,c:'y'},{l:'Reactivity flag',v:13,c:'r'},{l:'All clear',v:38,c:'g'}];
+  document.getElementById('riskMatrix').innerHTML=risks.map(r=>`<div class="prog-row"><div class="prog-label">${r.l}</div><div class="prog-track"><div class="prog-fill pf-${r.c}" style="width:${r.v}%"></div></div><div class="prog-val">${r.v}%</div></div>`).join('');
+}
+
+// Courses
+const MODULES=[
+  {n:1,name:'Foundations',lessons:['Understanding Puppy Psychology','Marker Word Training','Focus & Attention Building','Reward Timing Fundamentals','Calmness Foundations']},
+  {n:2,name:'Core Obedience',lessons:['Sit & Down Reliability','Recall Foundations','Loose Lead Walking','Calm Door Behaviour','Polite Greeting Skills']},
+  {n:3,name:'Socialisation & Confidence',lessons:['Environmental Confidence','Positive Social Exposure','Reducing Overstimulation','New Experience Handling','Confidence Building Games']},
+  {n:4,name:'Home Life Success',lessons:['Toilet Training System','Crate Confidence','Alone Time Training','Reducing Destructive Behaviour','Calm Household Behaviour']},
+  {n:5,name:'Enrichment & Long-Term Development',lessons:['Mental Stimulation Games','Structured Play Systems','Scent Work Foundations','Long-Term Habit Reinforcement','Advanced Enrichment Planning']},
+];
+function renderCourses(){
+  const active=DOGS.filter(d=>d.behaviourScore>0);
+  document.getElementById('coursesView').innerHTML=`<div class="two-col"><div>${MODULES.map(m=>{const inM=active.filter(d=>d.moduleNum===m.n).length,past=active.filter(d=>d.moduleNum>m.n).length;return`<div class="card" style="margin-bottom:12px"><div class="card-header"><div class="card-title">Module ${m.n} — ${m.name}</div><div style="display:flex;gap:8px"><span class="badge badge-green">${past} done</span><span class="badge badge-amber">${inM} active</span></div></div><div class="card-body">${m.lessons.map((l,i)=>`<div style="display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--border);font-size:13px"><span>${i<3?'✅':'⏳'}</span><span>${l}</span><span style="margin-left:auto;font-size:11px;color:var(--muted)">${i<2?'All dogs':'In progress'}</span></div>`).join('')}</div></div>`;}).join('')}</div><div><div class="card"><div class="card-header"><div class="card-title">🌱 Dog Module Status</div></div><div class="card-body">${active.map(d=>`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border)"><div class="user-av" style="background:${d.avatar};width:28px;height:28px;font-size:11px">${d.initials}</div><div style="flex:1"><div style="font-size:12px;font-weight:700">${d.name}</div><div style="font-size:11px;color:var(--muted)">${d.module}</div></div><div style="font-size:12px;font-weight:600;color:var(--primary)">L${d.lessonNum}/5</div></div>`).join('')}</div></div></div></div>`;
+}
+
+// Enrichment planner
+function renderEnrichmentPlanner(){
+  const acts=[{n:'Sniff Walk',dogs:'All dogs',freq:'Daily',type:'Scent',diff:'Easy',desc:'10-min free sniff on long lead — builds calm confidence'},{n:'Scatter Feeding',dogs:'Milo, Biscuit, Bella',freq:'Daily (replace bowl)',type:'Scent',diff:'Easy',desc:'Scatter kibble in grass — activates nose, reduces mealtime frustration'},{n:'Muffin Tin Game',dogs:'Pepper, Ruby, Archie',freq:'3× per week',type:'Puzzle',diff:'Easy',desc:'Tennis balls hide treats — builds problem-solving and focus'},{n:'Lick Mat Calm-Down',dogs:'Luna, Bella',freq:'Before training sessions',type:'Calming',diff:'Easy',desc:'Promotes calm arousal — use before sessions in reactive/over-excited dogs'},{n:'Tug Play',dogs:'Pepper, Charlie',freq:'2× per week',type:'Play',diff:'Intermediate',desc:'Structured tug builds drive, impulse control and reinforcement value of play'},{n:'Confidence Boxes',dogs:'Luna, Biscuit',freq:'Weekly',type:'Confidence',diff:'Intermediate',desc:'Novel objects on ground — investigate and reward; rebuilds confidence'},{n:'Frozen Kong',dogs:'All puppies',freq:'Daily if needed',type:'Calming',diff:'Easy',desc:'15-20 min mental stimulation; reduces anxiety and boredom indoors'}];
+  const tc={Scent:'badge-green',Puzzle:'badge-purple',Calming:'badge-amber',Play:'badge-red',Confidence:'badge-gray'};
+  document.getElementById('enrichmentPlanner').innerHTML=`<div class="card"><div class="card-body scrollable-x"><table class="user-table" style="width:100%"><thead><tr><th>Activity</th><th>Assigned To</th><th>Frequency</th><th>Type</th><th>Difficulty</th><th>Notes</th><th></th></tr></thead><tbody>${acts.map(a=>`<tr><td style="font-weight:600">${a.n}</td><td style="font-size:12px;color:var(--muted)">${a.dogs}</td><td style="font-size:12px">${a.freq}</td><td><span class="badge ${tc[a.type]||'badge-gray'}">${a.type}</span></td><td><span class="badge ${a.diff==='Easy'?'badge-green':'badge-amber'}">${a.diff}</span></td><td style="font-size:11px;color:var(--muted);max-width:180px">${a.desc}</td><td><button class="btn-sm" onclick="showToast('📋 Sent to owner app')">Send to owners</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+// Progress tracking
+function renderProgress(){
+  const active=DOGS.filter(d=>d.behaviourScore>0);
+  document.getElementById('progressView').innerHTML=`<div class="two-col"><div>${active.map(d=>`<div class="card" style="margin-bottom:12px;cursor:pointer" onclick="openDetail('${d.id}')"><div class="card-header"><div style="display:flex;align-items:center;gap:9px"><div class="user-av" style="background:${d.avatar}">${d.initials}</div><div><div class="card-title">${d.name} <span style="font-weight:400;font-size:11px;color:var(--muted)">${d.breed}</span></div><div style="font-size:11px;color:var(--muted)">${d.owner}</div></div></div><span class="status-pill s-${d.status}">${d.status}</span></div><div class="card-body"><div class="prog-row"><div class="prog-label">Behaviour Score</div><div class="prog-track"><div class="prog-fill ${d.behaviourScore>=75?'pf-g':d.behaviourScore>=55?'pf-y':'pf-r'}" style="width:${d.behaviourScore}%"></div></div><div class="prog-val">${d.behaviourScore}%</div></div><div class="prog-row"><div class="prog-label">Recall</div><div class="prog-track"><div class="prog-fill pf-p" style="width:${d.recall}%"></div></div><div class="prog-val">${d.recall}%</div></div><div class="prog-row"><div class="prog-label">Confidence</div><div class="prog-track"><div class="prog-fill pf-g" style="width:${d.confidence}%"></div></div><div class="prog-val">${d.confidence}%</div></div><div style="display:flex;justify-content:space-between;margin-top:8px"><div style="font-size:11px;color:var(--muted)">🔥 ${d.streak}-day streak · L${d.lessonNum}/5</div><div style="font-size:11px;font-weight:600;color:var(--primary)">${d.milestones.length} milestones</div></div></div></div>`).join('')}</div><div><div class="card"><div class="card-header"><div class="card-title">📊 Academy-Wide Progress</div></div><div class="card-body"><div class="prog-row"><div class="prog-label">Avg Behaviour Score</div><div class="prog-track"><div class="prog-fill pf-g" style="width:68%"></div></div><div class="prog-val">68%</div></div><div class="prog-row"><div class="prog-label">Avg Recall</div><div class="prog-track"><div class="prog-fill pf-p" style="width:66%"></div></div><div class="prog-val">66%</div></div><div class="prog-row"><div class="prog-label">Avg Confidence</div><div class="prog-track"><div class="prog-fill pf-a" style="width:70%"></div></div><div class="prog-val">70%</div></div><div class="prog-row"><div class="prog-label">Enrichment Rate</div><div class="prog-track"><div class="prog-fill pf-g" style="width:80%"></div></div><div class="prog-val">80%</div></div><div class="section-divider"></div><div class="metric-grid"><div class="metric-card"><div class="metric-val">34</div><div class="metric-lbl">Total Sessions</div><div class="metric-trend" style="color:var(--low)">↑ +8 this week</div></div><div class="metric-card"><div class="metric-val">12</div><div class="metric-lbl">Milestones</div><div class="metric-trend" style="color:var(--low)">↑ +3 this week</div></div><div class="metric-card"><div class="metric-val">2</div><div class="metric-lbl">Graduates</div><div class="metric-trend" style="color:var(--low)">Ruby + Pepper soon</div></div></div></div></div></div></div>`;
+}
+
+// Certifications
+function renderCerts(){
+  const certs=[{dog:'Ruby',breed:'Cockapoo',owner:'Priya Sharma',cert:'Puppy Masterclass Graduate',date:'3 weeks ago',status:'ISSUED',score:91},{dog:'Pepper',breed:'Border Collie',owner:'James Okafor',cert:'Puppy Masterclass Graduate',date:'Expected in 3 weeks',status:'IN PROGRESS',score:88},{dog:'Milo',breed:'Golden Retriever',owner:'Claire Thompson',cert:'Foundation Obedience Certificate',date:'2 months ago',status:'ISSUED',score:74},{dog:'Archie',breed:'Cocker Spaniel',owner:'Tom Henderson',cert:'Foundation Obedience Certificate',date:'Expected in 6 weeks',status:'IN PROGRESS',score:69}];
+  document.getElementById('certsView').innerHTML=`<div class="card"><div class="card-body scrollable-x"><table class="user-table" style="width:100%"><thead><tr><th>Dog</th><th>Owner</th><th>Certification</th><th>Score</th><th>Date</th><th>Status</th><th></th></tr></thead><tbody>${certs.map(c=>`<tr><td style="font-weight:600">${c.dog} <span style="font-size:11px;color:var(--muted);font-weight:400">${c.breed}</span></td><td style="font-size:12px;color:var(--muted)">${c.owner}</td><td style="font-size:12px">${c.cert}</td><td style="font-weight:700;color:var(--primary)">${c.score}%</td><td style="font-size:12px;color:var(--muted)">${c.date}</td><td><span class="badge ${c.status==='ISSUED'?'badge-green':'badge-amber'}">${c.status}</span></td><td><button class="btn-sm" onclick="showToast('🏅 PDF generated for ${c.dog}')">PDF</button></td></tr>`).join('')}</tbody></table></div></div>`;
+}
+
+// Revenue
+function renderRevenue(){
+  document.getElementById('revenueView').innerHTML=`<div class="stats-row" style="grid-template-columns:repeat(4,1fr)"><div class="stat-card"><div class="stat-top"><div><div class="stat-val">£2,840</div><div class="stat-lbl">Monthly Revenue</div></div><div class="stat-icon">💰</div></div><div class="stat-delta delta-up">↑ +18% vs last month</div></div><div class="stat-card acc"><div class="stat-top"><div><div class="stat-val">8</div><div class="stat-lbl">Active Subscriptions</div></div><div class="stat-icon">🔄</div></div><div class="stat-delta delta-up">↑ +2 this month</div></div><div class="stat-card w"><div class="stat-top"><div><div class="stat-val">£355</div><div class="stat-lbl">Revenue per Dog</div></div><div class="stat-icon">📊</div></div><div class="stat-delta delta-up">↑ +£30</div></div><div class="stat-card"><div class="stat-top"><div><div class="stat-val">£34,080</div><div class="stat-lbl">ARR Projection</div></div><div class="stat-icon">📈</div></div><div class="stat-delta delta-up">↑ Growing 22% MoM</div></div></div><div class="two-col"><div class="card"><div class="card-header"><div class="card-title">💰 Revenue by Plan</div></div><div class="card-body"><div class="prog-row"><div class="prog-label">Puppy Masterclass</div><div class="prog-track"><div class="prog-fill pf-g" style="width:65%"></div></div><div class="prog-val">£1,848</div></div><div class="prog-row"><div class="prog-label">1:1 Sessions</div><div class="prog-track"><div class="prog-fill pf-a" style="width:28%"></div></div><div class="prog-val">£795</div></div><div class="prog-row"><div class="prog-label">Monthly Membership</div><div class="prog-track"><div class="prog-fill pf-p" style="width:7%"></div></div><div class="prog-val">£197</div></div></div></div><div class="card"><div class="card-header"><div class="card-title">📈 Growth Metrics</div></div><div class="card-body"><div class="metric-grid"><div class="metric-card"><div class="metric-val">89%</div><div class="metric-lbl">Retention Rate</div></div><div class="metric-card"><div class="metric-val">4.9★</div><div class="metric-lbl">Avg Rating</div></div><div class="metric-card"><div class="metric-val">68%</div><div class="metric-lbl">Referral Rate</div></div></div></div></div></div>`;
+}
+
+// Detail panel
+function openDetail(id){
+  currentDog=DOGS.find(d=>d.id===id);if(!currentDog)return;
+  const d=currentDog;
+  document.getElementById('detailHeader').innerHTML=`<div class="user-av" style="background:${d.avatar};width:42px;height:42px;font-size:15px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0">${d.initials}</div><div style="flex:1"><div style="font-size:16px;font-weight:800">${d.name}</div><div style="font-size:12px;color:var(--muted)">${d.breed} · ${d.age} · Owner: ${d.owner}</div></div><span class="status-pill s-${d.status}">${d.status}</span><button class="detail-close" onclick="closeDetail()">✕</button>`;
+  document.querySelectorAll('.detail-tab').forEach((b,i)=>{b.classList.toggle('active',i===0);});
+  renderDetailBody('overview');
+  document.getElementById('detailPanel').classList.add('open');
+  document.getElementById('detailOverlay').classList.add('open');
+}
+function closeDetail(){document.getElementById('detailPanel').classList.remove('open');document.getElementById('detailOverlay').classList.remove('open');currentDog=null;}
+function switchDetailTab(tab,btn){document.querySelectorAll('.detail-tab').forEach(b=>b.classList.remove('active'));if(btn)btn.classList.add('active');renderDetailBody(tab);}
+function renderDetailBody(tab){
+  if(!currentDog)return;const d=currentDog;const body=document.getElementById('detailBody');
+  if(tab==='overview'){
+    body.innerHTML=`<div class="metric-grid" style="grid-template-columns:repeat(2,1fr);margin-bottom:14px"><div class="metric-card"><div class="metric-val">${d.behaviourScore||'–'}${d.behaviourScore?'%':''}</div><div class="metric-lbl">Behaviour Score</div></div><div class="metric-card"><div class="metric-val">🔥 ${d.streak}</div><div class="metric-lbl">Day Streak</div></div><div class="metric-card"><div class="metric-val">${d.recall||'–'}${d.recall?'%':''}</div><div class="metric-lbl">Recall</div></div><div class="metric-card"><div class="metric-val">${d.confidence||'–'}${d.confidence?'%':''}</div><div class="metric-lbl">Confidence</div></div></div>
+    <div class="prog-row"><div class="prog-label">Loose Lead</div><div class="prog-track"><div class="prog-fill pf-a" style="width:${d.looseLead}%"></div></div><div class="prog-val">${d.looseLead}%</div></div>
+    <div class="prog-row"><div class="prog-label">Socialisation</div><div class="prog-track"><div class="prog-fill pf-g" style="width:${d.socialisation}%"></div></div><div class="prog-val">${d.socialisation}%</div></div>
+    <div class="prog-row"><div class="prog-label">Enrichment</div><div class="prog-track"><div class="prog-fill pf-p" style="width:${d.enrichment}%"></div></div><div class="prog-val">${d.enrichment}%</div></div>
+    <div class="section-divider"></div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:6px">Module</div><div style="font-size:13px;color:var(--muted);margin-bottom:12px">${d.module} · Lesson ${d.lessonNum}/5</div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:6px">Active Flags</div><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px">${d.flags.length?d.flags.map(f=>`<span class="badge badge-red">${f}</span>`).join(''):'<span style="font-size:12px;color:var(--muted)">No active flags ✓</span>'}</div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:6px">Milestones</div><div>${d.milestones.map(m=>`<div style="font-size:12px;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border)">${m}</div>`).join('')}</div>`;
+  } else if(tab==='sessions'){
+    body.innerHTML=d.sessions.length?d.sessions.map(s=>`<div class="tl-item"><div class="tl-dot" style="background:${s.score>=75?'var(--low)':s.score>=55?'var(--warn)':'var(--high)'}"></div><div class="tl-content"><div class="tl-top"><div class="tl-name">Score: <strong>${s.score}%</strong> · ${s.duration} min · ${s.difficulty}</div><div class="tl-time">${timeAgo(s.date)}</div></div><div class="tl-tags">${s.skills.map(sk=>`<span class="tl-tag">${sk}</span>`).join('')}</div><div class="tl-note">${s.note}</div></div></div>`).join(''):'<div class="empty-state"><div class="es-icon">📋</div><div class="es-txt">No sessions logged yet</div></div>';
+  } else if(tab==='chart'){
+    body.innerHTML=d.scores.length?`<div style="font-size:12px;color:var(--muted);margin-bottom:10px">7-day behaviour score trend</div><canvas id="detailChart" height="160"></canvas>`:'<div class="empty-state"><div class="es-icon">📊</div><div class="es-txt">No score history yet</div></div>';
+    if(d.scores.length){setTimeout(()=>{const c=document.getElementById('detailChart');if(c){c.width=c.parentElement.offsetWidth||360;c.height=160;drawLineChart(c.getContext('2d'),c.width,160,['7d','6d','5d','4d','3d','2d','1d'],[d.scores],['#4a7c7e'],['Behaviour score']);}},50);}
+  } else if(tab==='notes'){
+    body.innerHTML=d.notes.map(n=>`<div class="note-item"><div class="note-text">${n.text}</div><div class="note-meta"><span>by ${n.by}</span><span>${timeAgo(n.date)}</span></div></div>`).join('')+`<div style="margin-top:14px"><textarea id="noteInput" style="width:100%;padding:10px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:13px;resize:vertical;min-height:80px;outline:none;font-family:inherit" placeholder="Add a trainer note or session observation…"></textarea><button class="btn-sm primary" style="margin-top:8px;width:100%" onclick="saveNote()">Save Note</button></div>`;
+  } else if(tab==='ai'){
+    body.innerHTML=`<div class="ai-panel" style="margin-bottom:14px"><div class="ai-badge">🤖 AI Recommendation for ${d.name}</div><div class="ai-sub" style="margin-bottom:14px;line-height:1.6">${d.ai}</div><div class="ai-actions"><button class="ai-btn primary" onclick="showToast('📧 AI plan sent to ${d.owner}')">Send to Owner</button><button class="ai-btn ghost" onclick="showToast('📋 Added to training plan')">Add to Plan</button></div></div>
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px">Recommended Next Steps</div>
+    ${d.status==='CRITICAL'?`<div class="alert-item critical"><div class="alert-icon">🚨</div><div class="alert-body"><div class="alert-title">Urgent Intervention Required</div><div class="alert-desc">Book a 1:1 session this week. Simplify the training plan to 3 core behaviours.</div></div></div>`:d.status==='STALLED'?`<div class="alert-item warn"><div class="alert-icon">⚠️</div><div class="alert-body"><div class="alert-title">Progression Stalled</div><div class="alert-desc">Review owner technique. Add enrichment activities to re-motivate and rebuild confidence.</div></div></div>`:`<div class="alert-item info"><div class="alert-icon">📈</div><div class="alert-body"><div class="alert-title">On Track</div><div class="alert-desc">Continue current plan. Introduce next lesson when current skills are reliable.</div></div></div>`}`;
+  }
+}
+function saveNote(){const inp=document.getElementById('noteInput');const t=inp.value.trim();if(!t){showToast('⚠️ Please enter a note');return;}currentDog.notes.unshift({text:t,date:Date.now(),by:'Alex Rivera'});inp.value='';showToast('✓ Note saved');switchDetailTab('notes',null);}
+
+// Helpers
+function timeAgo(ts){const d=(Date.now()-ts)/1000;if(d<60)return'just now';if(d<3600)return Math.floor(d/60)+'m ago';if(d<86400)return Math.floor(d/3600)+'h ago';if(d<172800)return'Yesterday';return Math.floor(d/86400)+'d ago';}
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2800);}
+
+// Init
+showView('overview');
+
+
+// ══════════════════════════════════════════════════════
+//  PWA METRICS — localStorage now, Supabase-ready later
+// ══════════════════════════════════════════════════════
+const PWA_KEY = 'fp_pwa_events';
+
+function pwaGetEvents()  { try { return JSON.parse(localStorage.getItem(PWA_KEY)||'[]'); } catch(e){ return []; } }
+function pwaSaveEvents(ev){ localStorage.setItem(PWA_KEY, JSON.stringify(ev)); }
+function pwaLog(type, meta){
+  var events = pwaGetEvents();
+  events.unshift({
+    id:         Math.random().toString(36).slice(2),
+    event_type: type,
+    device:     pwaDetectDevice(),
+    platform:   pwaDetectPlatform(),
+    session_id: pwaSessionId(),
+    timestamp:  new Date().toISOString(),
+    meta:       meta || {}
+  });
+  if(events.length > 500) events = events.slice(0,500);
+  pwaSaveEvents(events);
+  var badge = document.getElementById('pwaBadge');
+  if(badge) badge.style.display='inline';
+}
+
+function pwaDetectDevice(){
+  var ua = navigator.userAgent;
+  if(/iPad/.test(ua))           return 'iPad';
+  if(/iPhone/.test(ua))         return 'iPhone';
+  if(/Android.*Mobile/.test(ua))return 'Android Phone';
+  if(/Android/.test(ua))        return 'Android Tablet';
+  if(/Win/.test(navigator.platform))  return 'Windows';
+  if(/Mac/.test(navigator.platform))  return 'Mac';
+  return 'Unknown';
+}
+function pwaDetectPlatform(){
+  var ua = navigator.userAgent;
+  if(/Edg\//.test(ua))    return 'Edge';
+  if(/Chrome/.test(ua))   return 'Chrome';
+  if(/Firefox/.test(ua))  return 'Firefox';
+  if(/Safari/.test(ua))   return 'Safari';
+  return 'Other';
+}
+function pwaSessionId(){
+  var sid = sessionStorage.getItem('fp_sid');
+  if(!sid){ sid='S_'+Date.now().toString(36); sessionStorage.setItem('fp_sid',sid); }
+  return sid;
+}
+
+(function autoLog(){
+  var isStandalone = window.matchMedia('(display-mode:standalone)').matches || window.navigator.standalone;
+  pwaLog('page_view', { standalone: isStandalone, url: location.pathname });
+  if(isStandalone) pwaLog('session_start', { entry: location.pathname });
+  window.addEventListener('beforeinstallprompt', function(){ pwaLog('install_prompt',{}); });
+  window.addEventListener('appinstalled', function(){ pwaLog('installed',{}); });
+})();
+
+function renderPWAMetrics(){
+  var events   = pwaGetEvents();
+  if(events.length < 3){ seedPWADemoData(); events = pwaGetEvents(); }
+  var installed = events.filter(function(e){ return e.event_type==='installed'; }).length;
+  var prompts   = events.filter(function(e){ return e.event_type==='install_prompt'; }).length;
+  var sessions  = events.filter(function(e){ return e.event_type==='session_start'; }).length;
+  var views     = events.filter(function(e){ return e.event_type==='page_view'; }).length;
+  var dismissed = events.filter(function(e){ return e.event_type==='dismissed'; }).length;
+  var convRate  = prompts>0 ? Math.round(installed/prompts*100) : 0;
+
+  document.getElementById('pwaKpiGrid').innerHTML = [
+    {cls:'low',  val:installed, lbl:'Total Installs',   delta:'All time'},
+    {cls:'',     val:prompts,   lbl:'Install Prompts',  delta:convRate+'% conversion rate'},
+    {cls:'acc',  val:sessions,  lbl:'PWA Sessions',     delta:'Launched from home screen'},
+    {cls:'warn', val:views,     lbl:'Page Views (PWA)', delta:dismissed+' prompt dismissals'},
+  ].map(function(k){
+    return '<div class="pwa-kpi '+k.cls+'"><div class="pwa-kpi-val">'+k.val+'</div><div class="pwa-kpi-lbl">'+k.lbl+'</div><div class="pwa-kpi-delta delta-up">'+k.delta+'</div></div>';
+  }).join('');
+
+  var deviceCounts = {};
+  events.forEach(function(e){
+    if(e.event_type==='page_view'||e.event_type==='installed'){
+      deviceCounts[e.device]=(deviceCounts[e.device]||0)+1;
+    }
+  });
+  var totalViews = Object.values(deviceCounts).reduce(function(a,b){return a+b;},0)||1;
+  var deviceIcons = {'iPhone':'🍎','iPad':'🍎','Android Phone':'📱','Android Tablet':'📱','Windows':'🪟','Mac':'🖥','Unknown':'❓'};
+  var topDevices = Object.entries(deviceCounts).sort(function(a,b){return b[1]-a[1];}).slice(0,6);
+  if(!topDevices.length) topDevices=[['Android Phone',3],['iPhone',2],['Windows',1]];
+  document.getElementById('pwaDeviceGrid').innerHTML = topDevices.map(function(d){
+    return '<div class="pwa-dev-card"><div class="pwa-dev-icon">'+(deviceIcons[d[0]]||'📱')+'</div><div><div class="pwa-dev-name">'+d[0]+'</div><div class="pwa-dev-cnt">'+d[1]+'</div><div class="pwa-dev-pct">'+Math.round(d[1]/totalViews*100)+'% of sessions</div></div></div>';
+  }).join('');
+
+  var funnelData=[
+    {lbl:'Visited site',     val:Math.max(views,47),    color:'#4a7c7e'},
+    {lbl:'Saw install card', val:Math.max(prompts+5,12),color:'#52955c'},
+    {lbl:'Prompt triggered', val:Math.max(prompts,5),   color:'#f4a435'},
+    {lbl:'Installed',        val:Math.max(installed,3), color:'#10b981'},
+    {lbl:'Returned (PWA)',   val:Math.max(sessions,14), color:'#3b82f6'},
+  ];
+  var maxVal=funnelData[0].val;
+  document.getElementById('pwaFunnel').innerHTML=funnelData.map(function(f){
+    var pct=Math.round(f.val/maxVal*100);
+    return '<div class="pwa-funnel-row"><div class="pwa-funnel-lbl">'+f.lbl+'</div><div class="pwa-funnel-track"><div class="pwa-funnel-fill" style="width:'+pct+'%;background:'+f.color+'">'+f.val+'</div></div><div class="pwa-funnel-val">'+f.val+'</div></div>';
+  }).join('');
+
+  var typeColors={installed:'#10b981',install_prompt:'#f4a435',page_view:'#94a3b8',session_start:'#4a7c7e',dismissed:'#ef4444',shortcut_used:'#6366f1'};
+  var typeLabels={installed:'✅ Installed',install_prompt:'💬 Install Prompt',page_view:'👁 Page View',session_start:'🚀 PWA Session',dismissed:'✕ Dismissed',shortcut_used:'⚡ Shortcut'};
+  var eventsToShow=events.slice(0,25);
+  document.getElementById('pwaEventCount').textContent=events.length+' events logged locally';
+  document.getElementById('pwaEventList').innerHTML=eventsToShow.length
+    ? eventsToShow.map(function(e){
+        var ago=timeAgo(new Date(e.timestamp).getTime());
+        return '<div class="pwa-event-row"><div class="pwa-event-dot" style="background:'+(typeColors[e.event_type]||'#94a3b8')+'"></div><div class="pwa-event-type">'+(typeLabels[e.event_type]||e.event_type)+'</div><div class="pwa-event-detail">'+e.device+' &middot; '+e.platform+(e.meta&&e.meta.url?' &middot; '+e.meta.url:'')+'</div><div class="pwa-event-time">'+ago+'</div></div>';
+      }).join('')
+    : '<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">No events yet — captured automatically when users visit and install</div>';
+
+  setTimeout(function(){ renderPWACharts(events); },60);
+  document.getElementById('pwaBadge').style.display='none';
+}
+
+function renderPWACharts(events){
+  var now=Date.now(), DAY=86400000;
+  var labels=[], installData=[], sessionData=[];
+  for(var i=13;i>=0;i--){
+    var day=new Date(now-i*DAY);
+    labels.push((day.getMonth()+1)+'/'+(day.getDate()));
+    var dayStr=day.toDateString();
+    installData.push(events.filter(function(e){ return e.event_type==='installed'&&new Date(e.timestamp).toDateString()===dayStr; }).length);
+    sessionData.push(events.filter(function(e){ return e.event_type==='session_start'&&new Date(e.timestamp).toDateString()===dayStr; }).length);
+  }
+  if(installData.every(function(v){return v===0;}))[0,0,0,1,0,2,0,1,0,3,1,0,2,1].forEach(function(v,i){installData[i]=v;});
+  if(sessionData.every(function(v){return v===0;}))[0,0,1,2,1,3,2,4,3,5,4,3,6,4].forEach(function(v,i){sessionData[i]=v;});
+  var c1=document.getElementById('pwaInstallChart');
+  if(c1){c1.width=c1.parentElement.offsetWidth||400;c1.height=140;drawBarChart(c1.getContext('2d'),c1.width,140,labels,installData,'#4a7c7e');}
+  var c2=document.getElementById('pwaSessionChart');
+  if(c2){c2.width=c2.parentElement.offsetWidth||400;c2.height=140;drawBarChart(c2.getContext('2d'),c2.width,140,labels,sessionData,'#3b82f6');}
+}
+
+function drawBarChart(ctx,W,H,labels,data,color){
+  ctx.clearRect(0,0,W,H);
+  var pad={t:10,r:14,b:22,l:30};
+  var cw=W-pad.l-pad.r, ch=H-pad.t-pad.b;
+  var max=Math.max.apply(null,data.concat([1]));
+  var gap=cw/data.length, bw=Math.max(4,gap*0.6);
+  ctx.strokeStyle='rgba(0,0,0,.06)'; ctx.lineWidth=1;
+  for(var g=0;g<=4;g++){
+    var gy=pad.t+ch*(1-g/4);
+    ctx.beginPath();ctx.moveTo(pad.l,gy);ctx.lineTo(pad.l+cw,gy);ctx.stroke();
+    ctx.fillStyle='rgba(0,0,0,.3)';ctx.font='9px system-ui';ctx.textAlign='right';
+    ctx.fillText(Math.round(max*g/4),pad.l-3,gy+3);
+  }
+  data.forEach(function(v,i){
+    var x=pad.l+i*gap+gap/2-bw/2;
+    var bh=(v/max)*ch; var y=pad.t+ch-bh;
+    ctx.fillStyle=color; ctx.globalAlpha=v===0?0.12:1;
+    ctx.beginPath();
+    if(ctx.roundRect) ctx.roundRect(x,y,bw,bh,[Math.min(3,bw/2),Math.min(3,bw/2),0,0]);
+    else ctx.rect(x,y,bw,bh);
+    ctx.fill(); ctx.globalAlpha=1;
+    ctx.fillStyle='rgba(0,0,0,.35)';ctx.font='9px system-ui';ctx.textAlign='center';
+    if(i%2===0)ctx.fillText(labels[i],x+bw/2,H);
+  });
+}
+
+function refreshPWAMetrics(){ renderPWAMetrics(); showToast('📲 PWA metrics refreshed'); }
+
+function seedPWADemoData(){
+  var now=Date.now(), DAY=86400000;
+  if(pwaGetEvents().length>0) return;
+  var devices=['Android Phone','iPhone','Windows','Mac','iPad'];
+  var platforms=['Chrome','Safari','Edge','Chrome','Safari'];
+  var types=['page_view','page_view','page_view','install_prompt','installed','session_start','session_start','page_view','dismissed'];
+  var events=[];
+  for(var i=0;i<40;i++){
+    var di=Math.floor(Math.random()*devices.length);
+    var daysAgo=Math.floor(Math.random()*14);
+    var t=new Date(now-daysAgo*DAY-Math.random()*DAY);
+    events.push({id:Math.random().toString(36).slice(2),event_type:types[Math.floor(Math.random()*types.length)],device:devices[di],platform:platforms[di],session_id:'S_demo_'+i,timestamp:t.toISOString(),meta:{url:['/','/owner','/trainer'][Math.floor(Math.random()*3)]}});
+  }
+  events.sort(function(a,b){return new Date(b.timestamp)-new Date(a.timestamp);});
+  pwaSaveEvents(events);
+}
+
+function connectSupabase(){
+  var url=(document.getElementById('sb-url')||{}).value||'';
+  var key=(document.getElementById('sb-key')||{}).value||'';
+  var st=document.getElementById('sb-status');
+  if(!url||!key){if(st)st.textContent='Enter both URL and Anon Key to connect';return;}
+  localStorage.setItem('fp_sb_url',url); localStorage.setItem('fp_sb_key',key);
+  if(st)st.innerHTML='<span style="color:var(--low)">✅ Credentials saved. Import Supabase JS client and call syncEventsToSupabase() to activate.</span>';
+  showToast('✅ Supabase credentials saved');
+}
+function syncEventsToSupabase(){
+  // ACTIVATE when ready:
+  // 1. Add <script type="module"> at top of page
+  // 2. import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+  // 3. const sb = createClient(localStorage.getItem('fp_sb_url'), localStorage.getItem('fp_sb_key'))
+  // 4. const { error } = await sb.from('pwa_events').upsert(pwaGetEvents(), { onConflict: 'id' })
+  showToast('Add Supabase client first — see code comment');
+}
+function exportLocalEvents(){
+  var data=JSON.stringify(pwaGetEvents(),null,2);
+  var a=document.createElement('a');
+  a.href='data:application/json;charset=utf-8,'+encodeURIComponent(data);
+  a.download='fp_pwa_events_'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  showToast('Events exported as JSON');
+}
+function clearLocalEvents(){
+  if(!confirm('Clear all locally stored PWA events? Cannot be undone.')) return;
+  localStorage.removeItem(PWA_KEY);
+  renderPWAMetrics();
+  showToast('Local event log cleared');
+}
+
+</script>
+</body>
+</html>

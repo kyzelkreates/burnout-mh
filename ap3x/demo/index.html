@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<meta name="description" content="Recharge — Burnout Recovery &amp; Energy Restoration Platform — AI-Assisted Recovery Intelligence PWA"/>
+<title>Recharge — Burnout Recovery &amp; Energy Restoration Platform</title>
+<style>
+:root{
+  --bg:#f4f7f6;--surface:#fff;--surface2:#eef4f4;--border:#c8dada;
+  --primary:#4a7c7e;--primary-d:#3a6264;--accent:#f4a435;--accent-d:#d4891a;
+  --text:#1a2e2e;--muted:#607878;--light:#8fa0a0;
+  --r:14px;--rs:9px;--shadow:0 4px 24px rgba(74,124,126,.12);--t:.2s ease;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;line-height:1.6}
+a{color:inherit;text-decoration:none}
+
+/* ── Nav ── */
+.navbar{display:flex;align-items:center;justify-content:space-between;padding:16px 32px;background:var(--surface);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;box-shadow:0 1px 8px rgba(74,124,126,.06)}
+.nav-logo{display:flex;align-items:center;gap:9px;font-size:17px;font-weight:900;color:var(--primary);letter-spacing:-0.5px}
+.nav-logo span{color:var(--accent)}
+.nav-links{display:flex;gap:8px;align-items:center}
+.nav-link{padding:8px 18px;border-radius:var(--rs);font-size:13px;font-weight:600;cursor:pointer;text-decoration:none;transition:all var(--t);border:none}
+.nav-link.outline{border:2px solid var(--border);background:transparent;color:var(--muted)}
+.nav-link.outline:hover{border-color:var(--primary);color:var(--primary)}
+.nav-link.user-btn{background:var(--accent);color:#fff}
+.nav-link.user-btn:hover{background:var(--accent-d)}
+.nav-link.guide-btn{background:var(--primary);color:#fff}
+.nav-link.guide-btn:hover{background:var(--primary-d)}
+
+/* ── Hero ── */
+.hero{padding:90px 24px 70px;text-align:center;max-width:780px;margin:0 auto}
+.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1.5px solid var(--border);border-radius:99px;padding:6px 18px;font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:28px}
+.hero-eyebrow-dot{width:7px;height:7px;border-radius:50%;background:var(--primary);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
+.hero-title{font-size:52px;font-weight:900;color:var(--text);line-height:1.06;margin-bottom:22px;letter-spacing:-2.5px}
+.hero-title .hl{color:var(--primary)}
+.hero-title .hl2{color:var(--accent)}
+.hero-sub{font-size:19px;color:var(--muted);max-width:580px;margin:0 auto 48px;line-height:1.65}
+.hero-cta{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:52px}
+.cta-btn{padding:15px 30px;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all var(--t);border:none;display:inline-flex;align-items:center;gap:8px}
+.cta-btn.primary{background:var(--primary);color:#fff;box-shadow:0 6px 20px rgba(74,124,126,.3)}
+.cta-btn.primary:hover{background:var(--primary-d);transform:translateY(-2px);box-shadow:0 10px 28px rgba(74,124,126,.36)}
+.cta-btn.accent{background:var(--accent);color:#fff;box-shadow:0 6px 20px rgba(244,164,53,.3)}
+.cta-btn.accent:hover{background:var(--accent-d);transform:translateY(-2px)}
+.cta-btn.outline{background:transparent;border:2px solid var(--border);color:var(--muted)}
+.cta-btn.outline:hover{border-color:var(--primary);color:var(--primary)}
+.hero-note{font-size:12px;color:var(--light);margin-top:-36px;margin-bottom:52px}
+
+/* ── Stats strip ── */
+.stats-strip{background:var(--primary);padding:28px 24px}
+.stats-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:24px;text-align:center}
+.stat-item{color:#fff}
+.stat-num{font-size:36px;font-weight:900;letter-spacing:-1.5px;color:#fff}
+.stat-num span{color:var(--accent)}
+.stat-lbl{font-size:12px;opacity:.75;text-transform:uppercase;letter-spacing:.08em;font-weight:600;margin-top:2px}
+
+/* ── Demo buttons ── */
+.demo-section{max-width:980px;margin:0 auto;padding:64px 24px}
+.section-eyebrow{font-size:12px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.1em;margin-bottom:10px}
+.section-title-lg{font-size:34px;font-weight:900;letter-spacing:-1.2px;margin-bottom:10px}
+.section-sub-lg{font-size:16px;color:var(--muted);max-width:560px;line-height:1.65;margin-bottom:40px}
+.demo-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px}
+.demo-card{border-radius:18px;overflow:hidden;box-shadow:var(--shadow);transition:all var(--t);text-decoration:none;display:flex;flex-direction:column}
+.demo-card:hover{transform:translateY(-4px);box-shadow:0 12px 40px rgba(74,124,126,.2)}
+.dc-header{padding:28px 24px 22px;position:relative;overflow:hidden}
+.dc-header::after{content:'';position:absolute;bottom:-20px;right:-20px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.1)}
+.dc-icon{font-size:36px;margin-bottom:10px;position:relative;z-index:1}
+.dc-title{font-size:18px;font-weight:800;color:#fff;position:relative;z-index:1}
+.dc-sub{font-size:12px;color:rgba(255,255,255,.75);margin-top:3px;position:relative;z-index:1}
+.dc-user .dc-header{background:linear-gradient(135deg,#d4891a,#f4a435)}
+.dc-guide .dc-header{background:linear-gradient(135deg,#1a3d40,#4a7c7e)}
+.dc-body{padding:20px 22px;background:var(--surface);flex:1}
+.dc-features{list-style:none;display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.dc-features li{font-size:13px;color:var(--muted);display:flex;align-items:flex-start;gap:8px}
+.dc-features li::before{content:"✓";font-weight:700;color:var(--accent);flex-shrink:0;margin-top:1px}
+.dc-open-btn{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-radius:var(--rs);font-size:14px;font-weight:700;transition:all var(--t);border:none;cursor:pointer;width:100%}
+.dc-open-btn.user-btn{background:var(--accent);color:#fff}
+.dc-open-btn.user-btn:hover{background:var(--accent-d)}
+.dc-open-btn.guide-btn{background:var(--primary);color:#fff}
+.dc-open-btn.guide-btn:hover{background:var(--primary-d)}
+.btn-arr{transition:transform var(--t)}
+.dc-open-btn:hover .btn-arr{transform:translateX(4px)}
+
+/* ── Feature strip ── */
+.features-section{background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:56px 24px}
+.features-inner{max-width:980px;margin:0 auto}
+.feature-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:28px;margin-top:40px}
+.feature-item{text-align:center;padding:8px}
+.feature-icon{font-size:32px;margin-bottom:10px}
+.feature-name{font-size:14px;font-weight:700;margin-bottom:4px}
+.feature-desc{font-size:13px;color:var(--muted);line-height:1.5}
+
+/* ── WHY ── */
+.why-section{max-width:980px;margin:0 auto;padding:72px 24px}
+.two-col-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.why-points{display:flex;flex-direction:column;gap:18px;margin-top:20px}
+.why-point{display:flex;gap:14px;align-items:flex-start}
+.wp-icon{font-size:24px;flex-shrink:0;width:44px;height:44px;border-radius:12px;background:var(--surface2);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center}
+.wp-title{font-size:14px;font-weight:700;margin-bottom:3px}
+.wp-desc{font-size:13px;color:var(--muted);line-height:1.5}
+.market-card{background:linear-gradient(135deg,#1a3d40,#3a6264);border-radius:20px;padding:28px;color:#fff}
+.mc-stat{margin-bottom:20px}
+.mc-num{font-size:42px;font-weight:900;color:var(--accent);letter-spacing:-2px;line-height:1}
+.mc-lbl{font-size:13px;opacity:.8;margin-top:4px}
+.mc-divider{height:1px;background:rgba(255,255,255,.12);margin:20px 0}
+.mc-quote{font-size:14px;opacity:.8;line-height:1.6;font-style:italic}
+.mc-source{font-size:11px;opacity:.5;margin-top:8px}
+
+/* ── TECH ── */
+.tech-section{background:var(--surface);border-top:1px solid var(--border);padding:72px 24px}
+.tech-inner{max-width:980px;margin:0 auto}
+.tech-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.tech-card{background:var(--bg);border:1.5px solid var(--border);border-radius:var(--r);padding:22px;transition:all var(--t)}
+.tech-card:hover{border-color:var(--primary);box-shadow:0 4px 20px rgba(74,124,126,.1)}
+.tc-icon{font-size:26px;margin-bottom:12px}
+.tc-title{font-size:14px;font-weight:700;margin-bottom:6px}
+.tc-desc{font-size:12px;color:var(--muted);line-height:1.55}
+.tech-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.tech-tag{padding:2px 9px;border-radius:99px;font-size:10px;font-weight:600;background:var(--surface2);color:var(--primary);border:1px solid var(--border)}
+
+/* ── ROADMAP ── */
+.roadmap-section{padding:72px 24px;background:var(--bg)}
+.roadmap-inner{max-width:980px;margin:0 auto}
+.roadmap-timeline{display:flex;flex-direction:column;gap:16px;margin-top:48px}
+.roadmap-item{border:1.5px solid var(--border);border-radius:var(--r);padding:22px;background:var(--surface);transition:all var(--t)}
+.roadmap-item.active{border-color:var(--primary);box-shadow:0 4px 16px rgba(74,124,126,.1)}
+.roadmap-item.future{opacity:.75}
+.ri-phase{font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px}
+.ri-badge{background:var(--primary);color:#fff;border-radius:99px;padding:2px 10px;font-size:10px;margin-left:8px}
+.ri-title{font-size:18px;font-weight:800;margin-bottom:6px;letter-spacing:-.3px}
+.ri-desc{font-size:13px;color:var(--muted);line-height:1.6;margin-bottom:10px}
+.ri-tags{display:flex;flex-wrap:wrap;gap:6px}
+.ri-tag{padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+
+/* ── CTA FOOTER ── */
+.investor-cta{background:linear-gradient(135deg,#0d2226,#1f4a50);padding:72px 24px;text-align:center}
+.ic-inner{max-width:720px;margin:0 auto}
+.ic-eyebrow{font-size:12px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
+.ic-title{font-size:38px;font-weight:900;color:#fff;letter-spacing:-1.5px;line-height:1.08;margin-bottom:16px}
+.ic-sub{font-size:16px;color:rgba(255,255,255,.7);line-height:1.65;max-width:580px;margin:0 auto 36px}
+.ic-btns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:40px}
+.ic-btn{padding:15px 32px;border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;text-decoration:none;transition:all var(--t)}
+.ic-btn.primary{background:var(--accent);color:#fff}
+.ic-btn.primary:hover{background:var(--accent-d);transform:translateY(-2px)}
+.ic-btn.ghost{background:transparent;border:2px solid rgba(255,255,255,.3);color:#fff}
+.ic-btn.ghost:hover{border-color:#fff}
+.ic-stats{display:flex;gap:40px;justify-content:center;flex-wrap:wrap}
+.ic-stat-val{font-size:32px;font-weight:900;color:var(--accent);letter-spacing:-1px}
+.ic-stat-lbl{font-size:12px;color:rgba(255,255,255,.55);text-transform:uppercase;letter-spacing:.08em;margin-top:2px}
+
+@media(max-width:640px){
+  .hero-title{font-size:34px}
+  .demo-grid{grid-template-columns:1fr}
+  .tech-grid{grid-template-columns:1fr}
+  .two-col-grid{grid-template-columns:1fr}
+  .stats-inner{grid-template-columns:repeat(2,1fr)}
+  .navbar{padding:14px 18px}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="navbar">
+  <div class="nav-logo">🌿 Recharge<span> Recovery</span></div>
+  <div class="nav-links">
+    <a href="../companion/index.html" class="nav-link outline">My Recovery</a>
+    <a href="../companion/index.html" class="nav-link user-btn">Open App →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-eyebrow">
+    <span class="hero-eyebrow-dot"></span>
+    Burnout Recovery Platform — Now Live
+  </div>
+  <h1 class="hero-title">
+    Restore Your <span class="hl">Energy.</span><br>
+    Reset From <span class="hl2">Burnout.</span><br>
+    Recover Fully.
+  </h1>
+  <p class="hero-sub">A structured, self-guided progressive web app for burnout recovery — combining evidence-informed recovery programs, daily energy check-ins, and restorative practices into one calm, supportive platform.</p>
+  <div class="hero-cta">
+    <a href="../companion/index.html" class="cta-btn primary">🌿 Start Your Recovery →</a>
+    <a href="../companion/course-picker.html" class="cta-btn accent">🎓 View Programs</a>
+    <a href="../companion/enrichment.html" class="cta-btn outline">🧘 Restorative Practices</a>
+  </div>
+  <p class="hero-note">Free to use · No account required · Works offline</p>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div class="stat-item">
+      <div class="stat-num">1 in <span>4</span></div>
+      <div class="stat-lbl">Adults experience burnout</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span>6–18</span></div>
+      <div class="stat-lbl">Months avg recovery time</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span>5</span></div>
+      <div class="stat-lbl">Structured recovery phases</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num"><span>10+</span></div>
+      <div class="stat-lbl">Restorative practices</div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMO PORTALS -->
+<section class="demo-section">
+  <div class="section-eyebrow">Live Demo Portals</div>
+  <h2 class="section-title-lg">Everything You Need to Recover.</h2>
+  <p class="section-sub-lg">Explore the full recovery platform — daily check-ins, structured programs, restorative practices, and your personal AI recovery guide.</p>
+  <div class="demo-grid">
+    <a href="../companion/index.html" class="demo-card dc-user" style="text-decoration:none">
+      <div class="dc-header">
+        <div class="dc-icon">🌿</div>
+        <div class="dc-title">Recovery Dashboard</div>
+        <div class="dc-sub">Your personal burnout recovery companion</div>
+      </div>
+      <div class="dc-body">
+        <ul class="dc-features">
+          <li>Daily energy check-ins with mood tracking</li>
+          <li>Structured 5-phase recovery program</li>
+          <li>Breathwork &amp; grounding practice timer</li>
+          <li>Recovery progress tracking &amp; milestones</li>
+          <li>Offline-capable progressive web app</li>
+        </ul>
+        <button class="dc-open-btn user-btn">Open Recovery App <span class="btn-arr">→</span></button>
+      </div>
+    </a>
+    <a href="../companion/coach.html" class="demo-card dc-guide" style="text-decoration:none">
+      <div class="dc-header">
+        <div class="dc-icon">🤖</div>
+        <div class="dc-title">AI Recovery Guide</div>
+        <div class="dc-sub">Evidence-informed support, always available</div>
+      </div>
+      <div class="dc-body">
+        <ul class="dc-features">
+          <li>Answers common burnout recovery questions</li>
+          <li>Guided by evidence-informed frameworks</li>
+          <li>Quick-topic buttons for immediate help</li>
+          <li>Non-clinical, supportive tone</li>
+          <li>Personalised to your check-in history</li>
+        </ul>
+        <button class="dc-open-btn guide-btn">Open Recovery Guide <span class="btn-arr">→</span></button>
+      </div>
+    </a>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features-section">
+  <div class="features-inner">
+    <div class="section-eyebrow" style="text-align:center">Platform Features</div>
+    <h2 class="section-title-lg" style="text-align:center">Calm. Structured. Supportive.</h2>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="feature-icon">📋</div>
+        <div class="feature-name">Energy Check-Ins</div>
+        <div class="feature-desc">Daily energy ratings with recovery practice tracking and personalised feedback</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🎓</div>
+        <div class="feature-name">Recovery Programs</div>
+        <div class="feature-desc">5-phase structured recovery pathway from foundations through to long-term energy mastery</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🌬️</div>
+        <div class="feature-name">Breathwork Timer</div>
+        <div class="feature-desc">Guided breathwork, grounding, and body scan practices with visual breath animation</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📈</div>
+        <div class="feature-name">Recovery Tracking</div>
+        <div class="feature-desc">Visual energy trend charts, milestone unlocks, and streak tracking across your recovery</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">🤖</div>
+        <div class="feature-name">AI Recovery Guide</div>
+        <div class="feature-desc">Answers your recovery questions with evidence-informed, non-clinical, supportive guidance</div>
+      </div>
+      <div class="feature-item">
+        <div class="feature-icon">📱</div>
+        <div class="feature-name">PWA — Works Offline</div>
+        <div class="feature-desc">Installable on any device, works offline, no app store needed — recovery available anywhere</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY -->
+<section class="why-section">
+  <div class="two-col-grid">
+    <div>
+      <div class="section-eyebrow">Why Recharge</div>
+      <h2 class="section-title-lg">Built Around How Recovery Actually Works.</h2>
+      <div class="why-points">
+        <div class="why-point">
+          <div class="wp-icon">🌱</div>
+          <div>
+            <div class="wp-title">Structured, not overwhelming</div>
+            <div class="wp-desc">Recovery is broken into small, manageable phases that build on each other — never asking more than you have to give.</div>
+          </div>
+        </div>
+        <div class="why-point">
+          <div class="wp-icon">🧘</div>
+          <div>
+            <div class="wp-title">Nervous system aware</div>
+            <div class="wp-desc">Every practice is designed around the stress-recovery cycle and nervous system regulation — not just mindset or productivity hacks.</div>
+          </div>
+        </div>
+        <div class="why-point">
+          <div class="wp-icon">🔋</div>
+          <div>
+            <div class="wp-title">Energy-first framework</div>
+            <div class="wp-desc">The platform tracks and restores energy as the primary metric — not productivity, not output, not achievement.</div>
+          </div>
+        </div>
+        <div class="why-point">
+          <div class="wp-icon">💙</div>
+          <div>
+            <div class="wp-title">Non-clinical &amp; self-guided</div>
+            <div class="wp-desc">No diagnosis required. No clinical language. Designed to be used independently, at your own pace, with gentle support.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="market-card">
+      <div class="mc-stat">
+        <div class="mc-num">£322B</div>
+        <div class="mc-lbl">Annual cost of workplace burnout globally (WHO)</div>
+      </div>
+      <div class="mc-divider"></div>
+      <div class="mc-stat">
+        <div class="mc-num">77%</div>
+        <div class="mc-lbl">Of workers have experienced burnout at their current job</div>
+      </div>
+      <div class="mc-divider"></div>
+      <div class="mc-quote">"Burnout is not just tiredness. It is a complete depletion of the resources that make sustained functioning possible. Recovery requires structure, not willpower."</div>
+      <div class="mc-source">— Adapted from Maslach &amp; Leiter, 2016</div>
+    </div>
+  </div>
+</section>
+
+<!-- TECH -->
+<section class="tech-section">
+  <div class="tech-inner">
+    <div class="section-eyebrow" style="text-align:center">Technical Architecture</div>
+    <h2 class="section-title-lg" style="text-align:center">Lightweight. Offline-First. Private.</h2>
+    <div class="tech-grid">
+      <div class="tech-card">
+        <div class="tc-icon">📱</div>
+        <div class="tc-title">Progressive Web App</div>
+        <div class="tc-desc">Installable on any device. Service worker caching for fully offline operation. No app store, no account required.</div>
+        <div class="tech-tags"><span class="tech-tag">PWA</span><span class="tech-tag">Service Worker</span><span class="tech-tag">Offline-first</span></div>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">🔒</div>
+        <div class="tc-title">Local-First Privacy</div>
+        <div class="tc-desc">All recovery data stored locally in localStorage. No server, no account, no tracking. Your recovery data stays on your device.</div>
+        <div class="tech-tags"><span class="tech-tag">localStorage</span><span class="tech-tag">Zero tracking</span><span class="tech-tag">Private</span></div>
+      </div>
+      <div class="tech-card">
+        <div class="tc-icon">🧩</div>
+        <div class="tc-title">Single Source of Truth</div>
+        <div class="tc-desc">All content flows from one central data file — curriculum, practices, tips, AI responses — no duplicated logic anywhere.</div>
+        <div class="tech-tags"><span class="tech-tag">SSOT</span><span class="tech-tag">Vanilla JS</span><span class="tech-tag">No dependencies</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROADMAP -->
+<section class="roadmap-section">
+  <div class="roadmap-inner">
+    <div style="text-align:center;max-width:680px;margin:0 auto">
+      <div class="section-eyebrow">Recovery Roadmap</div>
+      <h2 class="section-title-lg">Five Phases.<br>Complete Recovery.</h2>
+    </div>
+    <div class="roadmap-timeline">
+      <div class="roadmap-item active">
+        <div class="ri-phase">Phase 1 — Foundations of Recovery <span class="ri-badge">✓ Available</span></div>
+        <div class="ri-title">Understanding Burnout &amp; Your Nervous System</div>
+        <div class="ri-desc">Burnout basics, the stress response cycle, attention restoration, rest vs. recovery, and nervous system regulation fundamentals.</div>
+        <div class="ri-tags"><span class="ri-tag">Burnout 101</span><span class="ri-tag">Nervous System</span><span class="ri-tag">Rest Science</span></div>
+      </div>
+      <div class="roadmap-item active">
+        <div class="ri-phase">Phase 2 — Energy Restoration <span class="ri-badge">✓ Available</span></div>
+        <div class="ri-title">Energy Audit, Boundaries &amp; Pacing</div>
+        <div class="ri-desc">Identifying energy drains and restorers, boundary-setting skills, micro-recovery habits, pacing strategies, and sleep optimisation for burnout.</div>
+        <div class="ri-tags"><span class="ri-tag">Energy Audit</span><span class="ri-tag">Boundaries</span><span class="ri-tag">Sleep</span><span class="ri-tag">Pacing</span></div>
+      </div>
+      <div class="roadmap-item active">
+        <div class="ri-phase">Phase 3 — Stress Resilience <span class="ri-badge">✓ Available</span></div>
+        <div class="ri-title">Triggers, Regulation &amp; Cognitive Recovery</div>
+        <div class="ri-desc">Stress trigger mapping, regulated response training, cognitive load reduction, social recovery, and rebuilding self-trust after burnout erosion.</div>
+        <div class="ri-tags"><span class="ri-tag">Triggers</span><span class="ri-tag">Regulation</span><span class="ri-tag">Social Recovery</span></div>
+      </div>
+      <div class="roadmap-item active">
+        <div class="ri-phase">Phase 4 — Sustainable Wellbeing <span class="ri-badge">✓ Available</span></div>
+        <div class="ri-title">Routines, Safe Spaces &amp; Relapse Prevention</div>
+        <div class="ri-desc">Recovery routine architecture, environment optimisation, independent practice building, early warning sign recognition, and calm life design.</div>
+        <div class="ri-tags"><span class="ri-tag">Routines</span><span class="ri-tag">Environment</span><span class="ri-tag">Prevention</span></div>
+      </div>
+      <div class="roadmap-item active">
+        <div class="ri-phase">Phase 5 — Long-Term Energy Mastery <span class="ri-badge">✓ Available</span></div>
+        <div class="ri-title">Joy, Movement, Mindfulness &amp; Long-Term Resilience</div>
+        <div class="ri-desc">Reintroducing joy and purpose, restorative movement, mindfulness foundations, habit reinforcement under pressure, and advanced recovery planning.</div>
+        <div class="ri-tags"><span class="ri-tag">Joy</span><span class="ri-tag">Mindfulness</span><span class="ri-tag">Long-term</span><span class="ri-tag">Mastery</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="investor-cta">
+  <div class="ic-inner">
+    <div class="ic-eyebrow">🌿 Start Your Recovery Today</div>
+    <h2 class="ic-title">You Don't Have to<br>Figure This Out Alone.</h2>
+    <p class="ic-sub">Recharge gives you a structured, evidence-informed pathway through burnout recovery — calm, self-guided, and available whenever you need it.</p>
+    <div class="ic-btns">
+      <a href="../companion/index.html" class="ic-btn primary">🌿 Open Recovery App</a>
+      <a href="../companion/enrichment.html" class="ic-btn ghost">🧘 Restorative Practices</a>
+    </div>
+    <div class="ic-stats">
+      <div>
+        <div class="ic-stat-val">5</div>
+        <div class="ic-stat-lbl">Recovery Phases</div>
+      </div>
+      <div>
+        <div class="ic-stat-val">25+</div>
+        <div class="ic-stat-lbl">Guided Sessions</div>
+      </div>
+      <div>
+        <div class="ic-stat-val">10+</div>
+        <div class="ic-stat-lbl">Restorative Practices</div>
+      </div>
+      <div>
+        <div class="ic-stat-val">0</div>
+        <div class="ic-stat-lbl">Accounts Required</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</body>
+</html>

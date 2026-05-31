@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>🌿 Energy Check-In — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.scale-labels-row { display:flex; justify-content:space-between; font-size:10px; color:var(--muted); margin-bottom:8px; font-weight:600; }
+.scale-track { display:flex; gap:3px; flex-wrap:wrap; justify-content:center; }
+.scale-btn {
+  width:36px; height:36px; border-radius:var(--sm);
+  border:1.5px solid var(--border); background:var(--surface2);
+  font-size:13px; font-weight:700; cursor:pointer;
+  transition:all var(--t); color:var(--text);
+}
+.scale-btn:hover { border-color:var(--primary); background:var(--primary-xl); }
+.scale-btn.selected { background:var(--primary); color:#fff; border-color:var(--primary); transform:scale(1.08); }
+.score-big { font-size:48px; font-weight:900; color:var(--primary); text-align:center; margin:10px 0 3px; letter-spacing:-2px; transition:all var(--t); }
+.score-ctx { text-align:center; font-size:14px; color:var(--muted); font-weight:600; min-height:22px; }
+
+.feedback-card { background:var(--primary-xl); border:1.5px solid var(--border); border-radius:var(--r); padding:18px; animation:slideUp .3s ease; }
+.feedback-badge { display:inline-block; padding:5px 16px; border-radius:99px; font-size:13px; font-weight:700; margin-bottom:10px; }
+.feedback-msg { font-size:14px; color:var(--text); line-height:1.55; margin-bottom:8px; }
+.feedback-tip-txt { font-size:13px; color:var(--muted); line-height:1.5; margin-bottom:14px; }
+.feedback-actions { display:flex; gap:8px; flex-wrap:wrap; }
+</style>
+</head>
+<body class="theme-light" data-page="log">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./index.html" class="back-btn">← Home</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in">
+  <h2 class="page-title">🌿 Energy Check-In</h2>
+  <p class="page-sub">Record how you're feeling — your guide sees this in real time</p>
+
+  <div id="log-form">
+    <div class="card">
+      <div class="card-label">How is your energy right now? <span class="hint-text">0 = fully depleted · 10 = fully restored</span></div>
+      <div class="scale-labels-row"><span>Depleted</span><span>Moderate</span><span>Restored</span></div>
+      <div class="scale-track" id="score-scale"></div>
+      <div class="score-big" id="score-display">–</div>
+      <div class="score-ctx" id="score-ctx"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Recovery practices used today <span class="hint-text">(select all that apply)</span></div>
+      <div class="tag-group" id="skills-tags">
+        <button class="tag" data-v="Breathwork">Breathwork 🌬️</button>
+        <button class="tag" data-v="Mindfulness">Mindfulness 🧘</button>
+        <button class="tag" data-v="Journalling">Journalling 📓</button>
+        <button class="tag" data-v="Rest">Rest 😴</button>
+        <button class="tag" data-v="Social recovery">Social recovery 💬</button>
+        <button class="tag" data-v="Boundaries">Boundaries 🚧</button>
+        <button class="tag" data-v="Movement">Movement 🚶</button>
+        <button class="tag" data-v="Nature time">Nature time 🌳</button>
+        <button class="tag" data-v="Creative activity">Creative activity 🎨</button>
+        <button class="tag" data-v="Grounding">Grounding 🌿</button>
+        <button class="tag" data-v="Sleep routine">Sleep routine 🌙</button>
+        <button class="tag" data-v="Nutrition">Nutrition 🥗</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">🧠 How is your mental state? <span class="hint-text">(select all that apply)</span></div>
+      <div class="tag-group" id="mood-tags">
+        <button class="tag" data-v="Calm & settled">Calm &amp; settled 😌</button>
+        <button class="tag" data-v="Hopeful">Hopeful 🌱</button>
+        <button class="tag" data-v="Focused">Focused 🎯</button>
+        <button class="tag" data-v="Anxious">Anxious 😟</button>
+        <button class="tag" data-v="Overwhelmed">Overwhelmed 🌊</button>
+        <button class="tag" data-v="Numb or flat">Numb or flat 😶</button>
+        <button class="tag" data-v="Irritable">Irritable 😤</button>
+        <button class="tag" data-v="Tired but okay">Tired but okay 😪</button>
+        <button class="tag" data-v="Disconnected">Disconnected 🌫️</button>
+        <button class="tag" data-v="Present & grounded">Present &amp; grounded 🌿</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Check-in duration (minutes)</div>
+      <input type="number" id="duration" class="form-input" min="1" max="120" placeholder="e.g. 10"/>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Notes <span class="hint-text">(optional — what came up today?)</span></div>
+      <textarea id="session-note" class="form-textarea" placeholder="What did you notice? Any breakthroughs, struggles or observations…" rows="3"></textarea>
+    </div>
+
+    <button class="btn-primary" id="submit-btn">Save Check-In ✓</button>
+  </div>
+
+  <div id="feedback-card" class="feedback-card" style="display:none">
+    <div id="fb-badge" class="feedback-badge"></div>
+    <p id="fb-msg" class="feedback-msg"></p>
+    <p id="fb-tip" class="feedback-tip-txt"></p>
+    <div class="feedback-actions">
+      <a href="./enrichment.html" class="btn-sm-outline">🧘 Restore</a>
+      <a href="./courses.html"    class="btn-sm-outline">🎓 Programs</a>
+      <button class="btn-sm-accent" onclick="resetForm()">↩ New Check-In</button>
+    </div>
+  </div>
+
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+let selectedScore = null;
+let selectedSkills = [];
+let selectedMood = [];
+
+(function buildScale() {
+  const container = $('score-scale');
+  for (let i=0;i<=10;i++) {
+    const btn = document.createElement('button');
+    btn.className = 'scale-btn'; btn.textContent = i;
+    btn.addEventListener('click', () => {
+      qsa('#score-scale .scale-btn').forEach(b=>b.classList.remove('selected'));
+      btn.classList.add('selected');
+      selectedScore = i;
+      $('score-display').textContent = i;
+      const ctx = {0:'🌑 Fully depleted',1:'🌑 Very low energy',2:'🌒 Very low',3:'🌒 Low energy',4:'🌓 Below baseline',5:'🌓 Moderate',6:'🌔 Building slowly',7:'🌔 Getting there',8:'🌕 Good energy',9:'🌕 Strong energy',10:'🌟 Fully restored'};
+      $('score-ctx').textContent = ctx[i] || '';
+    });
+    container.appendChild(btn);
+  }
+})();
+
+qsa('#skills-tags .tag').forEach(t=>t.addEventListener('click',()=>{ t.classList.toggle('active'); const v=t.getAttribute('data-v'); const i=selectedSkills.indexOf(v); i===-1?selectedSkills.push(v):selectedSkills.splice(i,1); }));
+qsa('#mood-tags .tag').forEach(t=>t.addEventListener('click',()=>{ t.classList.toggle('active'); const v=t.getAttribute('data-v'); const i=selectedMood.indexOf(v); i===-1?selectedMood.push(v):selectedMood.splice(i,1); }));
+
+$('submit-btn').addEventListener('click', () => {
+  if (selectedScore===null) { showToast('⚠️ Please rate your energy level first'); return; }
+  const s = selectedScore;
+  const lvl = s>=7?'high':s>=4?'mid':'low';
+  const msgs = {
+    high:'Wonderful — your energy is restoring. 🌟 These are the moments to notice and protect. Keep building on this momentum gently.',
+    mid:'You\'re moving through it. 🌿 Moderate energy is still forward motion. One small recovery practice now will build on this.',
+    low:'This takes courage to acknowledge. 💙 Low energy days are part of the recovery arc — not a setback. Be gentle with yourself today.',
+  };
+  const tips = {
+    high:'💡 High-energy windows are worth logging — they show your nervous system what restoration feels like.',
+    mid:'💡 A short breathwork or grounding practice now can shift your state noticeably within 5 minutes.',
+    low:'💡 On low days, your only job is basic care: water, rest, one slow breath. That\'s enough.',
+  };
+  const bgs  = {high:'#d1fae5',mid:'#fef3c7',low:'#e0f2fe'};
+  const cols = {high:'#065f46',mid:'#92400e',low:'#0c4a6e'};
+  const txts = {high:'🌟 Strong energy',mid:'🌿 Building steadily',low:'💙 Rest & restore'};
+
+  const badge = $('fb-badge');
+  badge.textContent = txts[lvl]; badge.style.background = bgs[lvl]; badge.style.color = cols[lvl];
+  $('fb-msg').textContent = msgs[lvl];
+  $('fb-tip').textContent = tips[lvl];
+
+  APP.addSession({ date:Date.now(), score:10-s, skills:[...selectedSkills], focus:[...selectedMood], duration:parseInt($('duration').value)||10, note:$('session-note').value.trim() });
+  save('rc_xp', APP.xp+50); save('rc_streak', APP.streak+1);
+  updateXP(); updateStreak();
+
+  $('log-form').style.display = 'none';
+  $('feedback-card').style.display = 'block';
+  showToast('✅ Check-in saved! +50 EP 🔥');
+});
+
+function resetForm() {
+  selectedScore=null; selectedSkills=[]; selectedMood=[];
+  qsa('.scale-btn').forEach(b=>b.classList.remove('selected'));
+  qsa('.tag').forEach(t=>t.classList.remove('active'));
+  $('score-display').textContent='–'; $('score-ctx').textContent='';
+  $('duration').value=''; $('session-note').value='';
+  $('log-form').style.display='block';
+  $('feedback-card').style.display='none';
+}
+</script>
+</body>
+</html>

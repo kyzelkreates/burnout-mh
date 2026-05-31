@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>📈 Recovery Progress — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.milestones-list { display:flex; flex-direction:column; gap:7px; }
+.milestone-row { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:var(--rs); border:1px solid var(--border); background:var(--surface); }
+.milestone-row.unlocked { background:var(--accent-xl); border-color:rgba(244,164,53,.3); }
+.ms-icon { font-size:18px; flex-shrink:0; }
+.ms-label { flex:1; font-size:13px; font-weight:600; }
+.ms-xp { font-size:11px; font-weight:700; color:var(--accent-d); background:var(--accent-xl); border-radius:99px; padding:2px 8px; }
+.ms-lock { font-size:11px; color:var(--muted); }
+.h-item { display:flex; gap:11px; align-items:flex-start; padding:11px 12px; background:var(--surface); border-radius:var(--rs); border:1px solid var(--border); margin-bottom:7px; }
+.h-score { width:40px; height:40px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; }
+.h-meta { flex:1; min-width:0; }
+.h-date { font-size:12px; color:var(--muted); margin-bottom:3px; }
+.h-tags { display:flex; gap:5px; flex-wrap:wrap; margin-bottom:3px; }
+.h-tag { padding:2px 8px; border-radius:99px; font-size:10px; font-weight:600; background:var(--surface2); color:var(--muted); }
+.h-note { font-size:12px; color:var(--muted); line-height:1.4; }
+</style>
+</head>
+<body class="theme-light" data-page="progress">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./index.html" class="back-btn">← Home</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in">
+  <h2 class="page-title">📈 Recovery Progress</h2>
+  <p class="page-sub">Your energy restoration journey</p>
+
+  <div class="stats-row" id="progress-stats"></div>
+
+  <div class="card">
+    <div class="card-label-row">
+      <span class="card-label">Energy Trend</span>
+      <div class="mini-tabs">
+        <button class="mini-tab active" onclick="switchChart('score',this)">Check-Ins</button>
+        <button class="mini-tab" onclick="switchChart('skills',this)">Practices</button>
+      </div>
+    </div>
+    <canvas id="progress-chart" height="140" style="width:100%"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🏅 Recovery Milestones</div>
+    <div id="milestones-list" class="milestones-list"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📋 Check-In History</div>
+    <div id="history-list"></div>
+  </div>
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', render);
+
+function getSessionProgress() {
+  const total = CURRICULUM.reduce((s,m)=>s+m.lessons.length,0);
+  const done  = APP.completedLessons.length;
+  return {total,done,pct:Math.round(done/total*100)};
+}
+
+function render() {
+  const sessions = APP.sessions;
+  const total = sessions.length;
+  const prog = getSessionProgress();
+  const avg = total ? (sessions.reduce((s,c)=>s+(10-c.score),0)/total).toFixed(1) : '0';
+  const r7  = sessions.slice(0,7).reduce((s,c)=>s+(10-c.score),0)/Math.min(7,total||1);
+  const p7  = sessions.slice(7,14);
+  const pAvg = p7.length ? p7.reduce((s,c)=>s+(10-c.score),0)/p7.length : r7;
+  const trend = Math.round((r7-pAvg)/(pAvg||1)*100);
+
+  $('progress-stats').innerHTML = `
+    <div class="stat-card"><div class="stat-val">${avg}</div><div class="stat-lbl">Avg Energy</div></div>
+    <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-lbl">Check-Ins</div></div>
+    <div class="stat-card"><div class="stat-val">🔥 ${APP.streak}</div><div class="stat-lbl">Streak</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:${trend>=0?'var(--low)':'var(--high)'}">${trend>=0?'↑':'↓'}${Math.abs(trend)}%</div><div class="stat-lbl">This Week</div></div>
+    <div class="stat-card"><div class="stat-val">${prog.done}</div><div class="stat-lbl">Sessions Done</div></div>
+    <div class="stat-card"><div class="stat-val">${prog.pct}%</div><div class="stat-lbl">Program</div></div>`;
+
+  const ms = getMilestones();
+  $('milestones-list').innerHTML = ms.map(m=>`
+    <div class="milestone-row ${m.unlocked?'unlocked':''}">
+      <span class="ms-icon">${m.unlocked?m.icon:'🔒'}</span>
+      <span class="ms-label">${m.label}</span>
+      ${m.unlocked?`<span class="ms-xp">+${m.xp} EP</span>`:`<span class="ms-lock">Locked</span>`}
+    </div>`).join('');
+
+  const hist = $('history-list');
+  if (!sessions.length) { hist.innerHTML='<p class="empty-msg">No check-ins yet — log your first one 🌿</p>'; return; }
+  hist.innerHTML = sessions.slice(0,15).map(s=>{
+    const d=new Date(s.date), inv=10-s.score;
+    const bg=inv>=7?'#d1fae5':inv>=4?'#fef3c7':'#e0f2fe';
+    const col=inv>=7?'#065f46':inv>=4?'#92400e':'#0c4a6e';
+    return `<div class="h-item">
+      <div class="h-score" style="background:${bg};color:${col}">${inv}/10</div>
+      <div class="h-meta">
+        <div class="h-date">${d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})} · ${s.duration}min</div>
+        <div class="h-tags">${(s.skills||[]).map(sk=>`<span class="h-tag">${sk}</span>`).join('')}</div>
+        ${s.note?`<div class="h-note">${s.note}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  setTimeout(()=>renderChart('score'), 80);
+}
+
+let chartMode = 'score';
+function switchChart(type, btn) {
+  chartMode = type;
+  qsa('.mini-tab').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderChart(type);
+}
+function renderChart(type) {
+  const slice = APP.sessions.slice(0,14).reverse();
+  const labels = slice.map(s=>{ const d=new Date(s.date); return `${d.getDate()}/${d.getMonth()+1}`; });
+  const data   = type==='skills' ? slice.map(s=>(s.skills||[]).length*20) : slice.map(s=>10-(s.score||5));
+  const color  = type==='skills' ? '#f4a435' : '#4a7c7e';
+  const fill   = type==='skills' ? 'rgba(244,164,53,.13)' : 'rgba(74,124,126,.13)';
+  drawChart($('progress-chart'), labels, data, color, fill, 140);
+}
+</script>
+</body>
+</html>

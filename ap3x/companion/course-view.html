@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>Recovery Program — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+/* ── Program view ── */
+.course-hero{background:linear-gradient(135deg,#1a3d40,#4a7c7e);border-radius:var(--r);padding:20px 18px;color:#fff;margin-bottom:16px}
+.ch-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.7;margin-bottom:6px}
+.ch-title{font-size:20px;font-weight:900;margin-bottom:10px}
+.ch-prog-track{height:8px;background:rgba(255,255,255,.2);border-radius:99px;overflow:hidden;margin-bottom:8px}
+.ch-prog-fill{height:100%;border-radius:99px;background:var(--accent);transition:width .7s ease}
+.ch-stats{display:flex;gap:20px}
+.ch-stat-val{font-size:20px;font-weight:900;color:var(--accent)}
+.ch-stat-lbl{font-size:11px;opacity:.65;margin-top:1px}
+
+/* ── Phase cards ── */
+.module-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);margin-bottom:12px;overflow:hidden;box-shadow:var(--shadow)}
+.module-header{display:flex;align-items:center;gap:12px;padding:14px 15px;cursor:pointer;user-select:none;transition:background var(--t)}
+.module-header:hover{background:var(--surface2)}
+.module-num{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;color:#fff}
+.module-num.complete{background:var(--primary)}
+.module-num.active-m{background:var(--accent)}
+.module-num.locked{background:var(--border2);color:var(--muted)}
+.module-info{flex:1}
+.module-title{font-size:14px;font-weight:700}
+.module-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.module-badge{padding:3px 10px;border-radius:99px;font-size:10px;font-weight:700;flex-shrink:0}
+.module-badge.complete{background:#d1fae5;color:#065f46}
+.module-badge.active-m{background:#fef3c7;color:#92400e}
+.module-badge.locked{background:var(--surface2);color:var(--muted)}
+.module-chevron{font-size:12px;color:var(--muted);transition:transform var(--t);margin-left:4px}
+.module-card.open .module-chevron{transform:rotate(180deg)}
+.module-lessons{display:none;border-top:1px solid var(--border);padding:6px 0}
+.module-card.open .module-lessons{display:block}
+.mod-prog-wrap{padding:0 15px 12px}
+.mod-prog-lbl{font-size:11px;color:var(--muted);margin-bottom:4px;font-weight:600}
+.mod-prog-track{height:6px;background:var(--surface2);border-radius:99px;overflow:hidden}
+.mod-prog-fill{height:100%;border-radius:99px;background:var(--primary);transition:width .6s ease}
+
+/* ── Session items ── */
+.lesson-item{display:flex;align-items:center;gap:12px;padding:11px 15px;cursor:pointer;transition:background var(--t);border-bottom:1px solid var(--border)}
+.lesson-item:last-child{border-bottom:none}
+.lesson-item:hover{background:var(--surface2)}
+.lesson-item.locked-l{opacity:.45;cursor:not-allowed}
+.lesson-check{width:28px;height:28px;border-radius:50%;border:2px solid var(--border2);background:none;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0}
+.lesson-check.done{background:var(--primary);border-color:var(--primary);color:#fff}
+.lesson-check.next-l{border-color:var(--accent);color:var(--accent)}
+.lesson-info{flex:1}
+.lesson-name{font-size:14px;font-weight:600}
+.lesson-name.done{text-decoration:line-through;opacity:.45}
+.lesson-desc{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+.lesson-xp{font-size:11px;font-weight:700;color:var(--accent-d);background:var(--accent-xl);border-radius:99px;padding:2px 8px;border:1px solid rgba(244,164,53,.3);flex-shrink:0}
+.lesson-tip{font-size:12px;color:var(--primary);background:var(--primary-xl);border-left:3px solid var(--primary);border-radius:0 var(--sm) var(--sm) 0;padding:6px 10px;margin:0 15px 6px;line-height:1.45}
+
+/* ── Session Portal overlay ── */
+#lesson-portal{position:fixed;inset:0;z-index:9000;background:var(--surface);overflow-y:auto;display:none;flex-direction:column}
+#lesson-portal.open{display:flex}
+.lp-header{position:sticky;top:0;background:var(--surface);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px;padding:14px 16px;z-index:1}
+.lp-back{background:none;border:1.5px solid var(--border);border-radius:var(--sm);padding:6px 12px;font-size:13px;font-weight:700;color:var(--text);cursor:pointer}
+.lp-title{font-size:15px;font-weight:800;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lp-xp{font-size:12px;font-weight:700;color:var(--accent-d);background:var(--accent-xl);border-radius:99px;padding:4px 10px;flex-shrink:0}
+.lp-body{padding:20px 18px 100px;flex:1}
+.lp-eyebrow{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--primary);margin-bottom:6px}
+.lp-lesson-title{font-size:22px;font-weight:900;color:var(--text);margin-bottom:4px}
+.lp-desc{font-size:14px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.lp-tip{background:var(--primary-xl);border-left:4px solid var(--primary);border-radius:0 var(--sm) var(--sm) 0;padding:10px 14px;font-size:13px;color:var(--primary);font-style:italic;margin-bottom:20px;line-height:1.55}
+.lp-content{font-size:14px;line-height:1.75;color:var(--text);margin-bottom:24px}
+.lp-content h3{font-size:16px;font-weight:800;color:var(--text);margin:20px 0 8px}
+.lp-content h4{font-size:14px;font-weight:700;color:var(--primary);margin:16px 0 6px}
+.lp-content ul,.lp-content ol{padding-left:20px;margin:6px 0 12px}
+.lp-content li{margin-bottom:5px}
+.lp-content strong{color:var(--text)}
+.lp-content .lesson-quiz{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--r);padding:16px;margin-top:20px}
+.lp-content .lesson-quiz h4{color:var(--text);margin-top:0}
+.quiz-options{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.quiz-options .qo{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--sm);padding:10px 14px;font-size:13px;text-align:left;cursor:pointer;transition:all .15s;color:var(--text);font-weight:500}
+.quiz-options .qo:hover{border-color:var(--primary);background:var(--primary-xl)}
+.quiz-options .qo.correct{background:#e8f5e9!important;border-color:var(--primary)!important;color:var(--primary)!important;font-weight:700}
+.quiz-options .qo.wrong{background:#fce8e8!important;border-color:#ef4444!important;color:#ef4444!important}
+.quiz-result{font-size:13px;font-weight:700;margin-top:10px;padding:8px 12px;border-radius:var(--sm);display:none}
+.quiz-result.correct{background:#e8f5e9;color:var(--primary)}
+.quiz-result.wrong{background:#fce8e8;color:#ef4444}
+.lp-complete-btn{width:100%;padding:16px;font-size:16px;font-weight:800;border:none;border-radius:var(--r);background:var(--primary);color:#fff;cursor:pointer;transition:background .2s;margin-top:8px}
+.lp-complete-btn:hover{background:var(--primary-d)}
+.lp-complete-btn:disabled{background:var(--border2);color:var(--muted);cursor:not-allowed}
+.lp-already-done{background:var(--primary-xl);border:1.5px solid var(--primary);border-radius:var(--r);padding:14px;text-align:center;font-size:14px;font-weight:700;color:var(--primary);margin-top:8px}
+.lp-nav-row{display:flex;gap:10px;margin-top:16px}
+.lp-nav-btn{flex:1;padding:12px;font-size:13px;font-weight:700;border:1.5px solid var(--border);border-radius:var(--sm);background:none;color:var(--text);cursor:pointer;transition:all .15s}
+.lp-nav-btn:hover{border-color:var(--primary);color:var(--primary)}
+.lp-nav-btn:disabled{opacity:.35;cursor:not-allowed}
+</style>
+</head>
+<body class="theme-light" data-page="course-view">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./course-picker.html" class="back-btn">← Programs</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in" id="course-main">
+  <div id="course-hero" class="course-hero"></div>
+  <div id="modules-list"></div>
+</main>
+
+<!-- ── Session Portal (full-screen overlay) ── -->
+<div id="lesson-portal">
+  <div class="lp-header">
+    <button class="lp-back" onclick="closeLesson()">← Back</button>
+    <div class="lp-title" id="lp-lesson-title-bar">Session</div>
+    <div class="lp-xp" id="lp-xp-badge">+0 EP</div>
+  </div>
+  <div class="lp-body" id="lp-body"></div>
+</div>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script src="../../fp-courses.js"></script>
+<script>
+/* ── State ── */
+var courseId = new URLSearchParams(location.search).get('course') || '';
+var extDoneKey = 'fp_ext_done_' + courseId;
+var _extDone = load(extDoneKey, []);
+var _currentLessonData = null;
+var _allModules = [];
+var _quizAnswered = false;
+
+/* ── Build phase list for this program ── */
+function getCourseModules() {
+  if (!window.FP_COURSE) return [];
+  return FP_COURSE.modules.filter(m => m.courseId === courseId);
+}
+
+function getLessonDoneList() { return load(extDoneKey, []); }
+function markLessonDone(lid) {
+  var d = getLessonDoneList();
+  if (d.indexOf(lid) < 0) { d.push(lid); save(extDoneKey, d); }
+}
+function unmarkLessonDone(lid) {
+  var d = getLessonDoneList().filter(function(x){ return x !== lid; });
+  save(extDoneKey, d);
+}
+
+/* ── Render hero ── */
+function renderHero(modules) {
+  var totalSessions = modules.reduce(function(s,m){ return s + m.lessons.length; }, 0);
+  var done = getLessonDoneList().length;
+  var pct = totalSessions ? Math.round(done/totalSessions*100) : 0;
+  var programName = modules[0] ? modules[0].courseName : 'Recovery Program';
+  var el = document.getElementById('course-hero');
+  el.innerHTML = '<div class="ch-eyebrow">Recharge Recovery</div>' +
+    '<div class="ch-title">' + programName + '</div>' +
+    '<div class="ch-prog-track"><div class="ch-prog-fill" style="width:'+pct+'%"></div></div>' +
+    '<div class="ch-stats">' +
+      '<div><div class="ch-stat-val">' + pct + '%</div><div class="ch-stat-lbl">Complete</div></div>' +
+      '<div><div class="ch-stat-val">' + done + '</div><div class="ch-stat-lbl">Sessions Done</div></div>' +
+      '<div><div class="ch-stat-val">' + modules.length + '</div><div class="ch-stat-lbl">Phases</div></div>' +
+    '</div>';
+}
+
+/* ── Render phase list ── */
+function renderModules(modules) {
+  var done = getLessonDoneList();
+  var list = document.getElementById('modules-list');
+  list.innerHTML = '';
+
+  modules.forEach(function(mod, mi) {
+    var modDone = mod.lessons.filter(function(l){ return done.indexOf(l.id) > -1; }).length;
+    var allDone = modDone === mod.lessons.length;
+    var prevModDone = mi === 0 || modules[mi-1].lessons.every(function(l){ return done.indexOf(l.id) > -1; });
+    var isActive = prevModDone && !allDone;
+    var isLocked = !prevModDone && !allDone;
+    var pct = mod.lessons.length ? Math.round(modDone/mod.lessons.length*100) : 0;
+    var sc = allDone ? 'complete' : isActive ? 'active-m' : 'locked';
+    var badge = allDone ? '✅ Complete' : isActive ? '▶ In Progress' : '🔒 Locked';
+
+    var card = document.createElement('div');
+    card.className = 'module-card' + ((isActive || allDone) ? ' open' : '');
+    card.innerHTML = '<div class="module-header" onclick="this.closest(\'.module-card\').classList.toggle(\'open\')">' +
+        '<div class="module-num ' + sc + '">' + (allDone ? '✓' : mod.n) + '</div>' +
+        '<div class="module-info">' +
+          '<div class="module-title">' + mod.emoji + ' ' + mod.name + '</div>' +
+          '<div class="module-sub">' + modDone + '/' + mod.lessons.length + ' sessions</div>' +
+        '</div>' +
+        '<span class="module-badge ' + sc + '">' + badge + '</span>' +
+        '<span class="module-chevron">▼</span>' +
+      '</div>' +
+      '<div class="mod-prog-wrap">' +
+        '<div class="mod-prog-lbl">' + pct + '% complete</div>' +
+        '<div class="mod-prog-track"><div class="mod-prog-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>' +
+      '<div class="module-lessons">' +
+        mod.lessons.map(function(lesson, li) {
+          var isDone = done.indexOf(lesson.id) > -1;
+          var isNext = !isDone && li === modDone && !isLocked;
+          var lockedL = isLocked || (!isDone && li > modDone);
+          var chk = isDone ? 'done' : isNext ? 'next-l' : '';
+          return '<div class="lesson-item' + (lockedL ? ' locked-l' : '') + '" onclick="openLesson(\'' + lesson.id + '\',\'' + mod.id + '\',' + isLocked + ')">' +
+              '<div class="lesson-check ' + chk + '">' + (isDone ? '✓' : isNext ? '▶' : '') + '</div>' +
+              '<div class="lesson-info">' +
+                '<div class="lesson-name' + (isDone ? ' done' : '') + '">' + lesson.name + '</div>' +
+                '<div class="lesson-desc">' + lesson.desc + '</div>' +
+              '</div>' +
+              '<span class="lesson-xp">+' + lesson.xp + ' EP</span>' +
+            '</div>' +
+            (isDone || isNext ? '<div class="lesson-tip">💡 ' + lesson.tip + '</div>' : '');
+        }).join('') +
+      '</div>';
+
+    list.appendChild(card);
+  });
+}
+
+/* ── Open session portal ── */
+function openLesson(lessonId, modId, locked) {
+  if (locked) { showToast('🔒 Complete earlier phases first'); return; }
+  var mod = _allModules.find(function(m){ return m.id === modId; });
+  if (!mod) return;
+  var lesson = mod.lessons.find(function(l){ return l.id === lessonId; });
+  if (!lesson) return;
+
+  var done = getLessonDoneList();
+  var isDone = done.indexOf(lessonId) > -1;
+  var allLessonIds = mod.lessons.map(function(l){ return l.id; });
+  var lessonIdx = allLessonIds.indexOf(lessonId);
+
+  _currentLessonData = { lesson:lesson, mod:mod, isDone:isDone, lessonIdx:lessonIdx };
+  _quizAnswered = false;
+
+  document.getElementById('lp-lesson-title-bar').textContent = lesson.name;
+  document.getElementById('lp-xp-badge').textContent = '+' + lesson.xp + ' EP';
+
+  var prevId = lessonIdx > 0 ? mod.lessons[lessonIdx-1].id : null;
+  var nextId = lessonIdx < mod.lessons.length-1 ? mod.lessons[lessonIdx+1].id : null;
+
+  document.getElementById('lp-body').innerHTML =
+    '<div class="lp-eyebrow">' + mod.courseName + ' · ' + mod.emoji + ' ' + mod.name + '</div>' +
+    '<div class="lp-lesson-title">' + lesson.name + '</div>' +
+    '<div class="lp-desc">' + lesson.desc + '</div>' +
+    '<div class="lp-tip">💡 ' + lesson.tip + '</div>' +
+    '<div class="lp-content">' + (lesson.content || '<p>Session content coming soon.</p>') + '</div>' +
+    (isDone
+      ? '<div class="lp-already-done">✅ Session Complete!</div>'
+      : '<button class="lp-complete-btn" id="lp-complete-btn" onclick="completeLesson()">✅ Mark Session Complete &nbsp;(+' + lesson.xp + ' EP)</button>'
+    ) +
+    '<div class="lp-nav-row">' +
+      '<button class="lp-nav-btn" ' + (!prevId ? 'disabled' : 'onclick="openLesson(\'' + prevId + '\',\'' + mod.id + '\',false)"') + '>← Previous</button>' +
+      '<button class="lp-nav-btn" ' + (!nextId ? 'disabled' : 'onclick="openLesson(\'' + nextId + '\',\'' + mod.id + '\',false)"') + '>Next →</button>' +
+    '</div>';
+
+  document.querySelectorAll('#lp-body .qo').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      if (_quizAnswered) return;
+      _quizAnswered = true;
+      var correct = btn.getAttribute('data-correct') === 'true';
+      document.querySelectorAll('#lp-body .qo').forEach(function(b) {
+        b.disabled = true; b.style.opacity = '0.55';
+        if (b.getAttribute('data-correct') === 'true') b.classList.add('correct');
+      });
+      btn.style.opacity = '1';
+      if (!correct) btn.classList.add('wrong');
+      showToast(correct ? '✅ Correct!' : '❌ Not quite — see the right answer above');
+    });
+  });
+
+  document.getElementById('lesson-portal').classList.add('open');
+  document.getElementById('lesson-portal').scrollTop = 0;
+}
+
+function closeLesson() {
+  document.getElementById('lesson-portal').classList.remove('open');
+  _currentLessonData = null;
+  renderHero(_allModules);
+  renderModules(_allModules);
+}
+
+function completeLesson() {
+  if (!_currentLessonData) return;
+  var lesson = _currentLessonData.lesson;
+  markLessonDone(lesson.id);
+  save('rc_xp', APP.xp + lesson.xp);
+  updateXP();
+  showToast('🌿 +' + lesson.xp + ' EP! Session complete!');
+  var btn = document.getElementById('lp-complete-btn');
+  if (btn) btn.outerHTML = '<div class="lp-already-done">✅ Session Complete!</div>';
+  _currentLessonData.isDone = true;
+}
+
+/* ── Boot ── */
+document.addEventListener('DOMContentLoaded', function() {
+  _allModules = getCourseModules();
+  if (!_allModules.length) {
+    document.getElementById('course-main').innerHTML =
+      '<div style="text-align:center;padding:60px 20px;color:var(--muted)">' +
+      '<div style="font-size:48px;margin-bottom:12px">🌿</div>' +
+      '<div style="font-weight:700;font-size:16px">Program not found</div>' +
+      '<div style="margin-top:8px"><a href="./course-picker.html" style="color:var(--primary)">Back to programs</a></div>' +
+      '</div>';
+    return;
+  }
+  renderHero(_allModules);
+  renderModules(_allModules);
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>🧘 Restorative Practices — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.enrich-card { background:var(--surface); border-radius:var(--r); border:1.5px solid var(--border); padding:15px; display:flex; gap:13px; box-shadow:var(--shadow); margin-bottom:10px; transition:box-shadow var(--t); }
+.enrich-card:hover { box-shadow:var(--shadow-lg); }
+.enrich-card.done { opacity:.7; }
+.enrich-icon { font-size:30px; flex-shrink:0; }
+.enrich-info { flex:1; min-width:0; }
+.enrich-info h3 { font-size:15px; font-weight:700; margin-bottom:3px; }
+.enrich-info p { font-size:13px; color:var(--muted); margin-bottom:7px; line-height:1.4; }
+.enrich-meta { display:flex; gap:6px; flex-wrap:wrap; margin-bottom:7px; }
+.enrich-pill { padding:2px 9px; border-radius:99px; font-size:11px; font-weight:600; background:var(--surface2); color:var(--muted); }
+.enrich-tip  { font-size:12px; color:var(--primary); background:var(--primary-xl); border-radius:var(--sm); padding:6px 9px; line-height:1.45; }
+.enrich-side { display:flex; flex-direction:column; gap:8px; align-items:flex-end; justify-content:flex-start; flex-shrink:0; }
+.btn-start { padding:9px 16px; border-radius:var(--rs); background:var(--accent); color:#fff; border:none; font-size:13px; font-weight:700; cursor:pointer; transition:all var(--t); white-space:nowrap; }
+.btn-start:hover { background:var(--accent-d); transform:translateY(-1px); }
+.done-badge { padding:7px 12px; border-radius:var(--rs); background:#d1fae5; color:#065f46; font-size:12px; font-weight:700; }
+
+/* Runner overlay */
+.runner-overlay { position:fixed; inset:0; background:rgba(10,22,26,.92); z-index:500; display:flex; align-items:center; justify-content:center; animation:fadeIn .2s ease; }
+.runner-box { background:var(--surface); border-radius:20px; padding:32px 24px; max-width:340px; width:90%; text-align:center; box-shadow:0 20px 60px rgba(0,0,0,.4); }
+.runner-title  { font-size:18px; font-weight:800; margin-bottom:22px; }
+.runner-visual { position:relative; display:flex; align-items:center; justify-content:center; height:110px; margin-bottom:16px; }
+.runner-circle { width:90px; height:90px; border-radius:50%; background:var(--primary); transition:all 1s ease; }
+.runner-circle.inhale { transform:scale(1.28); background:var(--primary); }
+.runner-circle.hold   { transform:scale(1.28); background:var(--accent); }
+.runner-circle.exhale { transform:scale(.82);  background:var(--primary-d); }
+.runner-timer  { position:absolute; font-size:24px; font-weight:900; color:#fff; pointer-events:none; }
+.runner-instr  { font-size:18px; font-weight:700; margin-bottom:6px; }
+.runner-prog   { font-size:13px; color:var(--muted); margin-bottom:20px; }
+</style>
+</head>
+<body class="theme-light" data-page="enrichment">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./index.html" class="back-btn">← Home</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in">
+  <h2 class="page-title">🧘 Restorative Practices</h2>
+  <p class="page-sub">Breathwork, grounding, movement &amp; recovery rituals</p>
+
+  <div class="filter-row" id="filter-row">
+    <button class="filter-btn active" onclick="filterActs('all',this)">All</button>
+    <button class="filter-btn" onclick="filterActs('breathwork',this)">🌬️ Breathwork</button>
+    <button class="filter-btn" onclick="filterActs('grounding',this)">🌿 Grounding</button>
+    <button class="filter-btn" onclick="filterActs('calm',this)">☕ Calm</button>
+    <button class="filter-btn" onclick="filterActs('movement',this)">🚶 Movement</button>
+    <button class="filter-btn" onclick="filterActs('reflection',this)">📓 Reflection</button>
+    <button class="filter-btn" onclick="filterActs('connection',this)">💬 Connection</button>
+  </div>
+
+  <div id="acts-list"></div>
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+let _filter = 'all';
+let _runnerAct = null;
+let _runnerInterval = null;
+let _phaseIdx = 0;
+let _cycleIdx = 0;
+let _phaseTime = 0;
+
+document.addEventListener('DOMContentLoaded', () => renderActs());
+
+function filterActs(cat, btn) {
+  _filter = cat;
+  qsa('.filter-btn').forEach(b=>b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+  renderActs();
+}
+
+function renderActs() {
+  const list   = $('acts-list');
+  const done   = load('rc_done_activities', []);
+  const acts   = _filter==='all' ? ENRICHMENT : ENRICHMENT.filter(a=>a.cat===_filter);
+  list.innerHTML = acts.map(act => {
+    const isDone = done.includes(act.id);
+    return `<div class="enrich-card ${isDone?'done':''}">
+      <div class="enrich-icon">${act.icon}</div>
+      <div class="enrich-info">
+        <h3>${act.name}</h3>
+        <p>${act.desc}</p>
+        <div class="enrich-meta">
+          <span class="enrich-pill">⏱ ${act.time}</span>
+          <span class="enrich-pill">${act.level}</span>
+          <span class="enrich-pill">${act.cat}</span>
+        </div>
+        <div class="enrich-tip">💡 ${act.tip}</div>
+      </div>
+      <div class="enrich-side">
+        ${isDone ? '<div class="done-badge">✅ Done</div>' : ''}
+        ${act.instant
+          ? `<button class="btn-start" onclick="doInstant('${act.id}',${JSON.stringify(act.instant).replace(/'/g,"&#39;")})">Start</button>`
+          : act.phases
+            ? `<button class="btn-start" onclick="startRunner('${act.id}')">Start</button>`
+            : `<button class="btn-start" onclick="markDone('${act.id}')">Done</button>`
+        }
+      </div>
+    </div>`;
+  }).join('') || '<p class="empty-msg">No practices in this category yet.</p>';
+}
+
+function doInstant(id, msg) {
+  showToast(msg.substring(0,50)+'…');
+  markDone(id);
+}
+
+function markDone(id) {
+  const done = load('rc_done_activities', []);
+  if (!done.includes(id)) {
+    done.push(id);
+    save('rc_done_activities', done);
+    save('rc_xp', APP.xp+30);
+    updateXP();
+    showToast('🧘 Practice complete! +30 EP');
+    renderActs();
+  }
+}
+
+function startRunner(id) {
+  _runnerAct = ENRICHMENT.find(a=>a.id===id);
+  if (!_runnerAct || !_runnerAct.phases) return;
+  _phaseIdx  = 0;
+  _cycleIdx  = 0;
+  _phaseTime = 0;
+  showRunner();
+}
+
+function showRunner() {
+  if (qs('.runner-overlay')) return;
+  const a = _runnerAct;
+  const overlay = document.createElement('div');
+  overlay.className = 'runner-overlay';
+  overlay.innerHTML = `<div class="runner-box">
+    <div class="runner-title">${a.icon} ${a.name}</div>
+    <div class="runner-visual">
+      <div class="runner-circle" id="rCircle"></div>
+      <div class="runner-timer" id="rTimer">–</div>
+    </div>
+    <div class="runner-instr" id="rInstr">Get ready…</div>
+    <div class="runner-prog" id="rProg"></div>
+    <button class="btn-primary" id="rStop" onclick="stopRunner()">Stop</button>
+  </div>`;
+  document.body.appendChild(overlay);
+  setTimeout(runTick, 300);
+}
+
+function runTick() {
+  if (!_runnerAct) return;
+  const a = _runnerAct;
+  if (_cycleIdx >= a.cycles) { stopRunner(); markDone(a.id); return; }
+  const phase = a.phases[_phaseIdx];
+  const circ  = $('rCircle');
+  const timer = $('rTimer');
+  const instr = $('rInstr');
+  const prog  = $('rProg');
+  if (!circ) return;
+
+  if (_phaseTime === 0) {
+    circ.className = 'runner-circle ' + phase.c;
+    instr.textContent = phase.l;
+    prog.textContent  = `Cycle ${_cycleIdx+1} of ${a.cycles} · Step ${_phaseIdx+1} of ${a.phases.length}`;
+  }
+
+  timer.textContent = phase.d - _phaseTime;
+  _phaseTime++;
+
+  if (_phaseTime > phase.d) {
+    _phaseTime = 0;
+    _phaseIdx++;
+    if (_phaseIdx >= a.phases.length) { _phaseIdx = 0; _cycleIdx++; }
+  }
+
+  _runnerInterval = setTimeout(runTick, 1000);
+}
+
+function stopRunner() {
+  clearTimeout(_runnerInterval);
+  _runnerAct = null;
+  const ol = qs('.runner-overlay');
+  if (ol) ol.remove();
+}
+</script>
+</body>
+</html>

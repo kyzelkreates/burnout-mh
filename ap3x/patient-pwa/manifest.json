@@ -1,0 +1,47 @@
+{
+  "name": "Four Paws Training & Enrichment Academy",
+  "short_name": "Four Paws",
+  "description": "Track your pet's training sessions, enrichment activities and progress \u2014 Recharge Recovery",
+  "start_url": "/pwa",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f5f7f0",
+  "theme_color": "#4a7c7e",
+  "categories": [
+    "education",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "/icons/fp-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/fp-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log Training Session",
+      "short_name": "Log Session",
+      "description": "Record today's training session",
+      "url": "/pwa?tab=checkin"
+    },
+    {
+      "name": "Enrichment Activities",
+      "short_name": "Enrichment",
+      "description": "Browse enrichment activities",
+      "url": "/pwa?tab=exercises"
+    },
+    {
+      "name": "Training History",
+      "short_name": "History",
+      "description": "View your training progress",
+      "url": "/pwa?tab=history"
+    }
+  ]
+}

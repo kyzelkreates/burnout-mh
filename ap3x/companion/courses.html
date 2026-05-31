@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>🎓 Recovery Programs — Recharge</title>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.course-hero {
+  background:linear-gradient(135deg,#1a3d40,#4a7c7e);
+  border-radius:var(--r); padding:18px; color:#fff; margin-bottom:14px;
+}
+.ch-title { font-size:18px; font-weight:800; margin-bottom:3px; }
+.ch-sub { font-size:12px; opacity:.72; margin-bottom:14px; }
+.ch-prog-track { height:8px; background:rgba(255,255,255,.2); border-radius:99px; overflow:hidden; margin-bottom:8px; }
+.ch-prog-fill { height:100%; border-radius:99px; background:var(--accent); transition:width .7s ease; }
+.ch-stats { display:flex; gap:20px; }
+.ch-stat-val { font-size:20px; font-weight:900; color:var(--accent); }
+.ch-stat-lbl { font-size:11px; opacity:.65; margin-top:1px; }
+
+.module-card { background:var(--surface); border:1.5px solid var(--border); border-radius:var(--r); margin-bottom:12px; overflow:hidden; box-shadow:var(--shadow); }
+.module-header { display:flex; align-items:center; gap:12px; padding:14px 15px; cursor:pointer; user-select:none; transition:background var(--t); }
+.module-header:hover { background:var(--surface2); }
+.module-num { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:800; flex-shrink:0; color:#fff; }
+.module-num.complete { background:var(--primary); }
+.module-num.active-m { background:var(--accent); }
+.module-num.locked   { background:var(--border2); color:var(--muted); }
+.module-info { flex:1; }
+.module-title { font-size:14px; font-weight:700; }
+.module-sub   { font-size:11px; color:var(--muted); margin-top:1px; }
+.module-badge { padding:3px 10px; border-radius:99px; font-size:10px; font-weight:700; flex-shrink:0; }
+.module-badge.complete { background:#d1fae5; color:#065f46; }
+.module-badge.active-m { background:#fef3c7; color:#92400e; }
+.module-badge.locked   { background:var(--surface2); color:var(--muted); }
+.module-chevron { font-size:12px; color:var(--muted); transition:transform var(--t); margin-left:4px; }
+.module-card.open .module-chevron { transform:rotate(180deg); }
+
+.module-lessons { display:none; border-top:1px solid var(--border); padding:6px 0; }
+.module-card.open .module-lessons { display:block; }
+
+.lesson-item { display:flex; align-items:center; gap:12px; padding:11px 15px; cursor:pointer; transition:background var(--t); border-bottom:1px solid var(--border); }
+.lesson-item:last-child { border-bottom:none; }
+.lesson-item:hover { background:var(--surface2); }
+.lesson-check { width:28px; height:28px; border-radius:50%; border:2px solid var(--border2); background:none; display:flex; align-items:center; justify-content:center; font-size:13px; flex-shrink:0; cursor:pointer; transition:all var(--t); }
+.lesson-check.done   { background:var(--primary); border-color:var(--primary); color:#fff; }
+.lesson-check.next-l { border-color:var(--accent); color:var(--accent); }
+.lesson-info { flex:1; }
+.lesson-name { font-size:14px; font-weight:600; }
+.lesson-name.done { text-decoration:line-through; opacity:.45; }
+.lesson-desc { font-size:12px; color:var(--muted); margin-top:2px; line-height:1.4; }
+.lesson-tip  { font-size:12px; color:var(--primary); background:var(--primary-xl); border-left:3px solid var(--primary); border-radius:0 var(--sm) var(--sm) 0; padding:6px 10px; margin:0 15px 6px; line-height:1.45; }
+.lesson-xp   { font-size:11px; font-weight:700; color:var(--accent-d); background:var(--accent-xl); border-radius:99px; padding:2px 8px; border:1px solid rgba(244,164,53,.3); flex-shrink:0; }
+</style>
+</head>
+<body class="theme-light" data-page="courses">
+
+<header class="fp-header">
+  <div class="header-left">
+    <a href="./index.html" class="back-btn">← Home</a>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none"><span id="streak-text"></span></div>
+
+<main class="page-shell animate-in">
+  <h2 class="page-title">🎓 Recovery Program</h2>
+
+  <div class="course-hero" id="course-hero">
+    <div class="ch-title">Burnout Reset Program</div>
+    <div class="ch-sub">Your structured path to energy restoration</div>
+    <div class="ch-prog-track"><div class="ch-prog-fill" id="prog-fill" style="width:0%"></div></div>
+    <div class="ch-stats">
+      <div><div class="ch-stat-val" id="stat-pct">0%</div><div class="ch-stat-lbl">Complete</div></div>
+      <div><div class="ch-stat-val" id="stat-done">0</div><div class="ch-stat-lbl">Sessions Done</div></div>
+      <div><div class="ch-stat-val" id="stat-xp">0</div><div class="ch-stat-lbl">Energy Points</div></div>
+    </div>
+  </div>
+
+  <div id="modules-list"></div>
+
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', render);
+
+function render() {
+  const done   = APP.completedLessons;
+  const total  = CURRICULUM.reduce((s,m)=>s+m.lessons.length, 0);
+  const pct    = total ? Math.round(done.length/total*100) : 0;
+  const earnedXP = CURRICULUM.flatMap(m=>m.lessons).filter(l=>done.includes(l.id)).reduce((s,l)=>s+l.xp,0);
+
+  $('prog-fill').style.width = pct + '%';
+  $('stat-pct').textContent  = pct + '%';
+  $('stat-done').textContent = done.length;
+  $('stat-xp').textContent   = earnedXP;
+
+  const container = $('modules-list');
+  container.innerHTML = '';
+
+  CURRICULUM.forEach((mod, mi) => {
+    const modDone   = mod.lessons.filter(l=>done.includes(l.id)).length;
+    const allDone   = modDone === mod.lessons.length;
+    const prevDone  = mi === 0 || CURRICULUM[mi-1].lessons.every(l=>done.includes(l.id));
+    const isActive  = prevDone && !allDone;
+    const isLocked  = !prevDone;
+    const modPct    = mod.lessons.length ? Math.round(modDone/mod.lessons.length*100) : 0;
+    const sc        = allDone ? 'complete' : isActive ? 'active-m' : 'locked';
+    const badge     = allDone ? '✅ Complete' : isActive ? '▶ Active' : '🔒 Locked';
+
+    const card = document.createElement('div');
+    card.className = 'module-card' + ((isActive||allDone) ? ' open' : '');
+    card.innerHTML = `
+      <div class="module-header" onclick="this.closest('.module-card').classList.toggle('open')">
+        <div class="module-num ${sc}">${allDone?'✓':mod.id}</div>
+        <div class="module-info">
+          <div class="module-title">${mod.emoji} ${mod.name}</div>
+          <div class="module-sub">${modDone}/${mod.lessons.length} sessions · ${modPct}%</div>
+        </div>
+        <span class="module-badge ${sc}">${badge}</span>
+        <span class="module-chevron">▼</span>
+      </div>
+      <div class="module-lessons">
+        ${mod.lessons.map((lesson, li)=>{
+          const isDone = done.includes(lesson.id);
+          const isNext = !isDone && li===modDone && !isLocked;
+          const lockedL= isLocked || (!isDone && li>modDone);
+          const chk    = isDone?'done':isNext?'next-l':'';
+          return `
+            <div class="lesson-item${lockedL?' locked-l':''}" onclick="${lockedL?'showToast(\'🔒 Complete earlier phases first\')':'toggleLesson(\''+lesson.id+'\','+lesson.xp+')'}">
+              <div class="lesson-check ${chk}">${isDone?'✓':isNext?'▶':''}</div>
+              <div class="lesson-info">
+                <div class="lesson-name${isDone?' done':''}">${lesson.name}</div>
+                <div class="lesson-desc">${lesson.desc}</div>
+              </div>
+              <span class="lesson-xp">+${lesson.xp} EP</span>
+            </div>
+            ${(isDone||isNext)?`<div class="lesson-tip">💡 ${lesson.tip}</div>`:''}`;
+        }).join('')}
+      </div>`;
+    container.appendChild(card);
+  });
+}
+
+function toggleLesson(id, xp) {
+  const done = APP.completedLessons;
+  if (!done.includes(id)) {
+    APP.completeLesson(id);
+    save('rc_xp', APP.xp + xp);
+    updateXP();
+    showToast('🌿 Session complete! +' + xp + ' EP');
+  } else {
+    const d2 = done.filter(x=>x!==id);
+    save('rc_done_lessons', d2);
+    showToast('↩ Session un-marked');
+  }
+  render();
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<title>Recharge — Recovery Companion</title>
+<style>
+:root{
+  --bg:#f5f7f0;--surface:#fff;--surface2:#eef4e8;--border:#c8d8b0;
+  --primary:#4a7c7e;--primary-d:#3a6264;--accent:#f4a435;--accent-d:#d4891a;
+  --warn:#f59e0b;--high:#ef4444;--critical:#7c3aed;
+  --text:#1e293b;--muted:#64748b;--light:#94a3b8;
+  --low:#10b981;--medium:#f59e0b;
+  --r:14px;--rs:9px;--shadow:0 2px 10px rgba(58,125,68,.09);--t:.2s ease;
+}
+[data-theme=dark]{
+  --bg:#0b1a0e;--surface:#111f18;--surface2:#192b1e;--border:#1e3028;
+  --text:#e2eafc;--muted:#8a9dc0;--light:#4a6080;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);min-height:100dvh;max-width:480px;margin:0 auto;padding-bottom:82px;font-size:15px;line-height:1.5}
+
+/* header */
+.ap3x-header{position:sticky;top:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border);box-shadow:var(--shadow)}
+.header-brand{display:flex;align-items:center;gap:7px;font-weight:700}
+.brand-dot{width:10px;height:10px;border-radius:50%;background:var(--primary)}
+.brand-name{font-size:16px;color:var(--primary)}
+.brand-sub{font-size:12px;color:var(--muted);font-weight:400}
+.header-right{display:flex;align-items:center;gap:6px}
+.btn-icon{background:none;border:none;cursor:pointer;font-size:19px;padding:5px;border-radius:8px;transition:background var(--t)}
+.btn-icon:hover{background:var(--surface2)}
+.back-link{font-size:12px;color:var(--muted);text-decoration:none;padding:5px 10px;background:var(--surface2);border-radius:var(--rs);border:1px solid var(--border)}
+.back-link:hover{color:var(--primary)}
+
+/* streak */
+.streak-banner{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:linear-gradient(135deg,#f4a435,#d4891a);color:#fff;font-size:14px}
+.streak-left{display:flex;align-items:center;gap:8px;font-weight:600}
+.streak-xp{font-size:12px;background:rgba(255,255,255,.2);border-radius:99px;padding:2px 10px}
+
+/* bottom nav */
+.bottom-nav{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:480px;display:flex;background:var(--surface);border-top:1px solid var(--border);box-shadow:0 -2px 8px rgba(0,0,0,.08);z-index:100}
+.nav-tab{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:10px 4px;background:none;border:none;color:var(--muted);font-size:10px;cursor:pointer;transition:color var(--t);position:relative}
+.nav-tab.active{color:var(--primary)}
+.nav-tab .notif-dot{position:absolute;top:7px;right:calc(50% - 14px);width:7px;height:7px;border-radius:50%;background:var(--high);border:2px solid var(--surface)}
+
+/* tab pages */
+.tab-page{padding:18px 16px;animation:fadeIn .2s ease}
+.tab-page.hidden{display:none!important}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.section-title{font-size:22px;font-weight:700;margin-bottom:3px}
+.section-sub{font-size:14px;color:var(--muted);margin-bottom:18px}
+
+/* mood ring / homepage */
+.home-greeting{background:linear-gradient(135deg,var(--primary),#5a9e50);border-radius:var(--r);padding:20px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden}
+.home-greeting::after{content:'🧠';position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:48px;opacity:.18}
+.hg-title{font-size:19px;font-weight:700;margin-bottom:4px}
+.hg-sub{font-size:13px;opacity:.85}
+.quick-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.qa-btn{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:14px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:6px;cursor:pointer;transition:all var(--t);text-align:left}
+.qa-btn:hover{border-color:var(--primary);box-shadow:0 0 0 3px rgba(58,125,68,.1)}
+.qa-icon{font-size:22px}
+.qa-label{font-size:13px;font-weight:700;color:var(--text)}
+.qa-desc{font-size:11px;color:var(--muted)}
+.insight-strip{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:16px;box-shadow:var(--shadow);border-left:4px solid var(--primary)}
+.insight-strip h4{font-size:13px;font-weight:700;margin-bottom:4px;color:var(--primary)}
+.insight-strip p{font-size:13px;color:var(--text);line-height:1.5}
+.mood-row{display:flex;gap:8px;justify-content:space-between;margin-bottom:16px}
+.mood-btn{flex:1;display:flex;flex-direction:column;align-items:center;gap:5px;background:var(--surface);border:2px solid transparent;border-radius:var(--r);padding:12px 4px;cursor:pointer;transition:all var(--t)}
+.mood-btn:hover{border-color:var(--border);transform:translateY(-2px)}
+.mood-btn.selected{border-color:var(--primary);background:var(--surface2)}
+.mood-emoji{font-size:26px}
+.mood-label{font-size:10px;color:var(--muted);font-weight:600}
+
+/* scale */
+.scale-wrap{background:var(--surface);border-radius:var(--r);padding:18px 14px;margin-bottom:16px;box-shadow:var(--shadow)}
+.scale-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.scale-title{font-size:14px;font-weight:700}
+.scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:10px}
+.scale-track{display:flex;gap:3px}
+.scale-btn{flex:1;aspect-ratio:1;border-radius:7px;border:2px solid transparent;font-size:12px;font-weight:700;cursor:pointer;transition:all var(--t)}
+.scale-btn:hover{transform:scale(1.1)}
+.scale-btn[data-v="0"],.scale-btn[data-v="1"]{background:#d1fae5;color:#065f46}
+.scale-btn[data-v="2"],.scale-btn[data-v="3"]{background:#d9f99d;color:#3f6212}
+.scale-btn[data-v="4"],.scale-btn[data-v="5"]{background:#fef9c3;color:#713f12}
+.scale-btn[data-v="6"],.scale-btn[data-v="7"]{background:#fed7aa;color:#7c2d12}
+.scale-btn[data-v="8"],.scale-btn[data-v="9"]{background:#fecaca;color:#7f1d1d}
+.scale-btn[data-v="10"]{background:#fca5a5;color:#7f1d1d}
+.scale-btn.selected{border-color:var(--primary);box-shadow:0 0 0 3px rgba(58,125,68,.25);transform:scale(1.14)}
+.score-display{text-align:center;margin-top:10px;font-size:30px;font-weight:800;color:var(--primary);min-height:38px}
+.score-label{text-align:center;font-size:13px;color:var(--muted);margin-top:2px;min-height:18px}
+
+/* form */
+.form-card{background:var(--surface);border-radius:var(--r);padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.form-card-title{font-size:14px;font-weight:700;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.form-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.04em}
+.form-textarea{width:100%;background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:10px 12px;font-size:14px;color:var(--text);font-family:inherit;resize:none;min-height:70px}
+.form-textarea:focus{outline:none;border-color:var(--primary);box-shadow:0 0 0 3px rgba(58,125,68,.12)}
+.tag-group{display:flex;flex-wrap:wrap;gap:7px}
+.tag{padding:5px 12px;border-radius:99px;border:1.5px solid var(--border);background:var(--surface);color:var(--muted);font-size:13px;cursor:pointer;transition:all var(--t)}
+.tag.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.form-slider-row{display:flex;align-items:center;gap:10px}
+.form-slider{flex:1;accent-color:var(--primary)}
+.slider-val{font-size:15px;font-weight:700;color:var(--primary);min-width:24px;text-align:right}
+.step-indicator{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+.step-dot{width:8px;height:8px;border-radius:50%;background:var(--border)}
+.step-dot.active{background:var(--primary)}
+.step-dot.done{background:var(--accent)}
+
+/* multi-step checkin */
+.checkin-step{animation:fadeIn .2s ease}
+.checkin-step.hidden{display:none!important}
+.step-progress{height:4px;background:var(--border);border-radius:99px;margin-bottom:20px;overflow:hidden}
+.step-progress-bar{height:100%;background:var(--primary);border-radius:99px;transition:width .4s ease}
+
+/* buttons */
+.btn-primary{width:100%;padding:14px;background:var(--primary);color:#fff;border:none;border-radius:var(--r);font-size:16px;font-weight:700;cursor:pointer;transition:background var(--t),transform var(--t)}
+.btn-primary:hover{background:var(--primary-d)}
+.btn-primary:active{transform:scale(.98)}
+.btn-secondary{width:100%;padding:12px;background:var(--surface2);color:var(--text);border:1.5px solid var(--border);border-radius:var(--r);font-size:15px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-secondary:hover{border-color:var(--primary);color:var(--primary)}
+.btn-row{display:flex;gap:10px;margin-top:12px}
+.btn-row .btn-primary,.btn-row .btn-secondary{flex:1;width:auto}
+.btn-emergency{width:100%;padding:14px;background:none;border:2px solid var(--high);color:var(--high);border-radius:var(--r);font-size:15px;font-weight:700;cursor:pointer;margin-top:20px;transition:all var(--t)}
+.btn-emergency:hover{background:var(--high);color:#fff}
+.btn-sm{padding:7px 14px;font-size:13px;font-weight:600;border-radius:var(--rs);cursor:pointer;border:1.5px solid var(--border);background:var(--surface);color:var(--text);transition:all var(--t)}
+.btn-sm:hover{border-color:var(--primary);color:var(--primary)}
+.btn-sm.filled{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+/* feedback */
+.feedback-card{background:var(--surface);border:1.5px solid var(--border);border-radius:var(--r);padding:18px;margin-top:16px;animation:fadeIn .3s ease}
+.feedback-card.risk-high{border-color:var(--high);background:#fff5f5}
+.feedback-card.risk-critical{border-color:var(--critical);background:#faf5ff}
+.risk-badge{display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:99px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
+.risk-badge.LOW{background:#d1fae5;color:#065f46}
+.risk-badge.MEDIUM{background:#fef3c7;color:#92400e}
+.risk-badge.HIGH{background:#fee2e2;color:#991b1b}
+.risk-badge.CRITICAL{background:#ede9fe;color:#4c1d95}
+.feedback-sugg{font-size:14px;color:var(--text);line-height:1.6;margin-bottom:12px}
+.feedback-actions{display:flex;gap:8px;flex-wrap:wrap}
+.feedback-tip{font-size:13px;color:var(--muted);background:var(--surface2);border-radius:var(--rs);padding:8px 12px;margin-top:8px;border-left:3px solid var(--accent)}
+
+/* history / chart */
+.chart-wrap{background:var(--surface);border-radius:var(--r);padding:16px;margin-bottom:16px;box-shadow:var(--shadow)}
+.chart-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.chart-title{font-size:14px;font-weight:700}
+.chart-tabs{display:flex;gap:4px}
+.chart-tab{padding:4px 10px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);transition:all var(--t)}
+.chart-tab.active{background:var(--primary);border-color:var(--primary);color:#fff}
+canvas{width:100%!important;display:block}
+.history-list{display:flex;flex-direction:column;gap:8px}
+.history-item{background:var(--surface);border-radius:var(--rs);padding:11px 14px;display:flex;align-items:center;gap:12px;box-shadow:var(--shadow);cursor:pointer;transition:all var(--t);border:1px solid transparent}
+.history-item:hover{border-color:var(--primary);box-shadow:0 0 0 2px rgba(58,125,68,.1)}
+.h-score{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;flex-shrink:0}
+.h-meta{flex:1;min-width:0}
+.h-date{font-size:11px;color:var(--muted)}
+.h-note{font-size:13px;color:var(--text);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.h-tags{display:flex;gap:4px;margin-top:4px;flex-wrap:wrap}
+.h-tag{font-size:10px;padding:2px 7px;border-radius:99px;background:var(--surface2);color:var(--muted);border:1px solid var(--border)}
+.history-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:16px}
+.hstat{background:var(--surface);border-radius:var(--rs);padding:12px;text-align:center;box-shadow:var(--shadow)}
+.hstat-val{font-size:20px;font-weight:800;color:var(--primary)}
+.hstat-lbl{font-size:11px;color:var(--muted);margin-top:2px}
+
+/* exercises */
+.ex-filter{display:flex;gap:6px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.ex-filter-btn{padding:5px 13px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);white-space:nowrap;transition:all var(--t)}
+.ex-filter-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.ex-cards{display:flex;flex-direction:column;gap:10px}
+.ex-card{background:var(--surface);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);transition:all var(--t)}
+.ex-card:hover{box-shadow:0 4px 16px rgba(58,125,68,.12)}
+.ex-icon{font-size:26px;flex-shrink:0;width:44px;height:44px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+.ex-icon.blue{background:#dbeafe}.ex-icon.green{background:#d1fae5}.ex-icon.purple{background:#ede9fe}.ex-icon.orange{background:#ffedd5}
+.ex-info{flex:1}
+.ex-info h3{font-size:14px;font-weight:700}
+.ex-info p{font-size:12px;color:var(--muted);margin-top:2px}
+.ex-meta{display:flex;gap:6px;margin-top:5px}
+.ex-pill{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--surface2);color:var(--muted)}
+.btn-start-ex{padding:7px 14px;background:var(--surface2);border:1.5px solid var(--primary);color:var(--primary);border-radius:var(--rs);font-size:12px;font-weight:700;cursor:pointer;flex-shrink:0;transition:all var(--t)}
+.btn-start-ex:hover{background:var(--primary);color:#fff}
+.ex-completed-badge{font-size:12px;color:var(--accent);font-weight:700;flex-shrink:0;display:flex;align-items:center;gap:3px}
+
+/* exercise runner */
+.ex-runner{position:fixed;inset:0;background:rgba(11,18,32,.97);z-index:200;display:flex;align-items:center;justify-content:center}
+.ex-runner.hidden{display:none!important}
+.runner-inner{display:flex;flex-direction:column;align-items:center;gap:20px;padding:40px 24px;max-width:340px;width:100%}
+.runner-title{font-size:16px;color:rgba(255,255,255,.6);text-align:center;font-weight:600;text-transform:uppercase;letter-spacing:.08em}
+.breath-circle{width:90px;height:90px;border-radius:50%;background:radial-gradient(circle,#60a5fa 0%,#2563eb 60%,#1d4ed8 100%);box-shadow:0 0 32px rgba(96,165,250,.5);transition:transform 1s ease-in-out,box-shadow 1s ease-in-out}
+.breath-circle.inhale{transform:scale(1.9);box-shadow:0 0 52px rgba(96,165,250,.85)}
+.breath-circle.hold{transform:scale(1.9);box-shadow:0 0 64px rgba(167,139,250,.7)}
+.breath-circle.exhale{transform:scale(1);box-shadow:0 0 16px rgba(96,165,250,.2)}
+.runner-instr{font-size:30px;font-weight:800;color:#fff;text-align:center}
+.runner-step{font-size:14px;color:#8ab4f8;text-align:center;max-width:240px;line-height:1.5}
+.runner-count{font-size:52px;font-weight:900;color:#fff;min-height:64px;text-align:center}
+.runner-progress{width:100%;height:5px;background:rgba(255,255,255,.15);border-radius:99px;overflow:hidden}
+.runner-progress-bar{height:100%;background:var(--accent);border-radius:99px;transition:width .5s ease}
+.runner-cycles{font-size:13px;color:rgba(255,255,255,.5);text-align:center}
+.btn-runner-stop{padding:10px 28px;background:rgba(255,255,255,.1);border:1.5px solid rgba(255,255,255,.25);color:#fff;border-radius:99px;font-size:14px;font-weight:600;cursor:pointer;transition:all var(--t)}
+.btn-runner-stop:hover{background:rgba(255,255,255,.2)}
+
+/* grounding runner */
+.ground-step{text-align:center}
+.ground-number{font-size:80px;font-weight:900;color:var(--primary);line-height:1}
+.ground-prompt{font-size:20px;font-weight:700;color:#fff;margin-top:8px}
+.ground-input{width:100%;background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.2);border-radius:var(--r);padding:12px 14px;font-size:15px;color:#fff;font-family:inherit;text-align:center;margin-top:14px}
+.ground-input::placeholder{color:rgba(255,255,255,.4)}
+.ground-input:focus{outline:none;border-color:rgba(96,165,250,.8)}
+.ground-list{display:flex;flex-direction:column;gap:6px;margin-top:12px;width:100%}
+.ground-list-item{background:rgba(255,255,255,.08);border-radius:var(--rs);padding:8px 14px;font-size:14px;color:#fff;border-left:3px solid var(--accent)}
+
+/* journal */
+.journal-prompts{display:flex;gap:7px;margin-bottom:12px;overflow-x:auto;padding-bottom:4px}
+.jp-btn{padding:6px 13px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1.5px solid var(--border);background:none;color:var(--muted);white-space:nowrap;transition:all var(--t);flex-shrink:0}
+.jp-btn:hover{border-color:var(--primary);color:var(--primary)}
+.journal-editor{background:var(--surface);border-radius:var(--r);padding:16px;box-shadow:var(--shadow);margin-bottom:14px}
+.journal-prompt-text{font-size:14px;color:var(--primary);font-weight:600;margin-bottom:8px;font-style:italic}
+.journal-ta{width:100%;border:none;background:transparent;font-size:15px;color:var(--text);font-family:inherit;resize:none;min-height:120px;line-height:1.6}
+.journal-ta:focus{outline:none}
+.journal-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border)}
+.wc{font-size:12px;color:var(--muted)}
+.mood-tag-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.journal-list{display:flex;flex-direction:column;gap:10px}
+.jl-item{background:var(--surface);border-radius:var(--r);padding:14px;box-shadow:var(--shadow);cursor:pointer}
+.jl-date{font-size:11px;color:var(--muted);margin-bottom:4px}
+.jl-excerpt{font-size:13px;color:var(--text);line-height:1.5}
+.jl-mood{font-size:12px;margin-top:6px}
+
+/* log */
+.log-section{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:14px;box-shadow:var(--shadow)}
+.log-subtitle{font-size:14px;font-weight:700;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.trigger-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trigger-chip{background:var(--surface2);border:1.5px solid var(--border);border-radius:var(--rs);padding:8px 10px;cursor:pointer;transition:all var(--t);text-align:center}
+.trigger-chip:hover,.trigger-chip.active{border-color:var(--primary);background:#dbeafe}
+.trigger-chip .tc-icon{font-size:20px;display:block;margin-bottom:3px}
+.trigger-chip .tc-name{font-size:11px;color:var(--text);font-weight:600}
+.trigger-list{display:flex;flex-direction:column;gap:7px}
+.trigger-item{display:flex;align-items:center;gap:10px;padding:10px;background:var(--surface2);border-radius:var(--rs)}
+.t-sev{width:26px;height:26px;border-radius:50%;background:var(--primary);color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.t-name{font-size:13px;font-weight:600}
+.t-date{font-size:11px;color:var(--muted)}
+
+/* goals */
+.goals-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.goal-card{background:var(--surface);border-radius:var(--r);padding:14px;margin-bottom:10px;box-shadow:var(--shadow)}
+.goal-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.goal-name{font-size:14px;font-weight:700}
+.goal-cat{font-size:11px;color:var(--muted);margin-top:2px}
+.goal-progress-wrap{height:8px;background:var(--border);border-radius:99px;overflow:hidden;margin-bottom:6px}
+.goal-progress-bar{height:100%;border-radius:99px;background:var(--accent);transition:width .5s ease}
+.goal-footer{display:flex;align-items:center;justify-content:space-between;font-size:12px;color:var(--muted)}
+.goal-check-row{display:flex;gap:4px;margin-top:6px}
+.goal-day{width:24px;height:24px;border-radius:5px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;cursor:pointer;transition:background var(--t)}
+.goal-day.done{background:var(--accent);color:#fff}
+.goal-day.today{border:2px solid var(--primary)}
+.achievement-row{display:flex;gap:8px;overflow-x:auto;padding-bottom:6px;margin-bottom:16px}
+.achievement{background:var(--surface);border-radius:var(--r);padding:12px;text-align:center;flex-shrink:0;width:90px;box-shadow:var(--shadow);border:1px solid var(--border)}
+.ach-icon{font-size:24px;display:block;margin-bottom:4px}
+.ach-name{font-size:10px;color:var(--muted);font-weight:600}
+.achievement.locked{opacity:.45;filter:grayscale(1)}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;display:flex;align-items:flex-end;justify-content:center;padding:0}
+.modal.hidden{display:none!important}
+.modal-inner{background:var(--surface);border-radius:var(--r) var(--r) 0 0;padding:24px;max-width:480px;width:100%;text-align:center;animation:slideUp .25s ease}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-inner h3{font-size:20px;font-weight:700;margin-bottom:8px}
+.modal-inner p{font-size:14px;color:var(--muted);margin-bottom:20px}
+.btn-emerg-large{display:block;padding:14px;background:var(--high);color:#fff;border-radius:var(--r);font-size:16px;font-weight:700;text-decoration:none;text-align:center;margin-bottom:10px;border:none;cursor:pointer;width:100%}
+.modal-handle{width:36px;height:4px;border-radius:99px;background:var(--border);margin:0 auto 16px}
+
+/* toasts */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:10px 18px;border-radius:99px;font-size:13px;font-weight:600;z-index:500;animation:toastIn .3s ease;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.toast.hidden{display:none!important}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(8px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+
+.fp-footer{padding:12px 16px 20px;font-size:11px;color:var(--light);text-align:center;line-height:1.4;border-top:1px solid var(--border)}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+
+<header class="ap3x-header">
+  <div class="header-brand">
+    <div class="brand-dot"></div>
+    <span class="brand-name">🌿 Recharge</span>
+    <span class="brand-sub">Academy</span>
+  </div>
+  <div class="header-right">
+    <button class="btn-icon" id="themeToggle" title="Toggle theme">🌙</button>
+    <a href="index.html" class="back-link">← Academy Home</a>
+  </div>
+</header>
+
+<div class="streak-banner" id="streakBanner">
+  <div class="streak-left"><span class="streak-fire">🔥</span><span id="streakText">5-day training streak — great work!</span></div>
+  <span class="streak-xp" id="xpText">⚡ 420 XP</span>
+</div>
+
+<!-- HOME TAB -->
+<div class="tab-page" id="tab-home">
+  <div class="home-greeting">
+    <div class="hg-title" id="greetingText">Good morning, Taylor 👋</div>
+    <div class="hg-sub">How's your pup doing today? Let's track their progress.</div>
+  </div>
+
+  <div style="margin-bottom:16px">
+    <div class="form-label">How's your energy today?</div>
+    <div class="mood-row">
+      <button class="mood-btn" data-mood="1" onclick="selectMood(1)"><span class="mood-emoji">😰</span><span class="mood-label">Exhausted</span></button>
+      <button class="mood-btn" data-mood="2" onclick="selectMood(2)"><span class="mood-emoji">😔</span><span class="mood-label">Tired</span></button>
+      <button class="mood-btn" data-mood="3" onclick="selectMood(3)"><span class="mood-emoji">😐</span><span class="mood-label">Okay</span></button>
+      <button class="mood-btn" data-mood="4" onclick="selectMood(4)"><span class="mood-emoji">🙂</span><span class="mood-label">Good</span></button>
+      <button class="mood-btn" data-mood="5" onclick="selectMood(5)"><span class="mood-emoji">😊</span><span class="mood-label">Fantastic</span></button>
+    </div>
+  </div>
+
+  <div class="quick-actions">
+    <button class="qa-btn" onclick="goTab('checkin')">
+      <span class="qa-icon">📋</span>
+      <span class="qa-label">Log Session</span>
+      <span class="qa-desc">Record today's training</span>
+    </button>
+    <button class="qa-btn" onclick="goTab('exercises')">
+      <span class="qa-icon">🧩</span>
+      <span class="qa-label">Enrichment</span>
+      <span class="qa-desc">Fun activities &amp; play</span>
+    </button>
+    <button class="qa-btn" onclick="goTab('journal')">
+      <span class="qa-icon">📓</span>
+      <span class="qa-label">Notes</span>
+      <span class="qa-desc">Session notes &amp; thoughts</span>
+    </button>
+    <button class="qa-btn" onclick="goTab('goals')">
+      <span class="qa-icon">🎯</span>
+      <span class="qa-label">Goals</span>
+      <span class="qa-desc">Training milestones</span>
+    </button>
+  </div>
+
+  <div class="insight-strip" id="dailyInsight">
+    <h4>💡 Today's Insight</h4>
+    <p id="insightText">Your pet trains best in short, focused sessions — 5 minutes twice a day beats one long session!</p>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-header">
+      <span class="chart-title">This Week</span>
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchMiniChart('score',this)">Progress</button>
+        <button class="chart-tab" onclick="switchMiniChart('sleep',this)">Sleep</button>
+        <button class="chart-tab" onclick="switchMiniChart('mood',this)">Mood</button>
+      </div>
+    </div>
+    <canvas id="miniChart" height="80"></canvas>
+  </div>
+
+  <button class="btn-emergency" onclick="openEmergency()">🐾 Contact My Trainer</button>
+</div>
+
+<!-- CHECK-IN TAB -->
+<div class="tab-page hidden" id="tab-checkin">
+  <div class="section-title" id="fp-section-checkin">Daily Training Log</div>
+  <div class="section-sub">Quick 2-minute session log — your trainer sees this</div>
+
+  <div class="step-progress"><div class="step-progress-bar" id="checkinBar" style="width:20%"></div></div>
+  <div class="step-indicator">
+    <div class="step-dot active" id="sd0"></div>
+    <div class="step-dot" id="sd1"></div>
+    <div class="step-dot" id="sd2"></div>
+    <div class="step-dot" id="sd3"></div>
+    <div class="step-dot" id="sd4"></div>
+  </div>
+
+  <!-- Step 1: Session Score -->
+  <div class="checkin-step" id="step-0">
+    <div class="scale-wrap">
+      <div class="scale-header"><span class="scale-title">🐾 How did the session go?</span><span style="font-size:12px;color:var(--muted)">0 = easy win → 10 = very tough</span></div>
+      <div class="scale-labels"><span>Easy win</span><span>Moderate</span><span>Very tough</span></div>
+      <div class="scale-track" id="anxietyScale"></div>
+      <div class="score-display" id="anxietyVal">—</div>
+      <div class="score-label" id="anxietyLabel"></div>
+    </div>
+    <button class="btn-primary" onclick="nextStep(1)">Continue →</button>
+  </div>
+
+  <!-- Step 2: Sleep + Physical -->
+  <div class="checkin-step hidden" id="step-1">
+    <div class="form-card">
+      <div class="form-card-title">😴 Owner Energy Level Today</div>
+      <div class="scale-labels"><span>Poor</span><span>Average</span><span>Excellent</span></div>
+      <div class="scale-track" id="sleepScale"></div>
+      <div class="score-display" id="sleepVal" style="font-size:22px">—</div>
+    </div>
+    <div class="form-card">
+      <div class="form-card-title">🧠 How is your mental state?</div>
+      <div class="tag-group" id="physicalTags">
+        <span class="tag" onclick="toggleTag(this)">Happy &amp; playful 😄</span>
+        <span class="tag" onclick="toggleTag(this)">Calm &amp; relaxed 😌</span>
+        <span class="tag" onclick="toggleTag(this)">Focused &amp; engaged 🎯</span>
+        <span class="tag" onclick="toggleTag(this)">Excitable / bouncy</span>
+        <span class="tag" onclick="toggleTag(this)">Anxious / unsettled 😟</span>
+        <span class="tag" onclick="toggleTag(this)">Reactive to triggers</span>
+        <span class="tag" onclick="toggleTag(this)">Frustrated</span>
+        <span class="tag" onclick="toggleTag(this)">Tired / flat</span>
+        <span class="tag" onclick="toggleTag(this)">Zoomies / over-aroused 🌀</span>
+        <span class="tag" onclick="toggleTag(this)">Confident &amp; brave 💪</span>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="nextStep(0)">← Back</button>
+      <button class="btn-primary" onclick="nextStep(2)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 3: Triggers -->
+  <div class="checkin-step hidden" id="step-2">
+    <div class="form-card">
+      <div class="form-card-title">⚡ Today's training context</div>
+      <div class="trigger-grid">
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">🏠</span><span class="tc-name">New Environment</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">🐕</span><span class="tc-name">Other Dogs</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">🎯</span><span class="tc-name">High Distraction</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">⭐</span><span class="tc-name">New Skill</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">✅</span><span class="tc-name">Familiar Routine</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">⏱️</span><span class="tc-name">Short Session</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">🌳</span><span class="tc-name">Outdoor Training</span></div>
+        <div class="trigger-chip" onclick="toggleChip(this)"><span class="tc-icon">❓</span><span class="tc-name">Unsure</span></div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="nextStep(1)">← Back</button>
+      <button class="btn-primary" onclick="nextStep(3)">Continue →</button>
+    </div>
+  </div>
+
+  <!-- Step 4: Notes -->
+  <div class="checkin-step hidden" id="step-3">
+    <div class="form-card">
+      <div class="form-card-title">📝 Anything else?</div>
+      <label class="form-label">Training methods used today</label>
+      <div class="tag-group" style="margin-bottom:12px" id="copingTags">
+        <span class="tag" onclick="toggleTag(this)">Luring</span>
+        <span class="tag" onclick="toggleTag(this)">Grounding</span>
+        <span class="tag" onclick="toggleTag(this)">Free shaping</span>
+        <span class="tag" onclick="toggleTag(this)">Target training</span>
+        <span class="tag" onclick="toggleTag(this)">Play reward</span>
+        <span class="tag" onclick="toggleTag(this)">Breathwork</span>
+      </div>
+      <label class="form-label">Session notes (optional)</label>
+      <textarea class="form-textarea" id="checkinNote" placeholder="How did it go? Any breakthroughs or challenges…" rows="3"></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="nextStep(2)">← Back</button>
+      <button class="btn-primary" onclick="nextStep(4)">Save Session Log ✓</button>
+    </div>
+  </div>
+
+  <!-- Step 5: Result -->
+  <div class="checkin-step hidden" id="step-4">
+    <div class="feedback-card" id="feedbackCard">
+      <span class="risk-badge" id="riskBadge">LOW</span>
+      <div class="feedback-sugg" id="feedbackText"></div>
+      <div class="feedback-tip" id="feedbackTip"></div>
+      <div class="feedback-actions" style="margin-top:12px">
+        <button class="btn-sm filled" onclick="goTab('exercises')">🧩 Try Enrichment</button>
+        <button class="btn-sm" onclick="goTab('journal')">📓 Journal It</button>
+        <button class="btn-sm" onclick="startNewCheckin()">↩ New Check-In</button>
+      </div>
+    </div>
+    <div style="margin-top:16px;font-size:13px;color:var(--muted);text-align:center">Session saved! Your trainer can see your log ✓</div>
+  </div>
+</div>
+
+<!-- EXERCISES TAB -->
+<div class="tab-page hidden" id="tab-exercises">
+  <div class="section-title" id="fp-section-enrich">Enrichment Activities</div>
+  <div class="section-sub">Keep your pet mentally stimulated &amp; engaged</div>
+
+  <div class="ex-filter">
+    <button class="ex-filter-btn active" onclick="filterEx('all',this)">All</button>
+    <button class="ex-filter-btn" onclick="filterEx('puzzle',this)">Puzzle</button>
+    <button class="ex-filter-btn" onclick="filterEx('scent',this)">Scent</button>
+    <button class="ex-filter-btn" onclick="filterEx('play',this)">Play</button>
+    <button class="ex-filter-btn" onclick="filterEx('quick',this)">⚡ Quick</button>
+  </div>
+
+  <div class="ex-cards" id="exCards"></div>
+</div>
+
+<!-- HISTORY TAB -->
+<div class="tab-page hidden" id="tab-history">
+  <div class="section-title" id="fp-section-history">Training History</div>
+  <div class="section-sub">Your session log &amp; progress over time</div>
+
+  <div class="history-stats">
+    <div class="hstat"><div class="hstat-val" id="avgScore">4.2</div><div class="hstat-lbl">Avg Session Score</div></div>
+    <div class="hstat"><div class="hstat-val" id="totalCheckins">18</div><div class="hstat-lbl">Sessions</div></div>
+    <div class="hstat"><div class="hstat-val" id="improvePct">↓12%</div><div class="hstat-lbl">This Week</div></div>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-header">
+      <span class="chart-title">30-Day Trend</span>
+      <div class="chart-tabs">
+        <button class="chart-tab active" onclick="switchHistChart('score',this)">Progress</button>
+        <button class="chart-tab" onclick="switchHistChart('sleep',this)">Sleep</button>
+      </div>
+    </div>
+    <canvas id="histChart" height="100"></canvas>
+  </div>
+
+  <div class="history-list" id="historyList"></div>
+</div>
+
+<!-- JOURNAL TAB -->
+<div class="tab-page hidden" id="tab-journal">
+  <div class="section-title">📓 Training Notes</div>
+  <div class="section-sub">Session reflections, breakthroughs &amp; ideas</div>
+
+  <div class="journal-prompts" id="journalPrompts"></div>
+
+  <div class="journal-editor" id="journalEditor">
+    <div class="journal-prompt-text" id="activePrompt">Reflect on today’s training session with your dog…</div>
+    <textarea class="journal-ta" id="journalTA" placeholder="Write about what happened, what worked, and what to try next…" oninput="updateWC()"></textarea>
+    <div class="journal-footer">
+      <span class="wc" id="wcDisplay">0 words</span>
+      <div style="display:flex;gap:6px">
+        <button class="btn-sm" onclick="clearJournal()">Clear</button>
+        <button class="btn-sm filled" onclick="saveJournal()">Save Entry</button>
+      </div>
+    </div>
+    <div class="mood-tag-row" id="journalMoodTags">
+      <span class="tag" onclick="toggleTag(this)">😌 Calm &amp; positive</span>
+      <span class="tag" onclick="toggleTag(this)">😤 Frustrated</span>
+      <span class="tag" onclick="toggleTag(this)">😊 Really pleased</span>
+      <span class="tag" onclick="toggleTag(this)">🤔 Uncertain</span>
+      <span class="tag" onclick="toggleTag(this)">💪 Motivated</span>
+      <span class="tag" onclick="toggleTag(this)">🌟 Breakthrough today</span>
+    </div>
+  </div>
+
+  <div style="font-size:13px;font-weight:700;margin-bottom:10px">Past Entries</div>
+  <div class="journal-list" id="journalList"></div>
+</div>
+
+<!-- GOALS TAB -->
+<div class="tab-page hidden" id="tab-goals">
+  <div class="section-title" id="fp-section-goals">Training Goals</div>
+  <div class="section-sub">Track skills, milestones &amp; daily consistency</div>
+
+  <div style="font-size:13px;font-weight:700;margin-bottom:8px">🏆 Achievements</div>
+  <div class="achievement-row" id="achievements"></div>
+
+  <div class="goals-header">
+    <span style="font-size:14px;font-weight:700">Active Goals</span>
+    <button class="btn-sm filled" onclick="addGoalPrompt()">+ Add Goal</button>
+  </div>
+  <div id="goalsList"></div>
+</div>
+
+
+<!-- COURSES TAB -->
+<div class="tab-page hidden" id="tab-courses">
+  <div class="section-title">🎓 Course Library</div>
+  <div id="coursesTabContent"></div>
+</div>
+
+<!-- BOTTOM NAV -->
+<nav class="bottom-nav">
+  <button class="nav-tab active" id="nav-home" onclick="goTab('home')">🏠<span>Home</span></button>
+  <button class="nav-tab" id="nav-checkin" onclick="goTab('checkin')"><span style="font-size:18px">📋</span><span>Log Session</span><div class="notif-dot" id="checkinDot"></div></button>
+  <button class="nav-tab" id="nav-exercises" onclick="goTab('exercises')">🧩<span>Enrich</span></button>
+  <button class="nav-tab" id="nav-history" onclick="goTab('history')">📊<span>History</span></button>
+  <button class="nav-tab" id="nav-courses" onclick="goTab('courses')">🎓<span>Courses</span></button>
+  <button class="nav-tab" id="nav-goals" onclick="goTab('goals')">🎯<span>Goals</span></button>
+</nav>
+
+<!-- Exercise runner -->
+<div class="ex-runner hidden" id="exRunner">
+  <div class="runner-inner">
+    <div class="runner-title" id="runnerTitle">4-7-8 Breathing</div>
+    <div class="breath-circle" id="breathCircle"></div>
+    <div class="runner-instr" id="runnerInstr">Inhale</div>
+    <div class="runner-count" id="runnerCount">4</div>
+    <div class="runner-step" id="runnerStep"></div>
+    <div class="runner-progress"><div class="runner-progress-bar" id="runnerProgressBar" style="width:0%"></div></div>
+    <div class="runner-cycles" id="runnerCycles">Cycle 1 of 4</div>
+    <button class="btn-runner-stop" onclick="stopExercise()">✕ End Session</button>
+  </div>
+</div>
+
+<!-- Grounding runner -->
+<div class="ex-runner hidden" id="groundRunner">
+  <div class="runner-inner">
+    <div class="runner-title">5-4-3-2-1 Grounding</div>
+    <div class="ground-step">
+      <div class="ground-number" id="groundNum">5</div>
+      <div class="ground-prompt" id="groundPrompt">Things you can SEE</div>
+    </div>
+    <input class="ground-input" id="groundInput" placeholder="Type each one and press Enter…" onkeydown="addGroundItem(event)"/>
+    <div class="ground-list" id="groundList"></div>
+    <div class="runner-cycles" id="groundProgress">0 / 5 named</div>
+    <button class="btn-runner-stop" onclick="stopGrounding()">✕ End Session</button>
+  </div>
+</div>
+
+<!-- Emergency modal -->
+<div class="modal hidden" id="emergencyModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <h3>🆘 Training Support</h3>
+    <p>Need help with a training challenge? Your trainer is here to support you.</p>
+    <a href="tel:116123" class="btn-emerg-large">📞 Call Samaritans: 116 123</a>
+    <a href="sms:85258" class="btn-emerg-large" style="background:#7c3aed">💬 Text SHOUT: 85258</a>
+    <button class="btn-secondary" style="margin-top:8px" onclick="goTab('exercises');closeEmergency()">🫁 Try a Breathing Exercise</button>
+    <button class="btn-secondary" onclick="closeEmergency()">I'm okay, close this</button>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast hidden" id="toast"></div>
+
+
+<!-- Add Goal Modal -->
+<div class="modal hidden" id="addGoalModal">
+  <div class="modal-inner">
+    <div class="modal-handle"></div>
+    <h3>🎯 Add a Goal</h3>
+    <p>What habit do you want to build?</p>
+    <div style="text-align:left;margin-bottom:12px">
+      <label class="form-label" style="display:block;margin-bottom:6px">Goal Name</label>
+      <input id="newGoalName" type="text" placeholder="e.g. Meditate for 10 minutes" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:14px;font-family:inherit"/>
+    </div>
+    <div style="text-align:left;margin-bottom:20px">
+      <label class="form-label" style="display:block;margin-bottom:6px">Category</label>
+      <select id="newGoalCat" style="width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:var(--rs);background:var(--surface2);color:var(--text);font-size:14px">
+        <option>Mindfulness</option>
+        <option>Exercise</option>
+        <option>Sleep</option>
+        <option>Social</option>
+        <option>Self-Care</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <button class="btn-primary" onclick="saveNewGoal()">Add Goal</button>
+    <button class="btn-secondary" style="margin-top:8px" onclick="closeGoalModal()">Cancel</button>
+  </div>
+</div>
+
+<footer class="fp-footer">Recharge Recovery Platform · Demo Mode · All data stays in your browser</footer>
+
+<script>
+// ── State ──────────────────────────────────────────────
+const S = {
+  checkinStep: 0,
+  score: null, sleep: null,
+  currentMood: null,
+  xp: 420, streak: 5,
+  currentExFilter: 'all',
+  activeExerciseId: null,
+  exercisesCompleted: JSON.parse(localStorage.getItem('ex_done')||'[]'),
+  journalEntries: JSON.parse(localStorage.getItem('journal')||'[]'),
+  goals: JSON.parse(localStorage.getItem('goals')||'null') || defaultGoals(),
+  checkins: JSON.parse(localStorage.getItem('checkins')||'null') || defaultCheckins(),
+};
+
+function defaultGoals(){
+  return [
+    {id:1,name:'Daily Meditation',cat:'Mindfulness',target:7,days:[1,1,1,0,1,1,0]},
+    {id:2,name:'Morning Walk',cat:'Exercise',target:5,days:[1,1,0,1,1,0,0]},
+    {id:3,name:'No Phone Before Bed',cat:'Sleep',target:7,days:[0,1,1,1,0,1,1]},
+  ];
+}
+function defaultCheckins(){
+  const now=Date.now(); const day=86400000;
+  return [
+    {date:now,score:3,sleep:7,note:'Morning breathwork felt genuinely calming',triggers:['Familiar Routine'],coping:['Breathwork'],risk:'LOW'},
+    {date:now-day,score:6,sleep:5,note:'Loose-lead work near other dogs',triggers:['Other Dogs'],coping:['Play reward'],risk:'MEDIUM'},
+    {date:now-day*2,score:4,sleep:6,note:'Mix of sit, stay and target training',triggers:['New Skill'],coping:['Grounding'],risk:'MEDIUM'},
+    {date:now-day*3,score:8,sleep:4,note:'Reactive incident near traffic, ended early',triggers:['High Distraction'],coping:['Luring'],risk:'HIGH'},
+    {date:now-day*4,score:2,sleep:8,note:'Best session yet! Mastered down-stay',triggers:[],coping:['Play reward','Breathwork'],risk:'LOW'},
+    {date:now-day*5,score:5,sleep:6,note:'New environment - park session',triggers:['New Environment'],coping:['Breathwork'],risk:'MEDIUM'},
+    {date:now-day*6,score:3,sleep:7,note:'Grounding walk + journalling',triggers:[],coping:['Grounding'],risk:'LOW'},
+  ];
+}
+
+// ── Greeting ──────────────────────────────────────────
+function setGreeting(){
+  const h = new Date().getHours();
+  const g = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('greetingText').textContent = g + ', Recovery User 🌿';
+}
+setGreeting();
+
+// ── Theme ─────────────────────────────────────────────
+let dark = localStorage.getItem('theme') === 'dark';
+function applyTheme(){
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : '');
+  document.getElementById('themeToggle').textContent = dark ? '☀️' : '🌙';
+}
+applyTheme();
+document.getElementById('themeToggle').onclick = function(){
+  dark = !dark;
+  localStorage.setItem('theme', dark ? 'dark' : '');
+  applyTheme();
+};
+
+// ── Tab nav ───────────────────────────────────────────
+function goTab(t){
+  document.querySelectorAll('.tab-page').forEach(function(p){ p.classList.add('hidden'); });
+  document.querySelectorAll('.nav-tab').forEach(function(b){ b.classList.remove('active'); });
+  var page = document.getElementById('tab-'+t);
+  if(page) page.classList.remove('hidden');
+  var nb = document.getElementById('nav-'+t);
+  if(nb) nb.classList.add('active');
+  if(t === 'history'){ renderHistory(); setTimeout(function(){ renderHistChart('score'); }, 80); }
+  if(t === 'goals') renderGoals();
+  if(t === 'journal') renderJournal();
+  if(t === 'exercises') renderExercises();
+  if(t === 'home') setTimeout(function(){ renderMiniChart('score'); }, 80);
+  if(t === 'courses') renderCourseLibrary();
+  window.scrollTo(0,0);
+}
+
+// ── Mood ──────────────────────────────────────────────
+function selectMood(v){
+  S.currentMood = v;
+  document.querySelectorAll('.mood-btn').forEach(function(b){ b.classList.remove('selected'); });
+  var btn = document.querySelector('.mood-btn[data-mood="'+v+'"]');
+  if(btn) btn.classList.add('selected');
+  var labels = ['','Feeling anxious 😰','Feeling low 😔','Feeling neutral 😐','Feeling good 🙂','Feeling great 😊'];
+  showToast(labels[v] || '');
+}
+
+// ── Scale builders ────────────────────────────────────
+function buildScale(containerId, valueId, stateKey, max){
+  max = max || 10;
+  var c = document.getElementById(containerId);
+  if(!c) return;
+  c.innerHTML = '';
+  for(var i = 0; i <= max; i++){
+    (function(val){
+      var b = document.createElement('button');
+      b.className = 'scale-btn';
+      b.textContent = val;
+      b.setAttribute('data-v', val);
+      b.onclick = function(){
+        c.querySelectorAll('.scale-btn').forEach(function(x){ x.classList.remove('selected'); });
+        b.classList.add('selected');
+        var vEl = document.getElementById(valueId);
+        if(vEl) vEl.textContent = val;
+        if(stateKey === 'score'){
+          S.score = val;
+          var lbl = document.getElementById('anxietyLabel');
+          if(lbl) lbl.textContent = val<=2 ? '🌟 Brilliant session!' : val<=4 ? '✅ Good session' : val<=6 ? '🟡 Moderate difficulty' : val<=8 ? '🟠 Tough session' : '🔴 Really hard day';
+        }
+        if(stateKey === 'sleep') S.sleep = val;
+      };
+      c.appendChild(b);
+    })(i);
+  }
+}
+buildScale('anxietyScale','anxietyVal','score',10);
+buildScale('sleepScale','sleepVal','sleep',10);
+
+// ── Tags / chips ──────────────────────────────────────
+function toggleTag(el){ el.classList.toggle('active'); }
+function toggleChip(el){ el.classList.toggle('active'); }
+
+// ── Check-in steps ────────────────────────────────────
+function nextStep(n){
+  document.getElementById('step-'+S.checkinStep).classList.add('hidden');
+  S.checkinStep = n;
+  document.getElementById('step-'+n).classList.remove('hidden');
+  var pct = Math.round((n/4)*100);
+  document.getElementById('checkinBar').style.width = Math.max(pct,10)+'%';
+  for(var i=0;i<5;i++){
+    var d = document.getElementById('sd'+i);
+    if(d){
+      d.classList.toggle('active', i===n);
+      d.classList.toggle('done', i<n);
+    }
+  }
+  if(n === 4) submitCheckin();
+}
+
+function startNewCheckin(){
+  S.checkinStep = 0; S.score = null; S.sleep = null;
+  document.querySelectorAll('.checkin-step').forEach(function(s){ s.classList.add('hidden'); });
+  document.getElementById('step-0').classList.remove('hidden');
+  document.getElementById('checkinBar').style.width = '10%';
+  // Reset dots
+  for(var i=0;i<5;i++){
+    var d = document.getElementById('sd'+i);
+    if(d){ d.classList.toggle('active',i===0); d.classList.remove('done'); }
+  }
+  // Reset scales
+  buildScale('anxietyScale','anxietyVal','score',10);
+  buildScale('sleepScale','sleepVal','sleep',10);
+  document.getElementById('anxietyVal').textContent = '—';
+  document.getElementById('anxietyLabel').textContent = '';
+  document.getElementById('sleepVal').textContent = '—';
+  // Reset tags
+  document.querySelectorAll('#physicalTags .tag, #copingTags .tag, .trigger-chip').forEach(function(t){ t.classList.remove('active'); });
+  var note = document.getElementById('checkinNote');
+  if(note) note.value = '';
+}
+
+function submitCheckin(){
+  var score = S.score !== null ? S.score : 5;
+  var risk = score<=3 ? 'LOW' : score<=6 ? 'MEDIUM' : score<=8 ? 'HIGH' : 'CRITICAL';
+  var msgs = {
+    LOW: 'Your energy is building. These moments of restoration are the ones to notice and protect.',
+    MEDIUM: 'Steady progress. One restorative practice now will help consolidate this energy.',
+    HIGH: 'Tough session — completely normal. Every dog has off days. Keep it short and always end on a win.',
+    CRITICAL: 'Really hard day. Rest now and try again tomorrow. Contact your trainer for personalised guidance.'
+  };
+  var tips = {
+    LOW: '💡 Tip: High-energy moments are worth logging — they show your system what restoration feels like.',
+    MEDIUM: '💡 Tip: Finish each day with one small act of self-care — it signals safety to your nervous system.',
+    HIGH: '💡 Tip: A 5-minute sniff walk on a long lead resets arousal far better than drilling exercises.',
+    CRITICAL: '💡 Tip: Management first, training second. Remove the trigger, simplify the environment, then try again.'
+  };
+  // Collect triggers from chips
+  var triggers = [];
+  document.querySelectorAll('.trigger-chip.active .tc-name').forEach(function(el){ triggers.push(el.textContent); });
+  var coping = [];
+  document.querySelectorAll('#copingTags .tag.active').forEach(function(el){ coping.push(el.textContent); });
+
+  var badge = document.getElementById('riskBadge');
+  badge.textContent = risk;
+  badge.className = 'risk-badge ' + risk;
+  document.getElementById('feedbackText').textContent = msgs[risk];
+  document.getElementById('feedbackTip').textContent = tips[risk];
+  var fc = document.getElementById('feedbackCard');
+  fc.className = 'feedback-card' + (risk==='HIGH' ? ' risk-high' : risk==='CRITICAL' ? ' risk-critical' : '');
+
+  var noteVal = document.getElementById('checkinNote') ? document.getElementById('checkinNote').value : '';
+  S.checkins.unshift({
+    date: Date.now(),
+    score: score,
+    sleep: S.sleep !== null ? S.sleep : 6,
+    note: noteVal,
+    triggers: triggers,
+    coping: coping,
+    risk: risk
+  });
+  localStorage.setItem('checkins', JSON.stringify(S.checkins));
+  S.xp += 50;
+  S.streak += 1;
+  document.getElementById('xpText').textContent = '⚡ '+S.xp+' XP';
+  document.getElementById('streakText').textContent = S.streak+'-day streak — keep it up!';
+  var dot = document.getElementById('checkinDot');
+  if(dot) dot.style.display = 'none';
+  showToast('✅ Check-in saved! +50 XP');
+  setTimeout(function(){ renderMiniChart('score'); }, 100);
+}
+
+// ── Mini chart (home) ─────────────────────────────────
+var currentMiniChartType = 'score';
+function renderMiniChart(type){
+  currentMiniChartType = type;
+  var c = document.getElementById('miniChart');
+  if(!c) return;
+  var slice = S.checkins.slice(0,7).reverse();
+  var data = slice.map(function(ci){ return type==='sleep' ? (ci.sleep||6) : (ci.score||0); });
+  var labels = slice.map(function(ci){ var d=new Date(ci.date); return ['Su','Mo','Tu','We','Th','Fr','Sa'][d.getDay()]; });
+  drawLineChart(c, labels, data, type==='sleep'?'#10b981':'#4a7c7e', type==='sleep'?'rgba(16,185,129,.15)':'rgba(58,125,68,.15)');
+}
+
+function switchMiniChart(type, btn){
+  document.querySelectorAll('#tab-home .chart-tab').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  renderMiniChart(type);
+}
+
+// ── History chart ─────────────────────────────────────
+var currentHistChartType = 'score';
+function renderHistChart(type){
+  currentHistChartType = type;
+  var c = document.getElementById('histChart');
+  if(!c) return;
+  var slice = S.checkins.slice(0,14).reverse();
+  var data = slice.map(function(ci){ return type==='sleep' ? (ci.sleep||6) : (ci.score||0); });
+  var labels = slice.map(function(ci){ var d=new Date(ci.date); return (d.getDate())+'/'+(d.getMonth()+1); });
+  drawLineChart(c, labels, data, type==='sleep'?'#10b981':'#4a7c7e', type==='sleep'?'rgba(16,185,129,.15)':'rgba(58,125,68,.15)');
+}
+
+function switchHistChart(type, btn){
+  document.querySelectorAll('#tab-history .chart-tab').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  renderHistChart(type);
+}
+
+// ── Line chart ────────────────────────────────────────
+function drawLineChart(canvas, labels, data, color, fill){
+  if(!canvas || !data.length) return;
+  var W = canvas.offsetWidth || 340;
+  var H = parseInt(canvas.getAttribute('height')) || 100;
+  canvas.width = W; canvas.height = H;
+  var ctx = canvas.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  var pad=14, max=Math.max.apply(null,data.concat([10])), min=0;
+  var xStep = (W-pad*2) / (data.length-1||1);
+  var yScale = (H-pad*2) / (max-min||1);
+  ctx.strokeStyle = 'rgba(148,163,184,.15)'; ctx.lineWidth=1;
+  for(var g=0;g<=2;g++){
+    var gy = pad+g*(H-pad*2)/2;
+    ctx.beginPath(); ctx.moveTo(pad,gy); ctx.lineTo(W-pad,gy); ctx.stroke();
+  }
+  ctx.beginPath();
+  data.forEach(function(v,i){ var x=pad+i*xStep, y=H-pad-(v-min)*yScale; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.lineTo(pad+(data.length-1)*xStep, H-pad); ctx.lineTo(pad,H-pad); ctx.closePath();
+  ctx.fillStyle = fill; ctx.fill();
+  ctx.beginPath(); ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round';
+  data.forEach(function(v,i){ var x=pad+i*xStep, y=H-pad-(v-min)*yScale; i===0?ctx.moveTo(x,y):ctx.lineTo(x,y); });
+  ctx.stroke();
+  data.forEach(function(v,i){
+    var x=pad+i*xStep, y=H-pad-(v-min)*yScale;
+    ctx.beginPath(); ctx.arc(x,y,3.5,0,Math.PI*2); ctx.fillStyle=color; ctx.fill();
+    ctx.fillStyle = dark?'#131f35':'#fff';
+    ctx.beginPath(); ctx.arc(x,y,1.8,0,Math.PI*2); ctx.fill();
+  });
+  ctx.fillStyle='#94a3b8'; ctx.font='10px sans-serif'; ctx.textAlign='center';
+  labels.forEach(function(l,i){ ctx.fillText(l, pad+i*xStep, H-1); });
+}
+
+// ── History tab ───────────────────────────────────────
+function renderHistory(){
+  var total = S.checkins.length;
+  var avg = total ? (S.checkins.reduce(function(a,c){ return a+(c.score||0); },0)/total).toFixed(1) : '0';
+  document.getElementById('avgScore').textContent = avg;
+  document.getElementById('totalCheckins').textContent = total;
+  var recent = S.checkins.slice(0,7).reduce(function(a,c){ return a+(c.score||0); },0) / Math.min(7,total||1);
+  var older = S.checkins.slice(7,14);
+  var olderAvg = older.length ? older.reduce(function(a,c){ return a+(c.score||0); },0)/older.length : recent;
+  var chg = Math.round((recent-olderAvg)/olderAvg*100);
+  document.getElementById('improvePct').textContent = (chg<=0 ? '↓'+Math.abs(chg) : '↑'+chg)+'%';
+
+  document.getElementById('historyList').innerHTML = S.checkins.map(function(ci){
+    var d = new Date(ci.date);
+    var sc = ci.score || 0;
+    var bg = sc<=3?'#d1fae5':sc<=6?'#fef3c7':'#fee2e2';
+    var col = sc<=3?'#065f46':sc<=6?'#92400e':'#991b1b';
+    var riskColors = {LOW:'#d1fae5',MEDIUM:'#fef3c7',HIGH:'#fee2e2',CRITICAL:'#ede9fe'};
+    var riskText = {LOW:'#065f46',MEDIUM:'#92400e',HIGH:'#991b1b',CRITICAL:'#4c1d95'};
+    var tags = (ci.triggers||[]).map(function(t){ return '<span class="h-tag">'+t+'</span>'; }).join('');
+    var rtag = '<span class="h-tag" style="background:'+( riskColors[ci.risk]||'#f1f5f9')+';color:'+(riskText[ci.risk]||'#475569')+'">'+ci.risk+'</span>';
+    return '<div class="history-item">'
+      +'<div class="h-score" style="background:'+bg+';color:'+col+'">'+sc+'</div>'
+      +'<div class="h-meta">'
+      +'<div class="h-date">'+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'})+' · '+d.toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit'})+'</div>'
+      +'<div class="h-note">'+(ci.note||'No notes')+'</div>'
+      +'<div class="h-tags">'+tags+rtag+'</div>'
+      +'</div></div>';
+  }).join('');
+}
+
+// ── Exercises ─────────────────────────────────────────
+var EXERCISES = [
+  {id:'breath',  cat:'breathwork', icon:'🌬️', iconBg:'teal',  name:'Box Breathing',  desc:'Structured breath for nervous system reset',      time:'10 min', level:'Beginner'},
+  {id:'muffin',  cat:'puzzle', icon:'🧁', iconBg:'orange', name:'Muffin Tin Game',        desc:'Hide treats under tennis balls in a tin',  time:'5 min',  level:'Beginner'},
+  {id:'ground',  cat:'grounding',  icon:'🌿', iconBg:'teal',  name:'Grounding Walk', desc:'Sensory-focused walk to complete stress cycle',    time:'5 min',  level:'Beginner'},
+  {id:'licki',   cat:'puzzle', icon:'🧈', iconBg:'purple', name:'Lick Mat Session',       desc:'Spread food paste, promotes calm licking', time:'10 min', level:'Beginner'},
+  {id:'tugplay', cat:'play',   icon:'🪛', iconBg:'blue',   name:'Tug Play',               desc:'Structured tug builds drive and focus',    time:'5 min',  level:'Intermediate'},
+  {id:'boxgame', cat:'puzzle', icon:'📦', iconBg:'purple', name:'Box Exploration',        desc:'Novel objects build confidence',           time:'8 min',  level:'Intermediate'},
+  {id:'flirt',   cat:'play',   icon:'🎣', iconBg:'blue',   name:'Flirt Pole Chase',       desc:'Physical exercise + impulse control',      time:'5 min',  level:'Intermediate'},
+  {id:'freeze',  cat:'quick',  icon:'❄️', iconBg:'green', name:'Frozen Kong',           desc:'Stuff and freeze for mental stimulation',  time:'1 min',  level:'Quick'},
+];
+
+function filterEx(f, btn){
+  S.currentExFilter = f;
+  document.querySelectorAll('.ex-filter-btn').forEach(function(b){ b.classList.remove('active'); });
+  if(btn) btn.classList.add('active');
+  renderExercises();
+}
+
+function renderExercises(){
+  var list = S.currentExFilter === 'all'
+    ? EXERCISES
+    : EXERCISES.filter(function(e){ return e.cat === S.currentExFilter; });
+  document.getElementById('exCards').innerHTML = list.map(function(e){
+    var done = S.exercisesCompleted.indexOf(e.id) !== -1;
+    return '<div class="ex-card">'
+      +'<div class="ex-icon '+e.iconBg+'">'+e.icon+'</div>'
+      +'<div class="ex-info"><h3>'+e.name+'</h3><p>'+e.desc+'</p>'
+      +'<div class="ex-meta"><span class="ex-pill">⏱ '+e.time+'</span><span class="ex-pill">'+e.level+'</span></div>'
+      +'</div>'
+      +(done
+        ? '<div class="ex-completed-badge">✅ Done</div>'
+        : '<button class="btn-start-ex" onclick="startExercise(\''+e.id+'\')">Start</button>')
+      +'</div>';
+  }).join('');
+}
+
+// ── Breathing runner ───────────────────────────────────
+var breathInterval = null;
+var breathCycle = 0;
+var breathMaxCycles = 4;
+var currentBreathPhases = [];
+
+function startExercise(id){
+  S.activeExerciseId = id;
+  if(id === 'scatter'){ startGrounding(); return; }
+  if(id === 'freeze'){
+    showToast('❄️ Stuff a Kong and freeze for 2+ hours — ready for the next session!');
+    markExerciseDone(id);
+    return;
+  }
+  if(id === 'flirt'){
+    showToast('🎣 A 5-minute breathwork session before bed can significantly improve sleep quality.');
+    markExerciseDone(id);
+    return;
+  }
+  var patterns = {
+    'sniff':   {name:'Sniff Walk Timer',   phases:[{l:'Walk & Sniff',d:10,c:'inhale'},{l:'Pause & Reward',d:5,c:'hold'}], cycles:4},
+    'muffin':  {name:'Muffin Tin Game',    phases:[{l:'Hide Treats',d:5,c:'hold'},{l:'Let Dog Search',d:8,c:'inhale'},{l:'Reward Find!',d:4,c:'exhale'}], cycles:3},
+    'licki':   {name:'Lick Mat Session',   phases:[{l:'Dog Licking',d:10,c:'inhale'},{l:'Check & Refill',d:5,c:'hold'}], cycles:4},
+    'tugplay': {name:'Tug Play Session',   phases:[{l:'Tug!',d:5,c:'inhale'},{l:'Drop Cue',d:3,c:'hold'},{l:'Reward & Reset',d:5,c:'exhale'}], cycles:4},
+    'boxgame': {name:'Box Exploration',    phases:[{l:'Present Object',d:5,c:'inhale'},{l:'Let Dog Explore',d:10,c:'hold'},{l:'Reward Interest',d:4,c:'exhale'}], cycles:3},
+  };
+  var p = patterns[id] || patterns['478'];
+  currentBreathPhases = p.phases;
+  breathCycle = 0;
+  breathMaxCycles = p.cycles;
+  document.getElementById('runnerTitle').textContent = p.name;
+  document.getElementById('exRunner').classList.remove('hidden');
+  runBreath(0);
+}
+
+function runBreath(phaseIdx){
+  if(breathCycle >= breathMaxCycles){ stopExercise(); return; }
+  var phase = currentBreathPhases[phaseIdx % currentBreathPhases.length];
+  var bc = document.getElementById('breathCircle');
+  bc.className = 'breath-circle ' + phase.c;
+  document.getElementById('runnerInstr').textContent = phase.l;
+  document.getElementById('runnerCycles').textContent = 'Cycle '+(breathCycle+1)+' of '+breathMaxCycles;
+  var pct = Math.round((breathCycle/breathMaxCycles)*100);
+  document.getElementById('runnerProgressBar').style.width = pct+'%';
+  var phaseStep = document.getElementById('runnerStep');
+  if(phaseStep) phaseStep.textContent = '';
+  var t = phase.d;
+  document.getElementById('runnerCount').textContent = t;
+  clearInterval(breathInterval);
+  breathInterval = setInterval(function(){
+    t--;
+    document.getElementById('runnerCount').textContent = t;
+    if(t <= 0){
+      clearInterval(breathInterval);
+      var nextIdx = phaseIdx + 1;
+      if(nextIdx % currentBreathPhases.length === 0) breathCycle++;
+      runBreath(nextIdx);
+    }
+  }, 1000);
+}
+
+function stopExercise(){
+  clearInterval(breathInterval);
+  document.getElementById('exRunner').classList.add('hidden');
+  if(S.activeExerciseId) markExerciseDone(S.activeExerciseId);
+  S.activeExerciseId = null;
+  showToast('🎉 Exercise complete! +30 XP');
+  S.xp += 30;
+  document.getElementById('xpText').textContent = '⚡ '+S.xp+' XP';
+  renderExercises();
+}
+
+function markExerciseDone(id){
+  if(S.exercisesCompleted.indexOf(id) === -1){
+    S.exercisesCompleted.push(id);
+    localStorage.setItem('ex_done', JSON.stringify(S.exercisesCompleted));
+  }
+}
+
+// ── Grounding runner ───────────────────────────────────
+var groundSteps = [
+  {n:5, sense:'a journal and pen'},
+  {n:4, sense:'different spots to hide treats'},
+  {n:3, sense:'jackpot pieces hidden deeply'},
+  {n:2, sense:'minutes of free sniffing time'},
+  {n:1, sense:'big final reward at the end'},
+];
+var groundStepIdx = 0;
+var groundItems = [];
+
+function startGrounding(){
+  groundStepIdx = 0; groundItems = [];
+  document.getElementById('groundList').innerHTML = '';
+  document.getElementById('groundInput').value = '';
+  updateGroundUI();
+  document.getElementById('groundRunner').classList.remove('hidden');
+  setTimeout(function(){ document.getElementById('groundInput').focus(); }, 150);
+}
+
+function updateGroundUI(){
+  var s = groundSteps[groundStepIdx];
+  document.getElementById('groundNum').textContent = s.n;
+  document.getElementById('groundPrompt').textContent = 'Prepare ' + s.sense;
+  document.getElementById('groundProgress').textContent = groundItems.length + ' / ' + s.n + ' named';
+}
+
+function addGroundItem(e){
+  if(e.key !== 'Enter') return;
+  var val = document.getElementById('groundInput').value.trim();
+  if(!val) return;
+  groundItems.push(val);
+  document.getElementById('groundInput').value = '';
+  var li = document.createElement('div');
+  li.className = 'ground-list-item';
+  li.textContent = '✓ ' + val;
+  document.getElementById('groundList').appendChild(li);
+  var s = groundSteps[groundStepIdx];
+  document.getElementById('groundProgress').textContent = groundItems.length + ' / ' + s.n + ' named';
+  if(groundItems.length >= s.n){
+    groundStepIdx++;
+    groundItems = [];
+    document.getElementById('groundList').innerHTML = '';
+    if(groundStepIdx >= groundSteps.length){ stopGrounding(); return; }
+    setTimeout(updateGroundUI, 500);
+  }
+}
+
+function stopGrounding(){
+  document.getElementById('groundRunner').classList.add('hidden');
+  markExerciseDone('54321');
+  showToast('🌿 Grounding complete! You did great. +30 XP');
+  S.xp += 30;
+  document.getElementById('xpText').textContent = '⚡ '+S.xp+' XP';
+  renderExercises();
+}
+
+// ── Journal ───────────────────────────────────────────
+var PROMPTS = [
+  'What went brilliantly in today\'s training session?',
+  'Which skill improved the most this week?',
+  'What was challenging — and how will you adjust?',
+  'Describe one moment of calm you experienced today.',
+  'Which restorative practice helped most this week?',
+  'What training milestone do you want to hit next?',
+];
+
+function renderJournal(){
+  var pEl = document.getElementById('journalPrompts');
+  if(pEl){
+    pEl.innerHTML = PROMPTS.map(function(p,i){
+      var short = p.length > 28 ? p.substring(0,28)+'…' : p;
+      return '<button class="jp-btn" onclick="setJournalPrompt('+i+',this)">'+short+'</button>';
+    }).join('');
+  }
+  renderJournalList();
+}
+
+function setJournalPrompt(i, btn){
+  var promptEl = document.getElementById('activePrompt');
+  if(promptEl) promptEl.textContent = PROMPTS[i];
+  document.querySelectorAll('.jp-btn').forEach(function(b){
+    b.style.borderColor = '';
+    b.style.color = '';
+  });
+  if(btn){ btn.style.borderColor='var(--primary)'; btn.style.color='var(--primary)'; }
+  var ta = document.getElementById('journalTA');
+  if(ta) ta.focus();
+}
+
+function updateWC(){
+  var ta = document.getElementById('journalTA');
+  if(!ta) return;
+  var words = ta.value.trim().split(/\s+/).filter(Boolean).length;
+  var wc = document.getElementById('wcDisplay');
+  if(wc) wc.textContent = words + (words===1?' word':' words');
+}
+
+function saveJournal(){
+  var ta = document.getElementById('journalTA');
+  var text = ta ? ta.value.trim() : '';
+  if(!text){ showToast('Write something first!'); return; }
+  var moods = [];
+  document.querySelectorAll('#journalMoodTags .tag.active').forEach(function(t){ moods.push(t.textContent); });
+  var promptEl = document.getElementById('activePrompt');
+  S.journalEntries.unshift({
+    date: Date.now(),
+    text: text,
+    prompt: promptEl ? promptEl.textContent : '',
+    moods: moods
+  });
+  localStorage.setItem('journal', JSON.stringify(S.journalEntries));
+  if(ta) ta.value = '';
+  document.querySelectorAll('#journalMoodTags .tag').forEach(function(t){ t.classList.remove('active'); });
+  updateWC();
+  showToast('📓 Training note saved! +20 XP');
+  S.xp += 20;
+  document.getElementById('xpText').textContent = '⚡ '+S.xp+' XP';
+  renderJournalList();
+}
+
+function clearJournal(){
+  var ta = document.getElementById('journalTA');
+  if(ta) ta.value = '';
+  updateWC();
+}
+
+function renderJournalList(){
+  var el = document.getElementById('journalList');
+  if(!el) return;
+  if(!S.journalEntries.length){
+    el.innerHTML = '<div style="color:var(--muted);font-size:13px;text-align:center;padding:20px 0">No training notes yet — write your first reflection above!</div>';
+    return;
+  }
+  el.innerHTML = S.journalEntries.map(function(e){
+    var d = new Date(e.date);
+    var excerpt = e.text.length > 120 ? e.text.substring(0,120)+'…' : e.text;
+    return '<div class="jl-item">'
+      +'<div class="jl-date">'+d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})+'</div>'
+      +'<div class="jl-excerpt">'+excerpt+'</div>'
+      +'<div class="jl-mood">'+(e.moods||[]).join(' ')+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+// ── Goals ─────────────────────────────────────────────
+var ACHIEVEMENTS = [
+  {icon:'🔥',name:'5-Day Streak',   locked:false},
+  {icon:'📋',name:'First Session',  locked:false},
+  {icon:'🧩',name:'Enrichment Pro', locked:false},
+  {icon:'🎯',name:'Goal Setter',    locked:true},
+  {icon:'🐾',name:'10 Sessions',    locked:true},
+  {icon:'🏆',name:'Graduate',       locked:true},
+];
+
+function renderGoals(){
+  var achEl = document.getElementById('achievements');
+  if(achEl){
+    achEl.innerHTML = ACHIEVEMENTS.map(function(a){
+      return '<div class="achievement'+(a.locked?' locked':'')+'"><span class="ach-icon">'+a.icon+'</span><span class="ach-name">'+a.name+'</span></div>';
+    }).join('');
+  }
+  var listEl = document.getElementById('goalsList');
+  if(!listEl) return;
+  listEl.innerHTML = S.goals.map(function(g){
+    var done = g.days.filter(Boolean).length;
+    var pct = Math.round((done/g.target)*100);
+    var today = new Date().getDay();
+    var dayLabels = ['S','M','T','W','T','F','S'];
+    var dayBoxes = g.days.map(function(d,i){
+      return '<div class="goal-day'+(d?' done':'')+(i===today?' today':'')+'" onclick="toggleGoalDay('+g.id+','+i+')" title="'+['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][i]+'">'+dayLabels[i]+'</div>';
+    }).join('');
+    return '<div class="goal-card">'
+      +'<div class="goal-top"><div><div class="goal-name">'+g.name+'</div><div class="goal-cat">'+g.cat+'</div></div>'
+      +'<div style="font-size:15px;font-weight:800;color:var(--accent)">'+pct+'%</div></div>'
+      +'<div class="goal-progress-wrap"><div class="goal-progress-bar" style="width:'+pct+'%"></div></div>'
+      +'<div class="goal-footer"><span>'+done+'/'+g.target+' days this week</span></div>'
+      +'<div class="goal-check-row">'+dayBoxes+'</div>'
+      +'</div>';
+  }).join('');
+}
+
+function toggleGoalDay(gid, day){
+  var g = S.goals.find(function(x){ return x.id===gid; });
+  if(g){
+    g.days[day] = g.days[day] ? 0 : 1;
+    localStorage.setItem('goals', JSON.stringify(S.goals));
+    renderGoals();
+    showToast(g.days[day] ? '✅ Day marked!' : 'Day unmarked');
+  }
+}
+
+function addGoalPrompt(){
+  var modal = document.getElementById('addGoalModal');
+  if(modal) modal.classList.remove('hidden');
+}
+function closeGoalModal(){
+  var modal = document.getElementById('addGoalModal');
+  if(modal) modal.classList.add('hidden');
+}
+function saveNewGoal(){
+  var nameEl = document.getElementById('newGoalName');
+  var catEl = document.getElementById('newGoalCat');
+  var name = nameEl ? nameEl.value.trim() : '';
+  var cat = catEl ? catEl.value : 'Mindfulness';
+  if(!name){ showToast('Enter a goal name first!'); return; }
+  S.goals.push({id:Date.now(), name:name, cat:cat, target:7, days:[0,0,0,0,0,0,0]});
+  localStorage.setItem('goals', JSON.stringify(S.goals));
+  if(nameEl) nameEl.value = '';
+  closeGoalModal();
+  renderGoals();
+  showToast('🎯 Goal added!');
+}
+
+// ── Emergency ─────────────────────────────────────────
+function openEmergency(){ document.getElementById('emergencyModal').classList.remove('hidden'); }
+function closeEmergency(){ document.getElementById('emergencyModal').classList.add('hidden'); }
+
+// ── Toast ─────────────────────────────────────────────
+var toastTimer = null;
+function showToast(msg){
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(function(){ t.classList.add('hidden'); }, 3000);
+}
+
+// ── Init ──────────────────────────────────────────────
+renderMiniChart('score');
+window.addEventListener('resize', function(){
+  renderMiniChart(currentMiniChartType || 'score');
+  if(document.getElementById('tab-history') && !document.getElementById('tab-history').classList.contains('hidden')){
+    renderHistChart(currentHistChartType);
+  }
+});
+</script>
+
+<!-- ══════════════════════════════════════════
+     RECHARGE GUIDE — RECOVERY COMPANION TOUR
+══════════════════════════════════════════ -->
+<style>
+#fp-tour-welcome{position:fixed;inset:0;z-index:9999;background:rgba(10,30,14,.78);display:flex;align-items:center;justify-content:center;animation:fpFadeIn .3s ease}
+#fp-tour-welcome.fp-hidden{display:none}
+.fp-welcome-box{background:#fff;border-radius:20px;padding:36px 32px;max-width:420px;width:90%;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.fp-welcome-paw{font-size:48px;margin-bottom:10px}
+.fp-welcome-title{font-size:22px;font-weight:900;color:#1e2d12;margin-bottom:8px}
+.fp-welcome-sub{font-size:14px;color:#5a6e47;line-height:1.6;margin-bottom:22px}
+.fp-guide-badge{display:inline-flex;align-items:center;gap:7px;background:#f0faf0;border:1.5px solid #c8d8b0;border-radius:99px;padding:5px 14px;font-size:12px;font-weight:700;color:#4a7c7e;margin-bottom:18px}
+.fp-welcome-btns{display:flex;gap:10px;justify-content:center}
+.fp-btn-start{background:#4a7c7e;color:#fff;border:none;border-radius:12px;padding:12px 24px;font-size:14px;font-weight:700;cursor:pointer;transition:background .2s}
+.fp-btn-start:hover{background:#3a6264}
+.fp-btn-skip{background:none;border:2px solid #c8d8b0;color:#5a6e47;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.fp-btn-skip:hover{border-color:#4a7c7e;color:#4a7c7e}
+#fp-tour-overlay{position:fixed;inset:0;z-index:9990;pointer-events:none}
+#fp-tour-overlay.fp-hidden{display:none}
+.fp-highlight-hole{position:absolute;border-radius:10px;box-shadow:0 0 0 9999px rgba(10,30,14,.72),0 0 0 3px #f4a435;transition:all .35s ease;z-index:9991}
+.fp-tooltip{position:absolute;background:#fff;border-radius:16px;padding:20px 22px;max-width:300px;min-width:240px;box-shadow:0 8px 32px rgba(0,0,0,.25);z-index:9992;pointer-events:all;transition:all .35s ease;animation:fpSlideUp .25s ease}
+.fp-tt-guide{display:flex;align-items:center;gap:7px;margin-bottom:8px}
+.fp-tt-guide-icon{font-size:18px}
+.fp-tt-guide-name{font-size:11px;font-weight:700;color:#4a7c7e;text-transform:uppercase;letter-spacing:.07em}
+.fp-tt-step{margin-left:auto;font-size:11px;color:#8fa07a;font-weight:600}
+.fp-tt-title{font-size:15px;font-weight:800;color:#1e2d12;margin-bottom:6px}
+.fp-tt-desc{font-size:13px;color:#5a6e47;line-height:1.55;margin-bottom:14px}
+.fp-tt-controls{display:flex;align-items:center;gap:7px}
+.fp-tt-dots{display:flex;gap:4px;flex:1}
+.fp-tt-dot{width:6px;height:6px;border-radius:50%;background:#c8d8b0;transition:background .2s}
+.fp-tt-dot.active{background:#4a7c7e}
+.fp-tt-dot.done{background:#f4a435}
+.fp-tt-back{background:none;border:1.5px solid #c8d8b0;color:#5a6e47;border-radius:8px;padding:6px 12px;font-size:12px;font-weight:600;cursor:pointer;transition:all .2s}
+.fp-tt-back:hover{border-color:#4a7c7e;color:#4a7c7e}
+.fp-tt-next{background:#4a7c7e;color:#fff;border:none;border-radius:8px;padding:6px 16px;font-size:12px;font-weight:700;cursor:pointer;transition:background .2s}
+.fp-tt-next:hover{background:#3a6264}
+.fp-tt-skip{background:none;border:none;color:#8fa07a;font-size:11px;cursor:pointer;padding:3px 6px;transition:color .2s}
+.fp-tt-skip:hover{color:#ef4444}
+@keyframes fpFadeIn{from{opacity:0}to{opacity:1}}
+@keyframes fpSlideUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+</style>
+
+<div id="fp-tour-welcome">
+  <div class="fp-welcome-box">
+    <div class="fp-welcome-paw">🐾</div>
+    <div class="fp-welcome-title">Welcome to the Owner Portal!</div>
+    <div class="fp-guide-badge">🐕 Four Paws Guide</div>
+    <div class="fp-welcome-sub">Hi! I'm your <strong>Four Paws Guide</strong>. Let me walk you through where everything is — it only takes a minute!</div>
+    <div class="fp-welcome-btns">
+      <button class="fp-btn-start" onclick="FourPawsTour.start()">🗺️ Start Tour</button>
+      <button class="fp-btn-skip" onclick="FourPawsTour.skip()">Skip</button>
+    </div>
+  </div>
+</div>
+
+<div id="fp-tour-overlay" class="fp-hidden">
+  <div class="fp-highlight-hole" id="fp-hole"></div>
+  <div class="fp-tooltip" id="fp-tooltip">
+    <div class="fp-tt-guide">
+      <span class="fp-tt-guide-icon">🐾</span>
+      <span class="fp-tt-guide-name">Four Paws Guide</span>
+      <span class="fp-tt-step" id="fp-step-label">1 / 5</span>
+    </div>
+    <div class="fp-tt-title" id="fp-tt-title"></div>
+    <div class="fp-tt-desc" id="fp-tt-desc"></div>
+    <div class="fp-tt-controls">
+      <div class="fp-tt-dots" id="fp-tt-dots"></div>
+      <button class="fp-tt-skip" onclick="FourPawsTour.finish()">✕</button>
+      <button class="fp-tt-back" id="fp-tt-back" onclick="FourPawsTour.prev()">← Back</button>
+      <button class="fp-tt-next" id="fp-tt-next" onclick="FourPawsTour.next()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var FourPawsTour=(function(){
+  var VERSION='1.0';
+  var STEPS=[
+    {sel:'.ap3x-header',title:'🏠 Academy Dashboard',desc:'This is your personal training hub! Your streak, XP points, and quick access to everything you need are all here.',pos:'bottom'},
+    {sel:'#tab-checkin',title:'📋 Training Modules',desc:'Log each training session here — rate how it went, note what you worked on, and track which skills you practised.',pos:'bottom'},
+    {sel:'#tab-exercises',title:'🧩 Enrichment Activities',desc:'Explore enrichment games and activities to keep your pet mentally stimulated between training sessions.',pos:'bottom'},
+    {sel:'#tab-history',title:'📈 Progress Tracking',desc:'See your full training history, average scores, and how your pet has improved over time.',pos:'top'},
+    {sel:'.bottom-nav',title:'⚙️ Navigation & Settings',desc:'Use the bottom bar to switch between all sections anytime. You can replay this tour from the Academy Home page.',pos:'top'}
+  ];
+  var current=0;
+  function isFirst(){return !localStorage.getItem('fourpaws_tour_completed') && localStorage.getItem('fourpaws_tour_version')!==VERSION;}
+  function init(){
+    if(isFirst()) document.getElementById('fp-tour-welcome').classList.remove('fp-hidden');
+    else document.getElementById('fp-tour-welcome').classList.add('fp-hidden');
+  }
+  function start(){
+    document.getElementById('fp-tour-welcome').classList.add('fp-hidden');
+    current=parseInt(localStorage.getItem('fourpaws_tour_step')||'0',10);
+    if(current>=STEPS.length) current=0;
+    document.getElementById('fp-tour-overlay').classList.remove('fp-hidden');
+    render(current);
+  }
+  function skip(){
+    document.getElementById('fp-tour-welcome').classList.add('fp-hidden');
+    localStorage.setItem('fourpaws_tour_completed','true');
+    localStorage.setItem('fourpaws_tour_version',VERSION);
+  }
+  function finish(){
+    document.getElementById('fp-tour-overlay').classList.add('fp-hidden');
+    document.getElementById('fp-tour-welcome').classList.add('fp-hidden');
+    localStorage.setItem('fourpaws_tour_completed','true');
+    localStorage.setItem('fourpaws_tour_version',VERSION);
+    localStorage.removeItem('fourpaws_tour_step');
+  }
+  function next(){
+    if(current<STEPS.length-1){current++;localStorage.setItem('fourpaws_tour_step',current);render(current);}
+    else finish();
+  }
+  function prev(){
+    if(current>0){current--;localStorage.setItem('fourpaws_tour_step',current);render(current);}
+  }
+  function render(idx){
+    var step=STEPS[idx];
+    var el=document.querySelector(step.sel);
+    document.getElementById('fp-tt-title').textContent=step.title;
+    document.getElementById('fp-tt-desc').textContent=step.desc;
+    document.getElementById('fp-step-label').textContent=(idx+1)+' / '+STEPS.length;
+    var dots=document.getElementById('fp-tt-dots');
+    dots.innerHTML='';
+    STEPS.forEach(function(_,i){var d=document.createElement('div');d.className='fp-tt-dot'+(i===idx?' active':i<idx?' done':'');dots.appendChild(d);});
+    document.getElementById('fp-tt-back').style.display=idx===0?'none':'';
+    document.getElementById('fp-tt-next').textContent=idx===STEPS.length-1?'🎉 Finish':'Next →';
+    if(el){
+      if(el.classList.contains('hidden')) el.classList.remove('hidden');
+      el.scrollIntoView({behavior:'smooth',block:'center'});
+      setTimeout(function(){positionTooltip(step,el);},350);
+    }
+  }
+  function positionTooltip(step,el){
+    var r=el.getBoundingClientRect();
+    var pad=8;
+    var hole=document.getElementById('fp-hole');
+    var tt=document.getElementById('fp-tooltip');
+    hole.style.top=(r.top+window.scrollY-pad)+'px';
+    hole.style.left=(r.left+window.scrollX-pad)+'px';
+    hole.style.width=(r.width+pad*2)+'px';
+    hole.style.height=(r.height+pad*2)+'px';
+    var ttW=280; var ttTop,ttLeft;
+    if(step.pos==='bottom'){ttTop=r.bottom+window.scrollY+16;ttLeft=r.left+window.scrollX+r.width/2-ttW/2;}
+    else{ttTop=r.top+window.scrollY-200;ttLeft=r.left+window.scrollX+r.width/2-ttW/2;}
+    ttLeft=Math.max(12,Math.min(ttLeft,window.innerWidth-ttW-12));
+    ttTop=Math.max(80,ttTop);
+    tt.style.top=ttTop+'px';tt.style.left=ttLeft+'px';
+  }
+  return{init:init,start:start,skip:skip,finish:finish,next:next,prev:prev};
+})();
+window.addEventListener('DOMContentLoaded',function(){FourPawsTour.init();});
+</script>
+
+<script>
+// ── Course Library ────────────────────────────────────
+var _courseState = { view:'list', courseId:null, moduleId:null, lessonId:null };
+var _lessonDone = JSON.parse(localStorage.getItem('fp_lessons_done')||'[]');
+
+function renderCourseLibrary(){
+  var el = document.getElementById('coursesTabContent');
+  if(!el) return;
+  var state = _courseState;
+  if(state.view === 'list') renderCourseList(el);
+  else if(state.view === 'modules') renderModuleList(el);
+  else if(state.view === 'lessons') renderLessonList(el);
+  else if(state.view === 'lesson') renderLesson(el);
+}
+
+function getCourses(){
+  if(!window.FP_COURSE) return [];
+  var map = {};
+  FP_COURSE.modules.forEach(function(m){
+    if(!map[m.courseId]) map[m.courseId] = {courseId:m.courseId, courseName:m.courseName, emoji:m.emoji, modules:[]};
+    map[m.courseId].modules.push(m);
+  });
+  return Object.values(map);
+}
+
+function renderCourseList(el){
+  var courses = getCourses();
+  if(!courses.length){
+    el.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">Loading courses…</div>';
+    return;
+  }
+  el.innerHTML = courses.map(function(c){
+    var totalLessons = c.modules.reduce(function(a,m){ return a + m.lessons.length; }, 0);
+    var done = c.modules.reduce(function(a,m){ return a + m.lessons.filter(function(l){ return _lessonDone.indexOf(l.id) > -1; }).length; }, 0);
+    var pct = totalLessons ? Math.round(done/totalLessons*100) : 0;
+    return '<div class="card" style="margin-bottom:14px;cursor:pointer" onclick="openCourse(\''+c.courseId+'\')">' +
+      '<div class="card-header">' +
+        '<div style="display:flex;align-items:center;gap:10px">' +
+          '<span style="font-size:28px">'+c.modules[0].emoji+'</span>' +
+          '<div><div class="card-title">'+c.courseName+'</div>' +
+          '<div style="font-size:12px;color:var(--muted)">'+c.modules.length+' modules &bull; '+totalLessons+' lessons</div></div>' +
+        '</div>' +
+        '<span style="font-size:13px;font-weight:700;color:var(--primary)">'+pct+'%</span>' +
+      '</div>' +
+      '<div style="height:6px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:0 16px 14px">' +
+        '<div style="height:100%;width:'+pct+'%;background:var(--primary);border-radius:99px;transition:width .4s"></div>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function openCourse(cid){
+  _courseState = {view:'modules', courseId:cid, moduleId:null, lessonId:null};
+  renderCourseLibrary();
+}
+
+function renderModuleList(el){
+  var courses = getCourses();
+  var course = courses.find(function(c){ return c.courseId === _courseState.courseId; });
+  if(!course){ _courseState.view='list'; renderCourseLibrary(); return; }
+  var back = '<button class="btn-secondary" style="margin-bottom:14px" onclick="_courseState.view=\'list\';renderCourseLibrary()">← All Courses</button>';
+  el.innerHTML = back + '<div class="section-title" style="margin-bottom:12px">'+course.courseName+'</div>' +
+    course.modules.map(function(m){
+      var done = m.lessons.filter(function(l){ return _lessonDone.indexOf(l.id) > -1; }).length;
+      var pct = m.lessons.length ? Math.round(done/m.lessons.length*100) : 0;
+      return '<div class="card" style="margin-bottom:12px;cursor:pointer" onclick="openModule(\''+m.id+'\')">' +
+        '<div class="card-header">' +
+          '<div><span style="font-size:20px">'+m.emoji+'</span> <strong>Module '+m.n+':</strong> '+m.name+'</div>' +
+          '<span style="font-size:12px;font-weight:700;color:var(--primary)">'+done+'/'+m.lessons.length+'</span>' +
+        '</div>' +
+        '<div style="font-size:12px;color:var(--muted);padding:0 16px 8px">'+m.desc+'</div>' +
+        '<div style="height:4px;background:var(--surface2);border-radius:99px;overflow:hidden;margin:0 16px 12px">' +
+          '<div style="height:100%;width:'+pct+'%;background:var(--primary);border-radius:99px"></div>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function openModule(mid){
+  _courseState.view = 'lessons';
+  _courseState.moduleId = mid;
+  renderCourseLibrary();
+}
+
+function renderLessonList(el){
+  var mod = null;
+  FP_COURSE.modules.forEach(function(m){ if(m.id === _courseState.moduleId) mod = m; });
+  if(!mod){ _courseState.view='modules'; renderCourseLibrary(); return; }
+  var back = '<button class="btn-secondary" style="margin-bottom:14px" onclick="_courseState.view=\'modules\';renderCourseLibrary()">← '+_courseState.courseId.replace(/-/g,' ')+'</button>';
+  el.innerHTML = back + '<div class="section-title" style="margin-bottom:12px">'+mod.emoji+' '+mod.name+'</div>' +
+    mod.lessons.map(function(l,i){
+      var done = _lessonDone.indexOf(l.id) > -1;
+      return '<div class="card" style="margin-bottom:10px;cursor:pointer;opacity:'+(done||i===0||_lessonDone.indexOf(mod.lessons[i-1]&&mod.lessons[i-1].id)>-1?'1':'0.55')+';" onclick="openLesson(\''+l.id+'\',\''+mod.id+'\','+i+')">' +
+        '<div class="card-header" style="padding:14px 16px">' +
+          '<div style="display:flex;align-items:center;gap:10px">' +
+            '<span style="font-size:20px">'+(done?'✅':'📖')+'</span>' +
+            '<div><div style="font-weight:700;font-size:14px">'+l.name+'</div>' +
+            '<div style="font-size:12px;color:var(--muted)">'+l.desc+'</div></div>' +
+          '</div>' +
+          '<span style="font-size:11px;font-weight:700;color:var(--primary)">+'+l.xp+' XP</span>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+}
+
+function openLesson(lid, mid, idx){
+  _courseState.view = 'lesson';
+  _courseState.lessonId = lid;
+  _courseState.moduleId = mid;
+  renderCourseLibrary();
+}
+
+function renderLesson(el){
+  var mod = null;
+  FP_COURSE.modules.forEach(function(m){ if(m.id === _courseState.moduleId) mod = m; });
+  if(!mod){ _courseState.view='lessons'; renderCourseLibrary(); return; }
+  var lesson = mod.lessons.find(function(l){ return l.id === _courseState.lessonId; });
+  if(!lesson){ _courseState.view='lessons'; renderCourseLibrary(); return; }
+  var done = _lessonDone.indexOf(lesson.id) > -1;
+  el.innerHTML = '<button class="btn-secondary" style="margin-bottom:14px" onclick="_courseState.view=\'lessons\';renderCourseLibrary()">← '+mod.name+'</button>' +
+    '<div class="card" style="margin-bottom:16px">' +
+      '<div style="padding:20px">' +
+        '<div style="font-size:11px;font-weight:700;color:var(--primary);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px">'+mod.courseName+' · Module '+mod.n+'</div>' +
+        '<div style="font-size:20px;font-weight:900;color:var(--text);margin-bottom:6px">'+lesson.name+'</div>' +
+        '<div style="font-size:13px;color:var(--muted);margin-bottom:16px">'+lesson.desc+'</div>' +
+        '<div style="background:var(--surface2);border-radius:12px;padding:14px;margin-bottom:16px;font-size:13px;color:var(--primary);font-style:italic">💡 '+lesson.tip+'</div>' +
+        '<div style="font-size:14px;line-height:1.7;color:var(--text)">'+lesson.content+'</div>' +
+      '</div>' +
+    '</div>' +
+    (!done ? '<button class="btn-primary" style="width:100%;padding:14px;font-size:15px" onclick="completeLesson(\''+lesson.id+'\','+lesson.xp+')">✅ Mark Complete (+'+lesson.xp+' XP)</button>' :
+             '<div style="text-align:center;padding:14px;background:#e8f5e9;border-radius:12px;font-weight:700;color:var(--primary)">✅ Lesson Complete!</div>');
+  // Wire up quiz buttons
+  setTimeout(function(){
+    el.querySelectorAll('.qo').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        var correct = btn.getAttribute('data-correct') === 'true';
+        btn.parentElement.querySelectorAll('.qo').forEach(function(b){
+          b.style.opacity='0.5'; b.disabled=true;
+          if(b.getAttribute('data-correct')==='true') b.style.background='#e8f5e9';
+        });
+        btn.style.opacity='1';
+        btn.style.background = correct ? '#e8f5e9' : '#fce8e8';
+        btn.style.borderColor = correct ? 'var(--primary)' : '#ef4444';
+        btn.style.color = correct ? 'var(--primary)' : '#ef4444';
+      });
+    });
+  }, 100);
+}
+
+function completeLesson(lid, xp){
+  if(_lessonDone.indexOf(lid) < 0){
+    _lessonDone.push(lid);
+    localStorage.setItem('fp_lessons_done', JSON.stringify(_lessonDone));
+    S.xp = (S.xp||0) + xp;
+    document.getElementById('xpValue') && (document.getElementById('xpValue').textContent = S.xp);
+  }
+  _courseState.view = 'lessons';
+  renderCourseLibrary();
+}
+
+</script>
+<script src="/fp-courses.js"></script>
+</body>
+</html>

@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AP3X — Clinician Dashboard</title>
+  <link rel="stylesheet" href="./clinician.css" />
+</head>
+<body data-theme="light">
+
+  <!-- ── Sidebar ────────────────────────────────────────────── -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <span class="brand-dot"></span>
+      <div>
+        <div class="brand-name">AP3X</div>
+        <div class="brand-sub">Clinician Dashboard</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-view="overview">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/>
+          <rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>
+        </svg>
+        Overview
+      </button>
+      <button class="nav-item" data-view="at-risk">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        At Risk
+        <span class="nav-badge" id="at-risk-count">0</span>
+      </button>
+      <button class="nav-item" data-view="patients">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+        All Patients
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="btn-icon-sm" id="theme-toggle-cli" title="Toggle theme">🌙</button>
+      <span class="sidebar-version">AP3X v1.0</span>
+    </div>
+  </aside>
+
+  <!-- ── Main area ──────────────────────────────────────────── -->
+  <div class="main-area">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <h1 class="topbar-title" id="view-title">Overview</h1>
+      <div class="topbar-actions">
+        <div class="realtime-indicator" id="realtime-indicator">
+          <span class="pulse-dot"></span>
+          <span>Live</span>
+        </div>
+        <span class="topbar-clinician">Dr. —</span>
+      </div>
+    </header>
+
+    <!-- ── View: Overview ─────────────────────────────────── -->
+    <section id="view-overview" class="view-section active">
+
+      <!-- Stats row -->
+      <div class="stats-row" id="stats-row">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-total">—</div>
+          <div class="stat-label">Total Patients</div>
+        </div>
+        <div class="stat-card stat-warning">
+          <div class="stat-value" id="stat-at-risk">—</div>
+          <div class="stat-label">At Risk</div>
+        </div>
+        <div class="stat-card stat-danger">
+          <div class="stat-value" id="stat-critical">—</div>
+          <div class="stat-label">Critical</div>
+        </div>
+        <div class="stat-card stat-muted">
+          <div class="stat-value" id="stat-missing">—</div>
+          <div class="stat-label">Missing Data</div>
+        </div>
+      </div>
+
+      <!-- Patient cards grid -->
+      <div class="patient-grid" id="overview-patient-grid">
+        <div class="loading-state">Loading patient data…</div>
+      </div>
+    </section>
+
+    <!-- ── View: At Risk ──────────────────────────────────── -->
+    <section id="view-at-risk" class="view-section hidden">
+      <p class="view-desc">Patients with HIGH, CRITICAL, or MISSING DATA status.</p>
+      <div class="patient-grid" id="at-risk-grid">
+        <p class="empty-state">No at-risk patients at this time.</p>
+      </div>
+    </section>
+
+    <!-- ── View: All Patients ─────────────────────────────── -->
+    <section id="view-patients" class="view-section hidden">
+      <div class="table-toolbar">
+        <input type="search" id="patient-search" class="search-input" placeholder="Search patients…" />
+        <select id="risk-filter" class="filter-select">
+          <option value="">All risk levels</option>
+          <option value="LOW">Low</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="HIGH">High</option>
+          <option value="CRITICAL">Critical</option>
+          <option value="MISSING_DATA">Missing Data</option>
+        </select>
+      </div>
+      <div class="patient-table-wrap">
+        <table class="patient-table" id="patient-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Last Check-in</th>
+              <th>Latest Score</th>
+              <th>Risk</th>
+              <th>Trend</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="patient-table-body">
+            <tr><td colspan="6" class="empty-state">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ── Patient Detail Panel (slides in) ──────────────── -->
+    <div class="detail-panel hidden" id="detail-panel">
+      <div class="detail-inner">
+        <div class="detail-header">
+          <div>
+            <h2 class="detail-name" id="detail-name">—</h2>
+            <div class="detail-meta" id="detail-meta">—</div>
+          </div>
+          <button class="btn-close" id="close-detail">✕</button>
+        </div>
+
+        <div class="detail-risk-row">
+          <span class="risk-badge" id="detail-risk-badge">—</span>
+          <span class="detail-last-seen" id="detail-last-seen">—</span>
+        </div>
+
+        <!-- Anxiety timeline chart -->
+        <div class="detail-section">
+          <h3 class="detail-section-title">Anxiety Timeline</h3>
+          <div class="detail-chart-wrap">
+            <canvas id="detail-chart" height="140"></canvas>
+          </div>
+        </div>
+
+        <!-- Mood & triggers -->
+        <div class="detail-section">
+          <h3 class="detail-section-title">Recent Mood Notes</h3>
+          <div id="detail-mood-list" class="detail-list">
+            <p class="empty-state">No mood notes.</p>
+          </div>
+        </div>
+
+        <!-- Active flags -->
+        <div class="detail-section">
+          <h3 class="detail-section-title">Active Flags</h3>
+          <div id="detail-flags" class="flag-list">
+            <p class="empty-state">No flags.</p>
+          </div>
+        </div>
+
+        <!-- Clinician notes -->
+        <div class="detail-section">
+          <h3 class="detail-section-title">Clinician Notes</h3>
+          <div id="detail-notes-list" class="detail-list"></div>
+          <textarea id="new-note-input" class="form-textarea"
+            placeholder="Add a clinician note…" rows="3"></textarea>
+          <div class="note-actions">
+            <select id="follow-up-status" class="filter-select small">
+              <option value="">No follow-up action</option>
+              <option value="MONITOR">Monitor closely</option>
+              <option value="REVIEW">Schedule review</option>
+              <option value="URGENT">Urgent contact</option>
+            </select>
+            <button class="btn-primary small" id="save-note-btn">Save Note</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Footer disclaimer ──────────────────────────────────── -->
+  <footer class="cli-footer">
+    <p id="cli-disclaimer"></p>
+  </footer>
+
+  <script type="module" src="./clinician-app.js"></script>
+</body>
+</html>

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1"/>
+<meta name="theme-color" content="#4a7c7e"/>
+<title>🌿 Recovery Dashboard — Recharge</title>
+<link rel="manifest" href="./manifest.json"/>
+<link rel="stylesheet" href="./app.css"/>
+<style>
+.home-hero {
+  background:linear-gradient(135deg,var(--primary),#5a9ea0);
+  border-radius:var(--r); padding:22px 18px; color:#fff;
+  margin-bottom:12px; position:relative; overflow:hidden;
+}
+.home-hero::after {
+  content:'🌿'; position:absolute; right:14px; top:50%;
+  transform:translateY(-50%); font-size:54px; opacity:.14; pointer-events:none;
+}
+.hero-greeting { font-size:14px; opacity:.85; margin-bottom:3px; }
+.hero-dog { font-size:19px; font-weight:800; margin-bottom:4px; }
+.hero-sub { font-size:13px; opacity:.78; }
+
+.quick-row { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:12px; }
+.quick-card {
+  background:var(--surface); border:1.5px solid var(--border);
+  border-radius:var(--r); padding:14px 6px 12px;
+  display:flex; flex-direction:column; align-items:center; gap:5px;
+  cursor:pointer; transition:all var(--t); text-decoration:none; color:var(--text);
+}
+.quick-card:hover { border-color:var(--primary); background:var(--primary-xl); }
+.quick-card:active { transform:scale(.96); }
+.qc-icon { font-size:24px; }
+.qc-label { font-size:10px; font-weight:700; color:var(--muted); text-align:center; }
+
+.task-item { display:flex; align-items:center; gap:11px; padding:9px 0; border-bottom:1px solid var(--border); }
+.task-item:last-child { border-bottom:none; }
+.task-check {
+  width:26px; height:26px; border-radius:50%; border:2px solid var(--border2);
+  background:none; cursor:pointer; font-size:13px; font-weight:700;
+  display:flex; align-items:center; justify-content:center;
+  transition:all var(--t); flex-shrink:0; color:var(--text);
+}
+.task-check.done { background:var(--primary); border-color:var(--primary); color:#fff; }
+.task-label { font-size:13px; flex:1; }
+.task-label.done { text-decoration:line-through; opacity:.45; }
+
+.milestone-strip { display:flex; flex-direction:column; gap:6px; }
+.milestone-chip {
+  display:flex; align-items:center; gap:8px;
+  padding:7px 10px; border-radius:var(--rs);
+  background:var(--accent-xl); border:1px solid rgba(244,164,53,.3);
+  font-size:12px; font-weight:600; color:var(--accent-d);
+}
+.milestone-chip.locked { background:var(--surface2); border-color:var(--border); color:var(--muted); opacity:.6; }
+</style>
+</head>
+<body class="theme-light" data-page="home">
+
+<header class="fp-header">
+  <div class="header-left">
+    <div class="brand-mark">
+      <span class="brand-dot"></span>
+      <span class="brand-name">🌿 Recharge</span>
+      <span class="brand-page">Recovery</span>
+    </div>
+  </div>
+  <div class="header-right">
+    <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
+    <button class="btn-icon" id="theme-toggle">🌙</button>
+  </div>
+</header>
+
+<div id="streak-banner" class="streak-banner" style="display:none">
+  <span id="streak-text"></span>
+</div>
+
+<main class="page-shell animate-in">
+
+  <div class="home-hero">
+    <div class="hero-greeting" id="hero-greeting">Good morning 👋</div>
+    <div class="hero-dog" id="hero-dog">Your Recovery Companion</div>
+    <div class="hero-sub">Steady progress restores energy 🌿</div>
+  </div>
+
+  <div class="quick-row">
+    <a href="./log.html"           class="quick-card"><span class="qc-icon">📋</span><span class="qc-label">Check-In</span></a>
+    <a href="./course-picker.html" class="quick-card"><span class="qc-icon">🎓</span><span class="qc-label">Programs</span></a>
+    <a href="./enrichment.html"    class="quick-card"><span class="qc-icon">🧘</span><span class="qc-label">Restore</span></a>
+    <a href="./progress.html"      class="quick-card"><span class="qc-icon">📈</span><span class="qc-label">Progress</span></a>
+    <a href="./coach.html"         class="quick-card"><span class="qc-icon">🤖</span><span class="qc-label">AI Guide</span></a>
+    <a href="/owner"               class="quick-card"><span class="qc-icon">🏠</span><span class="qc-label">Dashboard</span></a>
+  </div>
+
+  <div class="card">
+    <div class="card-label">📋 Today's Recovery Plan</div>
+    <div id="today-tasks"></div>
+  </div>
+
+  <div class="insight-card">
+    <div class="insight-icon">💡</div>
+    <div>
+      <div class="insight-title">Today's Reminder</div>
+      <div class="insight-text" id="tip-text">Loading…</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label-row">
+      <span class="card-label">📈 This Week</span>
+      <div class="mini-tabs" id="chart-tabs">
+        <button class="mini-tab active" onclick="switchChart('progress',this)">Energy</button>
+        <button class="mini-tab" onclick="switchChart('streak',this)">Streak</button>
+      </div>
+    </div>
+    <canvas id="home-chart" height="80" style="width:100%"></canvas>
+  </div>
+
+  <div class="card">
+    <div class="card-label">🏅 Recent Milestones</div>
+    <div id="milestone-strip" class="milestone-strip"></div>
+  </div>
+
+</main>
+
+<div id="fp-nav"></div>
+
+<script src="./app-shared.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  const h = new Date().getHours();
+  $('hero-greeting').textContent = (h<12?'Good morning':h<17?'Good afternoon':'Good evening') + ' 👋';
+  $('hero-dog').textContent = APP.userName + '\'s Recovery Companion';
+
+  $('tip-text').textContent = TIPS[new Date().getDate() % TIPS.length];
+
+  const curMod = getCurrentPhase();
+  const taskLabels = curMod
+    ? curMod.lessons.slice(0,3).map(l=>'🌿 '+l.name)
+    : ['🌬️ 5-min box breathing','📓 Free-write for 10 minutes','😌 One mindful pause today'];
+  const tasks = APP.tasks;
+  $('today-tasks').innerHTML = taskLabels.map((t,i)=>`
+    <div class="task-item">
+      <button class="task-check ${tasks[i]?'done':''}" onclick="toggleTask(${i})">${tasks[i]?'✓':''}</button>
+      <span class="task-label ${tasks[i]?'done':''}">${t}</span>
+    </div>`).join('');
+
+  const recent = getMilestones().filter(m=>m.unlocked).slice(-3);
+  $('milestone-strip').innerHTML = recent.length
+    ? recent.map(m=>`<div class="milestone-chip">${m.icon} ${m.label}</div>`).join('')
+    : '<div class="milestone-chip locked">🔒 Complete your first check-in to unlock milestones</div>';
+
+  setTimeout(()=>renderChart('progress'), 60);
+});
+
+function getCurrentPhase() {
+  for (const mod of CURRICULUM) {
+    if (!mod.lessons.every(l=>APP.completedLessons.includes(l.id))) return mod;
+  }
+  return CURRICULUM[CURRICULUM.length-1];
+}
+
+let chartType = 'progress';
+function switchChart(type, btn) {
+  chartType = type;
+  qsa('#chart-tabs .mini-tab').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderChart(type);
+}
+function renderChart(type) {
+  const recent = APP.sessions.slice(0,7).reverse();
+  const labels = recent.map(s=>['Su','Mo','Tu','We','Th','Fr','Sa'][new Date(s.date).getDay()]);
+  const data   = type==='streak' ? recent.map((_,i)=>i+1) : recent.map(s=>10-(s.score||5));
+  drawChart($('home-chart'), labels, data, '#4a7c7e', 'rgba(74,124,126,.14)', 90);
+}
+
+function toggleTask(i) {
+  const tasks = APP.tasks;
+  tasks[i] = !tasks[i];
+  APP.saveTask(i, tasks[i]);
+  if (tasks[i]) { save('rc_xp', APP.xp+10); updateXP(); showToast('✅ Practice done! +10 EP'); }
+  location.reload();
+}
+</script>
+</body>
+</html>
