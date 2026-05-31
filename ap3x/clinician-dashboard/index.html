@@ -5,6 +5,47 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AP3X — Clinician Dashboard</title>
   <link rel="stylesheet" href="./clinician.css" />
+  <!-- WIRING PATCH: inline styles for new elements only -->
+  <style>
+    /* ── Lifecycle badge ── */
+    .lifecycle-badge{display:inline-flex;align-items:center;padding:2px 9px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+    .lc-active  {background:#d1fae5;color:#065f46}
+    .lc-pending {background:#fef3c7;color:#92400e}
+    .lc-inactive{background:#fee2e2;color:#991b1b}
+    /* ── AI risk score chip ── */
+    .ai-risk-score{font-size:10px;font-weight:700;color:#4a7c7e;background:#e8f4f5;border-radius:99px;padding:2px 8px;border:1px solid #c8dada}
+    /* ── AI insight bar ── */
+    .ai-summary-bar{background:#e8f4f5;border-left:3px solid #4a7c7e;border-radius:0 8px 8px 0;padding:10px 13px;margin:10px 0;display:flex;flex-wrap:wrap;gap:8px;align-items:flex-start}
+    .ai-risk-pill{background:#4a7c7e;color:#fff;border-radius:99px;padding:3px 11px;font-size:11px;font-weight:700;flex-shrink:0}
+    .ai-summary-text{font-size:12px;color:#1a2e2e;flex:1;line-height:1.5}
+    .ai-updated{font-size:10px;color:#607878;white-space:nowrap}
+    /* ── Delivery row ── */
+    .delivery-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .btn-delivery{padding:7px 14px;border-radius:8px;border:1.5px solid #c8dada;background:#fff;color:#1a2e2e;font-size:12px;font-weight:600;cursor:pointer;text-decoration:none;transition:all .15s;display:inline-flex;align-items:center;gap:5px}
+    .btn-delivery:hover{border-color:#4a7c7e;color:#4a7c7e}
+    .qr-output{margin-top:10px}
+    /* ── Provision view ── */
+    .provision-card{background:var(--surface,#fff);border:1.5px solid var(--border,#c8dada);border-radius:14px;padding:24px;max-width:500px;margin-bottom:20px}
+    .provision-title{font-size:16px;font-weight:800;margin-bottom:6px}
+    .provision-sub{font-size:13px;color:var(--muted,#607878);margin-bottom:16px;line-height:1.5}
+    .provision-form{display:flex;flex-direction:column;gap:10px}
+    .provision-input{padding:10px 14px;border:1.5px solid var(--border,#c8dada);border-radius:9px;font-size:14px;background:var(--input-bg,#f4f7f6);color:var(--text,#1a2e2e);outline:none;transition:border-color .15s}
+    .provision-input:focus{border-color:#4a7c7e}
+    .provision-submit{padding:11px;border-radius:9px;background:#4a7c7e;color:#fff;border:none;font-size:14px;font-weight:700;cursor:pointer;transition:background .15s}
+    .provision-submit:hover{background:#3a6264}
+    .provision-error{font-size:12px;color:#ef4444;margin-top:4px}
+    .provision-success{background:#e8f4f5;border:1.5px solid #4a7c7e;border-radius:10px;padding:16px;margin-top:14px}
+    .ps-header{font-size:14px;font-weight:800;color:#4a7c7e;margin-bottom:8px}
+    .ps-id{font-size:12px;color:#607878;margin-bottom:8px}
+    .ps-link-row{display:flex;gap:8px;margin-bottom:8px}
+    .ps-link-input{flex:1;padding:7px 10px;border:1.5px solid #c8dada;border-radius:7px;font-size:11px;background:#fff;color:#1a2e2e}
+    .ps-actions{display:flex;gap:8px;flex-wrap:wrap}
+    /* ── Detail lifecycle row ── */
+    .detail-lifecycle-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:6px 0 10px}
+    /* ── CLI toast ── */
+    .cli-toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2e2e;color:#fff;padding:10px 22px;border-radius:99px;font-size:13px;font-weight:600;z-index:9999;pointer-events:none;animation:toastIn .25s ease}
+    @keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(10px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+  </style>
 </head>
 <body data-theme="light">
 
@@ -42,11 +83,20 @@
         </svg>
         All Patients
       </button>
+      <!-- WIRING PATCH: Provision nav item -->
+      <button class="nav-item" data-view="provision">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="16"/>
+          <line x1="8" y1="12" x2="16" y2="12"/>
+        </svg>
+        Provision Patient
+      </button>
     </nav>
 
     <div class="sidebar-footer">
       <button class="btn-icon-sm" id="theme-toggle-cli" title="Toggle theme">🌙</button>
-      <span class="sidebar-version">AP3X v1.0</span>
+      <span class="sidebar-version">AP3X v1.1</span>
     </div>
   </aside>
 
@@ -61,14 +111,12 @@
           <span class="pulse-dot"></span>
           <span>Live</span>
         </div>
-        <span class="topbar-clinician">Dr. —</span>
+        <span class="topbar-clinician">Clinician View</span>
       </div>
     </header>
 
     <!-- ── View: Overview ─────────────────────────────────── -->
     <section id="view-overview" class="view-section active">
-
-      <!-- Stats row -->
       <div class="stats-row" id="stats-row">
         <div class="stat-card">
           <div class="stat-value" id="stat-total">—</div>
@@ -87,8 +135,6 @@
           <div class="stat-label">Missing Data</div>
         </div>
       </div>
-
-      <!-- Patient cards grid -->
       <div class="patient-grid" id="overview-patient-grid">
         <div class="loading-state">Loading patient data…</div>
       </div>
@@ -116,6 +162,7 @@
         </select>
       </div>
       <div class="patient-table-wrap">
+        <!-- WIRING PATCH: added AI Risk + Status columns -->
         <table class="patient-table" id="patient-table">
           <thead>
             <tr>
@@ -124,13 +171,49 @@
               <th>Latest Score</th>
               <th>Risk</th>
               <th>Trend</th>
-              <th>Actions</th>
+              <th>🤖 AI Risk</th>
+              <th>Status</th>
             </tr>
           </thead>
           <tbody id="patient-table-body">
-            <tr><td colspan="6" class="empty-state">Loading…</td></tr>
+            <tr><td colspan="7" class="empty-state">Loading…</td></tr>
           </tbody>
         </table>
+      </div>
+    </section>
+
+    <!-- WIRING PATCH: View: Provision Patient ─────────────── -->
+    <section id="view-provision" class="view-section hidden">
+      <div class="provision-card">
+        <div class="provision-title">➕ Provision a New Patient</div>
+        <div class="provision-sub">
+          Creates a new patient record, generates a unique access token, and produces
+          a delivery link you can share directly with the patient.
+        </div>
+        <form class="provision-form" id="provision-form">
+          <input
+            type="text"
+            id="provision-name"
+            class="provision-input"
+            placeholder="Patient name or identifier"
+            autocomplete="off"
+            required
+          />
+          <div id="provision-error" class="provision-error" style="display:none"></div>
+          <button type="submit" class="provision-submit">Create Patient &amp; Generate Link →</button>
+        </form>
+        <div id="provision-result" style="display:none"></div>
+      </div>
+
+      <div class="provision-card" style="background:var(--surface2,#eef4f4)">
+        <div class="provision-title" style="font-size:13px">How it works</div>
+        <ol style="font-size:13px;color:var(--muted,#607878);line-height:1.75;padding-left:18px">
+          <li>Enter the patient's name or an anonymised identifier.</li>
+          <li>A unique <code>patientId</code> and <code>accessToken</code> are generated locally.</li>
+          <li>Share the delivery link or QR code with the patient.</li>
+          <li>The patient opens the link — their PWA boots with their ID pre-loaded.</li>
+          <li>Their check-ins appear in this dashboard automatically.</li>
+        </ol>
       </div>
     </section>
 
@@ -149,6 +232,12 @@
           <span class="risk-badge" id="detail-risk-badge">—</span>
           <span class="detail-last-seen" id="detail-last-seen">—</span>
         </div>
+
+        <!-- WIRING PATCH: AI insight summary -->
+        <div id="detail-ai-insight"></div>
+
+        <!-- WIRING PATCH: lifecycle status -->
+        <div class="detail-lifecycle-row" id="detail-lifecycle"></div>
 
         <!-- Anxiety timeline chart -->
         <div class="detail-section">
@@ -172,6 +261,12 @@
           <div id="detail-flags" class="flag-list">
             <p class="empty-state">No flags.</p>
           </div>
+        </div>
+
+        <!-- WIRING PATCH: Patient delivery package -->
+        <div class="detail-section">
+          <h3 class="detail-section-title">Patient App Delivery</h3>
+          <div id="detail-delivery"></div>
         </div>
 
         <!-- Clinician notes -->

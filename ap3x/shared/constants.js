@@ -12,15 +12,19 @@ export const AP3X_ROLES = {
 
 // ── SSOT storage keys (prefixed to avoid BCO collisions) ─────────
 export const AP3X_KEYS = {
-  ANXIETY_LOGS:  "ap3x_anxiety_logs",
-  MOOD_LOGS:     "ap3x_mood_logs",
-  SLEEP_LOGS:    "ap3x_sleep_logs",
-  TRIGGER_LOGS:  "ap3x_trigger_logs",
-  RISK_FLAGS:    "ap3x_risk_flags",
-  USER_PROFILE:  "ap3x_user_profile",
-  STREAK:        "ap3x_streak",
-  SYNC_QUEUE:    "ap3x_sync_queue",
-  CLINICIAN_NOTES: "ap3x_clinician_notes"
+  ANXIETY_LOGS:     "ap3x_anxiety_logs",
+  MOOD_LOGS:        "ap3x_mood_logs",
+  SLEEP_LOGS:       "ap3x_sleep_logs",
+  TRIGGER_LOGS:     "ap3x_trigger_logs",
+  RISK_FLAGS:       "ap3x_risk_flags",
+  USER_PROFILE:     "ap3x_user_profile",
+  STREAK:           "ap3x_streak",
+  SYNC_QUEUE:       "ap3x_sync_queue",
+  CLINICIAN_NOTES:  "ap3x_clinician_notes",
+  // ── WIRING PATCH: new SSOT keys ──────────────────────────────
+  PROVISIONS:       "ap3x_provisions",       // { [patientId]: provisionRecord }
+  AI_INSIGHTS:      "ap3x_ai_insights",      // { [patientId]: insightRecord }
+  LIFECYCLE:        "ap3x_lifecycle"         // { [patientId]: lifecycleRecord }
 };
 
 // ── Risk levels ───────────────────────────────────────────────────

@@ -434,5 +434,118 @@
 </div>
 
 <script src="./patient-app.js"></script>
+
+<!-- ══════════════════════════════════════════
+     WIRING PATCH: Access Denied Screen
+     Shown when URL token is invalid/missing
+══════════════════════════════════════════════ -->
+<div id="access-denied" style="display:none;position:fixed;inset:0;z-index:9999;background:#f4f7f6;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:14px;text-align:center;padding:24px">
+  <div style="font-size:48px">🔒</div>
+  <div style="font-size:20px;font-weight:800;color:#1a2e2e">Access Denied</div>
+  <div style="font-size:14px;color:#607878;max-width:300px;line-height:1.6">
+    This link is invalid or has expired.<br/>
+    Please ask your clinician for a new access link.
+  </div>
+  <div style="font-size:11px;color:#8fa0a0;margin-top:8px" id="access-denied-detail"></div>
+</div>
+<script>
+/* ══════════════════════════════════════════════════════════════
+   WIRING PATCH: Patient PWA Bootstrap
+   Reads patientId + token from URL, validates against
+   ap3x_provisions SSOT, loads patient config, logs first event.
+═══════════════════════════════════════════════════════════════ */
+(function patientBootstrap() {
+  var AP3X_PROVISIONS_KEY = "ap3x_provisions";
+  var AP3X_LIFECYCLE_KEY  = "ap3x_lifecycle";
+  var AP3X_ANXIETY_KEY    = "ap3x_anxiety_logs";
+
+  function lsGet(key, def) {
+    try { var v = localStorage.getItem(key); return v !== null ? JSON.parse(v) : def; }
+    catch (e) { return def; }
+  }
+  function lsSet(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+  }
+
+  var params    = new URLSearchParams(window.location.search);
+  var patientId = params.get("patientId");
+  var token     = params.get("token");
+
+  // No URL params → standalone mode (direct install, no provisioning)
+  if (!patientId && !token) {
+    console.log("[AP3X Patient] Standalone mode — no provisioning params.");
+    return;
+  }
+
+  // Validate token against SSOT provisions
+  var provisions  = lsGet(AP3X_PROVISIONS_KEY, {});
+  var provision   = provisions[patientId];
+
+  if (!provision || provision.accessToken !== token) {
+    // Invalid — show access denied, hide main app
+    document.getElementById("access-denied").style.display = "flex";
+    var detail = document.getElementById("access-denied-detail");
+    if (detail) detail.textContent = "ID: " + (patientId || "none") + " · Token mismatch";
+    // Hide everything else
+    var body = document.body;
+    Array.from(body.children).forEach(function(el) {
+      if (el.id !== "access-denied") el.style.visibility = "hidden";
+    });
+    console.warn("[AP3X Patient] Invalid token — access denied.");
+    return;
+  }
+
+  // ── Valid token: load patient config into sessionStorage + localStorage ──
+  sessionStorage.setItem("ap3x_patient_id",    patientId);
+  sessionStorage.setItem("ap3x_access_token",  token);
+  sessionStorage.setItem("ap3x_patient_name",  provision.name || "Patient");
+
+  // Store profile for the patient app to read
+  lsSet("ap3x_user_profile", {
+    userId:    patientId,
+    name:      provision.name || "Patient",
+    role:      "patient",
+    tokenAuth: true,
+    loadedAt:  new Date().toISOString()
+  });
+
+  // ── Update lifecycle: first engagement ─────────────────────────
+  var lifecycle = lsGet(AP3X_LIFECYCLE_KEY, {});
+  var lc = lifecycle[patientId] || {};
+  if (!lc.firstEngagement) {
+    lc.firstEngagement = new Date().toISOString();
+    lc.lastSync        = new Date().toISOString();
+    if (lc.status === "pending") lc.status = "active";
+  } else {
+    lc.lastSync = new Date().toISOString();
+  }
+  lifecycle[patientId] = lc;
+  lsSet(AP3X_LIFECYCLE_KEY, lifecycle);
+
+  // ── Log first engagement event ──────────────────────────────────
+  var EVENTS_KEY = "bco_events";
+  try {
+    var events = JSON.parse(localStorage.getItem(EVENTS_KEY) || "[]");
+    events.push({
+      id:        crypto.randomUUID(),
+      type:      "AP3X_PATIENT_PWA_LOAD",
+      module:    "ANXIETYCORE",
+      payload:   { patientId: patientId, tokenAuth: true },
+      source:    "patient_pwa",
+      timestamp: new Date().toISOString()
+    });
+    localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
+  } catch (e) {}
+
+  // ── Pre-populate onboarding name if not set ────────────────────
+  var savedName = localStorage.getItem("rc_user_name");
+  if (!savedName && provision.name) {
+    localStorage.setItem("rc_user_name", JSON.stringify(provision.name));
+  }
+
+  console.log("[AP3X Patient] Bootstrapped — ID:", patientId, "· Name:", provision.name);
+})();
+</script>
+
 </body>
 </html>
