@@ -21,72 +21,50 @@
     <!-- Step 1: Welcome -->
     <div class="ob-step active" id="ob-step-1">
       <div class="ob-logo">
-        <span class="ob-paw">🐾</span>
+        <span class="ob-paw">🌿</span>
         <div class="ob-brand">Recharge Recovery</div>
-        <div class="ob-brand-sub">Training Companion</div>
+        <div class="ob-brand-sub">Your Recovery Companion</div>
       </div>
-      <h1 class="ob-title">Welcome to your<br/>Dog's Training Portal</h1>
-      <p class="ob-desc">Personalised training plans, behaviour tracking and AI guidance — all built around your dog. Let's set up your profile.</p>
+      <h1 class="ob-title">Welcome to your<br/>Recovery Portal</h1>
+      <p class="ob-desc">Personalised burnout recovery, daily check-ins, and evidence-based guidance — built around you. Let's set up your profile.</p>
       <div class="ob-feature-list">
-        <div class="ob-feat"><span>🎓</span> 5-module Puppy Masterclass</div>
-        <div class="ob-feat"><span>🧠</span> AI Training Coach</div>
-        <div class="ob-feat"><span>📈</span> Progress &amp; behaviour tracking</div>
-        <div class="ob-feat"><span>🧩</span> Guided enrichment activities</div>
+        <div class="ob-feat"><span>🎓</span> 5-phase Burnout Recovery Program</div>
+        <div class="ob-feat"><span>🧠</span> AI Recovery Coach</div>
+        <div class="ob-feat"><span>📈</span> Anxiety &amp; energy tracking</div>
+        <div class="ob-feat"><span>🌬️</span> Guided restorative practices</div>
       </div>
-      <button class="btn-primary ob-next-btn" onclick="obNext(1)">Let's set up your dog's profile →</button>
+      <button class="btn-primary ob-next-btn" onclick="obNext(1)">Set up my recovery profile →</button>
       <button class="ob-skip-btn" onclick="obSkip()">Skip — already set up</button>
     </div>
 
-    <!-- Step 2: Dog's name + breed -->
+    <!-- Step 2: Name -->
     <div class="ob-step" id="ob-step-2">
       <button class="ob-back" onclick="obBack(2)">‹ Back</button>
       <div class="ob-step-num">Step 1 of 3</div>
-      <h2 class="ob-step-title">Tell us about your dog</h2>
-      <p class="ob-step-sub">This personalises your training plans and AI coach responses</p>
+      <h2 class="ob-step-title">What should we call you?</h2>
+      <p class="ob-step-sub">Your name personalises your experience and the AI coach's responses</p>
       <div class="ob-field">
-        <label class="ob-label">Your dog's name</label>
-        <input type="text" id="ob-dog-name" class="ob-input" placeholder="e.g. Luna, Biscuit, Buddy…" autocomplete="off"/>
+        <label class="ob-label">Your name or first name</label>
+        <input type="text" id="ob-user-name" class="ob-input" placeholder="e.g. Alex, Jordan, Sam…" autocomplete="off"/>
       </div>
-      <div class="ob-field">
-        <label class="ob-label">Breed</label>
-        <input type="text" id="ob-breed" class="ob-input" placeholder="e.g. Labrador, French Bulldog, Mixed…" autocomplete="off"/>
-      </div>
-      <div class="ob-field">
-        <label class="ob-label">Age</label>
-        <div class="ob-age-row">
-          <button class="ob-age-btn active" data-age="8–16 weeks">8–16 weeks</button>
-          <button class="ob-age-btn" data-age="4–6 months">4–6 months</button>
-          <button class="ob-age-btn" data-age="6–12 months">6–12 months</button>
-          <button class="ob-age-btn" data-age="1–2 years">1–2 years</button>
-          <button class="ob-age-btn" data-age="2+ years">2+ years</button>
-        </div>
-      </div>
-      <div class="ob-field">
-        <label class="ob-label">Your name</label>
-        <input type="text" id="ob-owner-name" class="ob-input" placeholder="e.g. Sarah, James…" autocomplete="off"/>
-      </div>
-      <button class="btn-primary ob-next-btn" onclick="obNext(2)">Next →</button>
+      <button class="btn-primary ob-next-btn" onclick="obNext(2)" style="margin-top:20px">Next →</button>
     </div>
 
-    <!-- Step 3: Training goals -->
+    <!-- Step 3: Recovery goals -->
     <div class="ob-step" id="ob-step-3">
       <button class="ob-back" onclick="obBack(3)">‹ Back</button>
       <div class="ob-step-num">Step 2 of 3</div>
-      <h2 class="ob-step-title">What are your training goals?</h2>
-      <p class="ob-step-sub">Select everything you want to work on — we'll prioritise your lessons</p>
-      <div class="ob-goals-grid" id="ob-goals">
-        <button class="ob-goal-btn" data-g="Recall &amp; coming when called">📣 Recall</button>
-        <button class="ob-goal-btn" data-g="Loose lead walking">🦮 Loose lead</button>
-        <button class="ob-goal-btn" data-g="Sit, down &amp; stay">🪑 Sit &amp; stay</button>
-        <button class="ob-goal-btn" data-g="Stopping jumping up">⬇️ No jumping</button>
-        <button class="ob-goal-btn" data-g="Crate training">🏠 Crate training</button>
-        <button class="ob-goal-btn" data-g="Socialisation">🐕 Socialisation</button>
-        <button class="ob-goal-btn" data-g="Stopping biting &amp; mouthing">😬 Biting/mouthing</button>
-        <button class="ob-goal-btn" data-g="Confidence building">💪 Confidence</button>
-        <button class="ob-goal-btn" data-g="Reducing reactivity">⚠️ Reactivity</button>
-        <button class="ob-goal-btn" data-g="Toilet training">🚽 Toilet training</button>
-        <button class="ob-goal-btn" data-g="Enrichment &amp; mental stimulation">🧩 Enrichment</button>
-        <button class="ob-goal-btn" data-g="Alone time &amp; separation">🚪 Alone time</button>
+      <h2 class="ob-step-title">What are your recovery goals?</h2>
+      <p class="ob-step-sub">Select everything that applies — we'll personalise your program</p>
+      <div class="ob-goal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:16px 0">
+        <button class="ob-goal-btn" data-g="Reduce anxiety and daily stress">😮‍💨 Reduce anxiety</button>
+        <button class="ob-goal-btn" data-g="Improve sleep quality">😴 Better sleep</button>
+        <button class="ob-goal-btn" data-g="Recover from burnout">🔋 Recover from burnout</button>
+        <button class="ob-goal-btn" data-g="Build sustainable boundaries">🛡️ Set boundaries</button>
+        <button class="ob-goal-btn" data-g="Improve focus and concentration">🎯 Improve focus</button>
+        <button class="ob-goal-btn" data-g="Build restorative daily habits">🌿 Daily habits</button>
+        <button class="ob-goal-btn" data-g="Reduce physical tension and stress">🫁 Body tension</button>
+        <button class="ob-goal-btn" data-g="Reconnect with meaning and values">💛 Find meaning</button>
       </div>
       <button class="btn-primary ob-next-btn" onclick="obNext(3)" style="margin-top:16px">Next →</button>
     </div>
@@ -95,62 +73,54 @@
     <div class="ob-step" id="ob-step-4">
       <button class="ob-back" onclick="obBack(4)">‹ Back</button>
       <div class="ob-step-num">Step 3 of 3</div>
-      <h2 class="ob-step-title">Your training experience</h2>
-      <p class="ob-step-sub">Helps us calibrate lesson complexity and tip detail</p>
-      <div class="ob-exp-list" id="ob-exp">
-        <button class="ob-exp-btn" data-e="new">
-          <span class="oe-icon">🌱</span>
-          <div>
-            <div class="oe-title">New to dog training</div>
-            <div class="oe-desc">This is my first dog or I'm completely new to training</div>
-          </div>
+      <h2 class="ob-step-title">How severe is your burnout?</h2>
+      <p class="ob-step-sub">Helps calibrate your program intensity and session depth</p>
+      <div class="ob-exp-row" style="display:flex;flex-direction:column;gap:10px;margin:16px 0">
+        <button class="ob-exp-btn active" data-e="mild" style="text-align:left;padding:14px;border-radius:12px;border:2px solid #e0e0e0">
+          <div style="font-weight:700">Mild / Early signs</div>
+          <div style="font-size:12px;opacity:.7">Feeling drained, motivation dipping, finding it harder to switch off</div>
         </button>
-        <button class="ob-exp-btn" data-e="some">
-          <span class="oe-icon">📚</span>
-          <div>
-            <div class="oe-title">Some experience</div>
-            <div class="oe-desc">I've trained a dog before but want to learn more</div>
-          </div>
+        <button class="ob-exp-btn" data-e="moderate" style="text-align:left;padding:14px;border-radius:12px;border:2px solid #e0e0e0">
+          <div style="font-weight:700">Moderate burnout</div>
+          <div style="font-size:12px;opacity:.7">Persistent exhaustion, anxiety or low mood, difficulty functioning</div>
         </button>
-        <button class="ob-exp-btn" data-e="confident">
-          <span class="oe-icon">🎓</span>
-          <div>
-            <div class="oe-title">Confident owner</div>
-            <div class="oe-desc">I'm comfortable with training but want structured guidance</div>
-          </div>
+        <button class="ob-exp-btn" data-e="severe" style="text-align:left;padding:14px;border-radius:12px;border:2px solid #e0e0e0">
+          <div style="font-weight:700">Severe / Recovery phase</div>
+          <div style="font-size:12px;opacity:.7">Off work or significantly reduced capacity — in active recovery</div>
         </button>
       </div>
-      <button class="btn-primary ob-next-btn" onclick="obFinish()" style="margin-top:16px">Set up my portal →</button>
+      <button class="btn-primary ob-next-btn" onclick="obFinish()" style="margin-top:8px">Finish setup →</button>
     </div>
 
-    <!-- Step 5: Ready screen -->
+    <!-- Step 5: Summary + launch -->
     <div class="ob-step" id="ob-step-5">
-      <div class="ob-ready-icon">🎉</div>
-      <h2 class="ob-ready-title">You're all set!</h2>
-      <p class="ob-ready-sub">Your personalised training portal is ready.</p>
-      <div class="ob-summary" id="ob-summary"></div>
-      <button class="btn-primary ob-next-btn" id="ob-launch-btn">Open My Training Portal →</button>
+      <div class="ob-logo" style="margin-bottom:16px">
+        <span class="ob-paw">✅</span>
+        <div class="ob-brand">You're all set</div>
+      </div>
+      <h2 class="ob-step-title">Your Recovery Profile</h2>
+      <div id="ob-summary" class="ob-summary-wrap"></div>
+      <div class="ob-disclaimer" style="font-size:11px;color:#8fa0a0;margin:16px 0;line-height:1.5;padding:10px;background:#f4f7f6;border-radius:8px">
+        This app supports your recovery journey. It is not a medical tool and does not replace clinical care. Always consult a qualified clinician.
+      </div>
+      <button class="btn-primary ob-next-btn" id="ob-launch-btn">Open my Recovery Portal →</button>
     </div>
 
   </div>
 </div>
 
-
-<!-- ══════════════════════════════════════════
-     PORTAL HOME — main hub
-══════════════════════════════════════════════ -->
 <div id="portal-root" style="display:none">
 
   <header class="portal-header">
     <div class="ph-brand">
       <span class="brand-dot"></span>
       <div>
-        <div class="brand-name">🐾 Four Paws</div>
-        <div class="brand-sub" id="portal-brand-sub">Training Companion</div>
+        <div class="brand-name">🌿 Recharge</div>
+        <div class="brand-sub" id="portal-brand-sub">Recovery Companion</div>
       </div>
     </div>
     <div class="ph-right">
-      <span class="xp-chip" id="xp-chip">⚡ 0 XP</span>
+      <span class="xp-chip" id="xp-chip">⚡ 0 EP</span>
       <button class="btn-icon" id="theme-toggle">🌙</button>
     </div>
   </header>
@@ -161,10 +131,10 @@
 
   <div class="portal-scroll">
 
-    <!-- Dog hero card -->
+    <!-- Recovery hero card -->
     <div class="portal-hero">
       <div class="hero-greeting" id="hero-greeting">Good morning 👋</div>
-      <div class="hero-dog"      id="hero-dog-name">Your Training Companion</div>
+      <div class="hero-dog"      id="hero-dog-name">Your Recovery Companion</div>
       <div class="hero-sub"      id="hero-sub">Consistency builds champions 🐕</div>
       <div class="hero-dog-chips" id="hero-dog-chips"></div>
     </div>
@@ -176,7 +146,7 @@
     <div class="portal-grid">
       <button class="portal-tile tile-log"      onclick="openScreen('log')">
         <span class="tile-icon">📋</span>
-        <span class="tile-label">Log Session</span>
+        <span class="tile-label">Check In</span>
         <span class="tile-meta" id="tile-log-meta">Ready to log</span>
         <span class="tile-arrow">›</span>
       </button>
@@ -276,7 +246,7 @@
       </div>
 
       <div class="s-card">
-        <div class="s-label" id="mood-label">How was your dog's mood? <span class="hint">(select all)</span></div>
+        <div class="s-label" id="mood-label">How are you feeling today? <span class="hint">(select all)</span></div>
         <div class="tag-group" id="mood-tags">
           <button class="tag" data-v="Happy & playful">Happy &amp; playful 😄</button>
           <button class="tag" data-v="Calm & relaxed">Calm &amp; relaxed 😌</button>
@@ -301,7 +271,7 @@
         <textarea id="session-note" class="ob-textarea" placeholder="Breakthroughs, challenges, what you noticed…" rows="3"></textarea>
       </div>
 
-      <button class="btn-primary" id="submit-session">Save Session ✓</button>
+      <button class="btn-primary" id="submit-session">Save Check-in ✓</button>
     </div>
 
     <div id="log-feedback" class="feedback-card" style="display:none">
@@ -321,7 +291,7 @@
 <div id="screen-courses" class="screen" aria-hidden="true">
   <div class="screen-header">
     <button class="screen-back" onclick="closeScreen('courses')">‹ Back</button>
-    <span class="screen-title">🎓 Puppy Masterclass</span>
+    <span class="screen-title">🌿 Recovery Program</span>
     <span></span>
   </div>
   <div class="screen-body">
@@ -392,7 +362,7 @@
     <div class="coach-chat" id="coach-chat"></div>
     <div class="coach-quick-row" id="coach-quick"></div>
     <div class="coach-input-bar">
-      <input type="text" id="coach-input" class="coach-input" placeholder="Ask anything about your dog…"/>
+      <input type="text" id="coach-input" class="coach-input" placeholder="Ask about your recovery…"/>
       <button class="coach-send" id="coach-send">➤</button>
     </div>
   </div>
